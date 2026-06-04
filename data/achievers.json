@@ -1,0 +1,98 @@
+[
+  {
+    "name": "Arjun Verma",
+    "github": "arjun-verma-oss",
+    "headline": "GSoC 2024 at Mozilla Firefox — worked on the DevTools debugger",
+    "programs": [
+      { "name": "GSoC", "year": 2024, "org": "Mozilla", "url": "" }
+    ]
+  },
+  {
+    "name": "Priya Nair",
+    "github": "priya-nair-contrib",
+    "headline": "Outreachy 2024 at Wikimedia Foundation — improved Wikipedia's mobile editor",
+    "programs": [
+      { "name": "Outreachy", "year": 2024, "org": "Wikimedia Foundation", "url": "" }
+    ]
+  },
+  {
+    "name": "Siddharth Rao",
+    "github": "sidrao-dev",
+    "headline": "GSoC 2023 at NumPy — contributed to array API compatibility layer",
+    "programs": [
+      { "name": "GSoC", "year": 2023, "org": "NumPy / Scientific Python", "url": "" }
+    ]
+  },
+  {
+    "name": "Meera Krishnan",
+    "github": "meera-k-dev",
+    "headline": "Summer of Bitcoin 2024 — built Lightning Network payment tooling",
+    "programs": [
+      { "name": "Summer of Bitcoin", "year": 2024, "org": "Bitcoin FOSS", "url": "" }
+    ]
+  },
+  {
+    "name": "Rohan Gupta",
+    "github": "rohan-gupta-oss",
+    "headline": "LFX Mentorship 2024 at CNCF — contributed to Kubernetes ecosystem",
+    "programs": [
+      { "name": "LFX", "year": 2024, "org": "CNCF / Kubernetes", "url": "" }
+    ]
+  },
+  {
+    "name": "Ananya Singh",
+    "github": "ananya-singh-dev",
+    "headline": "GSoC 2023 at Python Software Foundation — improved CPython documentation tooling",
+    "programs": [
+      { "name": "GSoC", "year": 2023, "org": "Python Software Foundation", "url": "" }
+    ]
+  },
+  {
+    "name": "Karthik Menon",
+    "github": "karthikmenon-oss",
+    "headline": "Outreachy 2023 at GNOME Foundation — accessibility improvements in GTK",
+    "programs": [
+      { "name": "Outreachy", "year": 2023, "org": "GNOME Foundation", "url": "" }
+    ]
+  },
+  {
+    "name": "Divya Sharma",
+    "github": "divya-sharma-contrib",
+    "headline": "GSoC 2024 at SymPy — implemented symbolic integration algorithms",
+    "programs": [
+      { "name": "GSoC", "year": 2024, "org": "SymPy", "url": "" }
+    ]
+  },
+  {
+    "name": "Vikram Patel",
+    "github": "vikramp-oss",
+    "headline": "LFX Mentorship 2023 at Linux Foundation — contributed to eBPF tooling",
+    "programs": [
+      { "name": "LFX", "year": 2023, "org": "Linux Foundation", "url": "" }
+    ]
+  },
+  {
+    "name": "Ishaan Tyagi",
+    "github": "ishaan-tyagi-dev",
+    "headline": "MLH Fellowship 2024 — contributed to open source ML infrastructure",
+    "programs": [
+      { "name": "MLH", "year": 2024, "org": "Major League Hacking", "url": "" }
+    ]
+  },
+  {
+    "name": "Sneha Reddy",
+    "github": "sneha-reddy-oss",
+    "headline": "GSoC 2022 at Oppia Foundation — built interactive math lessons",
+    "programs": [
+      { "name": "GSoC", "year": 2022, "org": "Oppia Foundation", "url": "" }
+    ]
+  },
+  {
+    "name": "Aakash Kumar",
+    "github": "aakash-kumar-dev",
+    "headline": "Summer of Bitcoin 2023 — developed Bitcoin Script tooling and testing infrastructure",
+    "programs": [
+      { "name": "Summer of Bitcoin", "year": 2023, "org": "Bitcoin FOSS", "url": "" }
+    ]
+  }
+]
