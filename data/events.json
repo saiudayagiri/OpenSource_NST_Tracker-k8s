@@ -1,125 +1,51 @@
+
 [
   {
-    "id": "gsoc-2026-results",
-    "type": "milestone",
-    "title": "GSoC 2026 — Accepted Contributors Announced",
-    "description": "Google Summer of Code 2026 accepted contributor list goes live. If you applied, check your email and the GSoC portal immediately.",
-    "program": "GSoC",
-    "programColor": "blue",
-    "datetime": "2026-04-27T18:30:00+05:30",
-    "url": "https://summerofcode.withgoogle.com"
+    "program": "Google Summer of Code (GSoC)",
+    "description": "Global program connecting new contributors with mentors to work on open-source projects.",
+    "type": "Internship / Mentorship",
+    "stipend": "Varies based on project scope"
   },
   {
-    "id": "mlh-summer-2026-deadline",
-    "type": "deadline",
-    "title": "MLH Fellowship Summer 2026 — Applications Close",
-    "description": "Last day to apply for the MLH Fellowship Summer 2026 batch starting May 18. Open Source, Software Engineering, and Production Engineering tracks available. Stipend ~$5,000.",
-    "program": "MLH",
-    "programColor": "rose",
-    "datetime": "2026-04-30T23:59:00+05:30",
-    "url": "https://fellowship.mlh.io"
-  },
-  {
-    "id": "gsoc-2026-coding-start",
-    "type": "milestone",
-    "title": "GSoC 2026 — Coding Period Begins",
-    "description": "The official GSoC 2026 coding period starts. Selected contributors begin working with their mentors. Community bonding period ends May 25.",
-    "program": "GSoC",
-    "programColor": "blue",
-    "datetime": "2026-05-26T00:00:00+05:30",
-    "url": "https://summerofcode.withgoogle.com"
-  },
-  {
-    "id": "lfx-summer-2026-open",
-    "type": "deadline",
-    "title": "LFX Mentorship Summer 2026 — Applications Open",
-    "description": "LFX Summer 2026 applications open today. Projects span CNCF, Kubernetes, Hyperledger, and 20+ other foundations. Applications close May 27 — only 2 weeks window.",
-    "program": "LFX",
-    "programColor": "violet",
-    "datetime": "2026-05-14T00:00:00+05:30",
-    "url": "https://mentorship.lfx.linuxfoundation.org"
-  },
-  {
-    "id": "lfx-summer-2026-close",
-    "type": "deadline",
-    "title": "LFX Mentorship Summer 2026 — Applications Close",
-    "description": "Final day to submit your LFX Mentorship Summer 2026 application. Internship runs June–August 2026. Stipend $3,000–$6,600.",
-    "program": "LFX",
-    "programColor": "violet",
-    "datetime": "2026-05-27T23:59:00+05:30",
-    "url": "https://mentorship.lfx.linuxfoundation.org"
-  },
-  {
-    "id": "sob-2026-first-eval",
-    "type": "milestone",
-    "title": "Summer of Bitcoin 2026 — First Evaluation",
-    "description": "Halfway point evaluation for Summer of Bitcoin 2026 contributors. 40% of the stipend is released on successful evaluation.",
-    "program": "Summer of Bitcoin",
-    "programColor": "orange",
-    "datetime": "2026-06-29T00:00:00+05:30",
-    "url": "https://www.summerofbitcoin.org"
-  },
-  {
-    "id": "outreachy-dec-2026-open",
-    "type": "deadline",
-    "title": "Outreachy December 2026 — Applications Expected Open",
-    "description": "Outreachy December 2026–March 2027 cohort initial applications are expected to open in August. Stipend $7,000. Check outreachy.org for confirmed dates.",
     "program": "Outreachy",
-    "programColor": "green",
-    "datetime": "2026-08-01T00:00:00+05:30",
-    "url": "https://www.outreachy.org"
+    "description": "Internships for groups underrepresented in the tech industry.",
+    "type": "Internship",
+    "stipend": "$7,000 USD"
   },
   {
-    "id": "lfx-fall-2026-open",
-    "type": "deadline",
-    "title": "LFX Mentorship Fall 2026 — Applications Open",
-    "description": "LFX Fall 2026 applications open. Internship runs September–November 2026. Applications close August 12.",
-    "program": "LFX",
-    "programColor": "violet",
-    "datetime": "2026-07-30T00:00:00+05:30",
-    "url": "https://mentorship.lfx.linuxfoundation.org"
+    "program": "LFX Mentorship",
+    "description": "Mentorships on Linux Foundation projects (CNCF, Kubernetes, etc.).",
+    "type": "Internship / Mentorship",
+    "stipend": "$3,000 – $6,600"
   },
   {
-    "id": "hacktoberfest-2026",
-    "type": "milestone",
-    "title": "Hacktoberfest 2026 — Starts",
-    "description": "Hacktoberfest 2026 begins. Make 4 quality PRs to participating repositories throughout October to earn digital rewards. Perfect first-timer event.",
+    "program": "MLH Fellowship",
+    "description": "12-week remote internship alternative focused on engineering skills.",
+    "type": "Fellowship",
+    "stipend": "Educational stipend provided"
+  },
+  {
+    "program": "Summer of Bitcoin",
+    "description": "Internship focused on Bitcoin and blockchain-related open-source projects.",
+    "type": "Internship",
+    "stipend": "Paid in Bitcoin (varies by location)"
+  },
+  {
+    "program": "Google Season of Docs",
+    "description": "Funds open-source organizations to hire technical writers for documentation.",
+    "type": "Grant Program",
+    "stipend": "$5,000 – $15,000 (to organizations)"
+  },
+  {
     "program": "Hacktoberfest",
-    "programColor": "pink",
-    "datetime": "2026-10-01T00:00:00+05:30",
-    "url": "https://hacktoberfest.com"
+    "description": "Month-long event encouraging contributions to open-source repositories.",
+    "type": "Event",
+    "stipend": "Digital badges and limited-run swag"
   },
   {
-    "id": "session-pr-review",
-    "type": "session",
-    "title": "GSoC Proposal + PR Review",
-    "description": "Review session for GSoC 2026 proposals and PR quality. Bring your draft proposal or a PR you want feedback on.",
-    "mentor": "JigyasuRajput",
-    "mentorName": "Jigyasu Rajput",
-    "datetime": "2026-04-24T18:00:00+05:30",
-    "durationMins": 45,
-    "bookingUrl": ""
-  },
-  {
-    "id": "session-first-pr",
-    "type": "session",
-    "title": "Your First Merged PR — Live Walkthrough",
-    "description": "Step-by-step: find a good issue, clone the repo, make the fix, open a clean PR. Beginner friendly.",
-    "mentor": "TriyanMukherjee",
-    "mentorName": "Triyan Mukherjee",
-    "datetime": "2026-04-26T16:00:00+05:30",
-    "durationMins": 60,
-    "bookingUrl": ""
-  },
-  {
-    "id": "session-lfx-qa",
-    "type": "session",
-    "title": "LFX Mentorship Application Q&A",
-    "description": "Open Q&A to prepare for LFX Summer 2026 applications opening May 14. Bring your project shortlist.",
-    "mentor": "saiudayagiri",
-    "mentorName": "Sai Udayagiri",
-    "datetime": "2026-05-10T19:00:00+05:30",
-    "durationMins": 60,
-    "bookingUrl": ""
+    "program": "Season of KDE",
+    "description": "Opportunity to contribute to KDE software and community projects.",
+    "type": "Mentorship",
+    "stipend": "None (experience-based)"
   }
 ]

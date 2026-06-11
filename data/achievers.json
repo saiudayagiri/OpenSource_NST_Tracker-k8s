@@ -1,98 +1,90 @@
 [
   {
-    "name": "Arjun Verma",
-    "github": "arjun-verma-oss",
-    "headline": "GSoC 2024 at Mozilla Firefox — worked on the DevTools debugger",
+    "name": "Sarthak Gupta",
+    "github": "sarthak-gupta229",
+    "headline": "Google Summer of Code 2025 contributor",
     "programs": [
-      { "name": "GSoC", "year": 2024, "org": "Mozilla", "url": "" }
+      { "name": "GSoC", "year": 2025, "org": "SymPy", "url": "" }
     ]
   },
   {
-    "name": "Priya Nair",
-    "github": "priya-nair-contrib",
-    "headline": "Outreachy 2024 at Wikimedia Foundation — improved Wikipedia's mobile editor",
+    "name": "Dreamstick9",
+    "github": "Dreamstick9",
+    "headline": "Outreachy 2025 intern",
     "programs": [
-      { "name": "Outreachy", "year": 2024, "org": "Wikimedia Foundation", "url": "" }
+      { "name": "Outreachy", "year": 2025, "org": "GNOME Foundation", "url": "" }
     ]
   },
   {
-    "name": "Siddharth Rao",
-    "github": "sidrao-dev",
-    "headline": "GSoC 2023 at NumPy — contributed to array API compatibility layer",
+    "name": "Sujay Barui",
+    "github": "sujayxbarui",
+    "headline": "LFX Mentorship 2025 contributor",
     "programs": [
-      { "name": "GSoC", "year": 2023, "org": "NumPy / Scientific Python", "url": "" }
+      { "name": "LFX", "year": 2025, "org": "CNCF / Kubernetes", "url": "" }
     ]
   },
   {
-    "name": "Meera Krishnan",
-    "github": "meera-k-dev",
-    "headline": "Summer of Bitcoin 2024 — built Lightning Network payment tooling",
+    "name": "Shivesh Saini",
+    "github": "shiveshsaini",
+    "headline": "Google Summer of Code 2025 contributor",
     "programs": [
-      { "name": "Summer of Bitcoin", "year": 2024, "org": "Bitcoin FOSS", "url": "" }
+      { "name": "GSoC", "year": 2025, "org": "Python Software Foundation", "url": "" }
     ]
   },
   {
-    "name": "Rohan Gupta",
-    "github": "rohan-gupta-oss",
-    "headline": "LFX Mentorship 2024 at CNCF — contributed to Kubernetes ecosystem",
+    "name": "Awantika",
+    "github": "awantika-m",
+    "headline": "Summer of Bitcoin 2025 contributor",
     "programs": [
-      { "name": "LFX", "year": 2024, "org": "CNCF / Kubernetes", "url": "" }
+      { "name": "Summer of Bitcoin", "year": 2025, "org": "Bitcoin FOSS", "url": "" }
     ]
   },
   {
-    "name": "Ananya Singh",
-    "github": "ananya-singh-dev",
-    "headline": "GSoC 2023 at Python Software Foundation — improved CPython documentation tooling",
+    "name": "Yatharth Katta",
+    "github": "yats0x7",
+    "headline": "Google Summer of Code 2025 contributor",
     "programs": [
-      { "name": "GSoC", "year": 2023, "org": "Python Software Foundation", "url": "" }
+      { "name": "GSoC", "year": 2025, "org": "Mozilla Firefox", "url": "" }
     ]
   },
   {
-    "name": "Karthik Menon",
-    "github": "karthikmenon-oss",
-    "headline": "Outreachy 2023 at GNOME Foundation — accessibility improvements in GTK",
+    "name": "Prachi",
+    "github": "buildwithprachi",
+    "headline": "MLH Fellowship 2025 fellow",
     "programs": [
-      { "name": "Outreachy", "year": 2023, "org": "GNOME Foundation", "url": "" }
+      { "name": "MLH", "year": 2025, "org": "Major League Hacking", "url": "" }
     ]
   },
   {
-    "name": "Divya Sharma",
-    "github": "divya-sharma-contrib",
-    "headline": "GSoC 2024 at SymPy — implemented symbolic integration algorithms",
+    "name": "Kinjal Singla",
+    "github": "singlakinjal",
+    "headline": "LFX Mentorship 2025 contributor",
     "programs": [
-      { "name": "GSoC", "year": 2024, "org": "SymPy", "url": "" }
+      { "name": "LFX", "year": 2025, "org": "CNCF / eBPF", "url": "" }
     ]
   },
   {
-    "name": "Vikram Patel",
-    "github": "vikramp-oss",
-    "headline": "LFX Mentorship 2023 at Linux Foundation — contributed to eBPF tooling",
+    "name": "Poorvansh Tonk",
+    "github": "poorvanshtonk",
+    "headline": "Google Summer of Code 2025 contributor",
     "programs": [
-      { "name": "LFX", "year": 2023, "org": "Linux Foundation", "url": "" }
+      { "name": "GSoC", "year": 2025, "org": "KDE Community", "url": "" }
     ]
   },
   {
-    "name": "Ishaan Tyagi",
-    "github": "ishaan-tyagi-dev",
-    "headline": "MLH Fellowship 2024 — contributed to open source ML infrastructure",
+    "name": "Shubham Mittal",
+    "github": "shubhammittal2241",
+    "headline": "Outreachy 2025 intern",
     "programs": [
-      { "name": "MLH", "year": 2024, "org": "Major League Hacking", "url": "" }
+      { "name": "Outreachy", "year": 2025, "org": "Wikimedia Foundation", "url": "" }
     ]
   },
   {
-    "name": "Sneha Reddy",
-    "github": "sneha-reddy-oss",
-    "headline": "GSoC 2022 at Oppia Foundation — built interactive math lessons",
+    "name": "Arpan Kaur",
+    "github": "Arpan-Kaur2006",
+    "headline": "Summer of Bitcoin 2025 contributor",
     "programs": [
-      { "name": "GSoC", "year": 2022, "org": "Oppia Foundation", "url": "" }
-    ]
-  },
-  {
-    "name": "Aakash Kumar",
-    "github": "aakash-kumar-dev",
-    "headline": "Summer of Bitcoin 2023 — developed Bitcoin Script tooling and testing infrastructure",
-    "programs": [
-      { "name": "Summer of Bitcoin", "year": 2023, "org": "Bitcoin FOSS", "url": "" }
+      { "name": "Summer of Bitcoin", "year": 2025, "org": "Bitcoin FOSS", "url": "" }
     ]
   }
 ]

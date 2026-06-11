@@ -116,15 +116,6 @@ export default async function AchieverPage({ params }: { params: Promise<{ usern
                         <div className={`text-base font-semibold ${meta.color}`}>{prog.name}</div>
                         <div className="text-white/50 text-sm mt-0.5">{meta.label}</div>
                         {prog.org && <div className="text-white/35 text-xs mt-1">{prog.org}</div>}
-                        {prog.mentors && prog.mentors.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-1">
-                            {prog.mentors.map((m, mi) => (
-                              <span key={mi} className="text-white/40 text-xs bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
-                                {m}
-                              </span>
-                            ))}
-                          </div>
-                        )}
                       </div>
                       {prog.year && (
                         <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${meta.bg} ${meta.color} border ${meta.border}`}>

@@ -1,9 +1,27 @@
 import Link from 'next/link';
-import { getEvents } from '@/lib/data';
+import { getEvents, getAchievers } from '@/lib/data';
 import { UpcomingEvents } from './components/UpcomingEvents';
+import { readSummaryCache } from '@/lib/summary-cache';
 
-export default function Home() {
+export const dynamic = 'force-dynamic';
+
+export default async function Home() {
   const events = getEvents();
+  const achievers = getAchievers();
+  const cache = await readSummaryCache();
+
+  // Stats from achievers
+  const programSet = new Set(achievers.flatMap((a) => a.programs.map((p) => p.name)));
+  const gsocCount = achievers.filter((a) => a.programs.some((p) => p.name === 'GSoC')).length;
+  const totalSelections = achievers.reduce((n, a) => n + a.programs.length, 0);
+
+  // Stats from summary cache
+  const totalContributors = cache?.summaries.length ?? 0;
+  const totalMerged = cache?.summaries.reduce((s, c) => s + c.mergedPRs, 0) ?? 0;
+  const totalPRs = cache?.summaries.reduce((s, c) => s + c.totalPRs, 0) ?? 0;
+
+  // Top contributors (top 3 from cache for the activity strip)
+  const topContributors = cache?.summaries.slice(0, 5) ?? [];
 
   return (
     <main className="min-h-screen bg-[#0d0d14]">
@@ -14,23 +32,22 @@ export default function Home() {
       </div>
 
       {/* Hero */}
-      <div className="relative flex flex-col items-center justify-center text-center px-4 pt-20 pb-16">
+      <div className="relative flex flex-col items-center justify-center text-center px-4 pt-20 pb-10">
         <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-xs text-purple-300/70 mb-8">
-          Open Source
+          <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+          {totalContributors > 0 ? `${totalContributors} active contributors` : 'Open Source at NST'}
         </div>
 
         <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight">
-          Opensource Tracker{' '}
+          Built in public.{' '}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
-            NST
+            Celebrated together.
           </span>
         </h1>
 
-        <p className="text-white/40 text-lg mb-2 max-w-lg">
-          Track all opensource contributions and celebrate our contributors
-        </p>
-        <p className="text-white/25 text-sm mb-10">
-          Let&apos;s celebrate our Open Source contributors!
+        <p className="text-white/40 text-lg mb-10 max-w-lg leading-relaxed">
+          Every PR merged, every issue closed — tracked, celebrated, and remembered.
+          NST's open source contributions, all in one place.
         </p>
 
         <div className="flex flex-wrap gap-3 justify-center">
@@ -44,32 +61,122 @@ export default function Home() {
             View Contributors
           </Link>
           <Link
-            href="/mentors"
-            className="inline-flex items-center gap-2.5 bg-white/[0.06] border border-white/[0.1] hover:bg-white/[0.1] text-white/70 hover:text-white font-semibold px-7 py-3.5 rounded-full transition-all"
+            href="/achievers"
+            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white/[0.04] border border-white/[0.1] text-white/70 font-medium hover:bg-white/[0.07] hover:text-white transition-all"
           >
-            Find a Mentor
+            🏆 Hall of Fame
           </Link>
         </div>
       </div>
+
+      {/* Live stats strip */}
+      {totalPRs > 0 && (
+        <div className="relative max-w-3xl mx-auto px-4 mb-12">
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: 'Total PRs', value: totalPRs, color: 'text-white' },
+              { label: 'Merged', value: totalMerged, color: 'text-emerald-400' },
+              { label: 'Contributors', value: totalContributors, color: 'text-purple-400' },
+            ].map((s) => (
+              <div key={s.label} className="bg-white/[0.03] border border-white/[0.07] rounded-2xl px-4 py-5 text-center">
+                <div className={`text-3xl font-bold tabular-nums ${s.color}`}>{s.value}</div>
+                <div className="text-white/30 text-xs mt-1">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Top contributors preview */}
+      {topContributors.length > 0 && (
+        <div className="relative max-w-3xl mx-auto px-4 mb-14">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-white/50 text-sm font-medium uppercase tracking-wider">Top Contributors</h2>
+            <Link href="/contributors" className="text-purple-400/60 text-xs hover:text-purple-400 transition-colors">
+              View all →
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {topContributors.map((s) => (
+              <Link
+                key={s.profile.login}
+                href={`/contributors/${s.profile.login}`}
+                className="group flex items-center gap-3 px-4 py-3 rounded-xl bg-white/[0.025] border border-white/[0.07] hover:bg-white/[0.05] hover:border-purple-500/20 transition-all"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={s.profile.avatar_url} alt={s.profile.login} className="w-8 h-8 rounded-full ring-1 ring-white/10 group-hover:ring-purple-500/30 transition-all" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-white/80 text-sm font-medium truncate group-hover:text-white transition-colors">
+                    {s.profile.name ?? s.profile.login}
+                  </div>
+                  <div className="text-white/25 text-xs">@{s.profile.login}</div>
+                </div>
+                <div className="flex items-center gap-3 text-xs flex-shrink-0">
+                  <span className="text-emerald-400 font-medium tabular-nums">{s.mergedPRs} merged</span>
+                  <span className="text-white/15 group-hover:text-purple-400 transition-colors">→</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* NST achievers strip */}
+      {achievers.length > 0 && (
+        <div className="relative max-w-3xl mx-auto px-4 mb-14">
+          <div className="rounded-2xl border border-yellow-500/15 bg-yellow-500/5 p-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+              <div>
+                <div className="text-yellow-400 text-xs font-semibold uppercase tracking-wider mb-1">Hall of Fame</div>
+                <h2 className="text-white font-bold text-lg">NST students in top programs</h2>
+              </div>
+              <Link href="/achievers" className="text-yellow-400/60 text-xs hover:text-yellow-400 transition-colors">
+                View all →
+              </Link>
+            </div>
+            <div className="flex flex-wrap gap-3 mb-5">
+              {[
+                { label: 'Achievers', value: achievers.length },
+                { label: 'Selections', value: totalSelections },
+                { label: 'Programs', value: programSet.size },
+                ...(gsocCount > 0 ? [{ label: 'GSoC', value: gsocCount }] : []),
+              ].map((s) => (
+                <div key={s.label} className="bg-white/[0.04] border border-yellow-500/10 rounded-xl px-4 py-2">
+                  <div className="text-xl font-bold text-yellow-400 tabular-nums">{s.value}</div>
+                  <div className="text-white/30 text-xs">{s.label}</div>
+                </div>
+              ))}
+            </div>
+            {/* Program badges */}
+            <div className="flex flex-wrap gap-2">
+              {[...programSet].map((prog) => (
+                <span key={prog} className="text-xs px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-white/40">
+                  {prog}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick nav strip */}
       <div className="relative max-w-5xl mx-auto px-4 mb-16">
         <div className="flex flex-wrap justify-center gap-3">
           {[
-            { label: 'Contributors', href: '/contributors', icon: '👥' },
-            { label: 'Mentors',      href: '/mentors',      icon: '🎓' },
-            { label: 'Hall of Fame', href: '/achievers',    icon: '🏆' },
-            { label: 'Programs',     href: '/programs',     icon: '🚀' },
-            { label: 'Get Started',  href: '/get-started',  icon: '📖' },
-            { label: 'Issues',       href: '/issues',       icon: '🔧' },
+            { label: 'Contributors', href: '/contributors', icon: '👥', desc: 'Track all PRs' },
+            { label: 'Hall of Fame', href: '/achievers',    icon: '🏆', desc: 'Top programs' },
+            { label: 'Programs',     href: '/programs',     icon: '🚀', desc: 'GSoC, LFX & more' },
+            { label: 'Get Started',  href: '/get-started',  icon: '📖', desc: 'Start contributing' },
+            { label: 'Common Issues', href: '/issues',      icon: '🔧', desc: 'Git guides' },
           ].map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-white/[0.07] text-white/40 text-sm hover:text-white/70 hover:bg-white/[0.06] hover:border-white/[0.12] transition-all"
+              className="inline-flex flex-col items-center gap-1 px-5 py-3 rounded-2xl bg-white/[0.03] border border-white/[0.07] text-white/40 hover:text-white/70 hover:bg-white/[0.06] hover:border-white/[0.12] transition-all min-w-[100px]"
             >
-              <span>{item.icon}</span>
-              {item.label}
+              <span className="text-xl">{item.icon}</span>
+              <span className="text-xs font-medium text-white/60">{item.label}</span>
+              <span className="text-[10px] text-white/25">{item.desc}</span>
             </Link>
           ))}
         </div>

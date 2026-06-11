@@ -58,33 +58,6 @@ const sections = [
       { title: 'Tooling', items: ['Running projects locally', 'Understanding build systems', 'Linters and formatters', 'CI/CD pipelines', 'Docker for dev environments'] },
     ],
   },
-  {
-    id: 'mentors',
-    title: 'Who Are Our Mentors?',
-    color: 'text-cyan-400',
-    accent: 'border-cyan-500/30',
-    bg: 'bg-cyan-500/5',
-    content: [
-      'Our mentors are students and alumni who have already cracked competitive open source programs — GSoC, LFX, Outreachy, Summer of Bitcoin, and more. They have walked the same path you are starting and know exactly what it takes.',
-      'They are not teachers in the traditional sense. They are senior peers who can give you an honest assessment of your PRs, point you to the right issues, help you prepare proposals, and guide you through the unwritten rules of open source communities.',
-    ],
-    cta: { label: 'Meet Our Mentors', href: '/mentors' },
-  },
-  {
-    id: 'contacting-mentors',
-    title: 'Working With Mentors',
-    color: 'text-violet-400',
-    accent: 'border-violet-500/30',
-    bg: 'bg-violet-500/5',
-    bullets: [
-      { icon: '✅', title: 'Come prepared', desc: 'Before reaching out, try the problem yourself. Share what you tried and where you got stuck.' },
-      { icon: '✅', title: 'Be specific', desc: 'Don\'t ask "how do I contribute?" — ask "I\'m looking at issue #123 in project X, I think the fix is Y, does that make sense?"' },
-      { icon: '✅', title: 'Respect their time', desc: 'Mentors are students too. A single well-formed question gets better answers than a stream of vague messages.' },
-      { icon: '✅', title: 'Share your progress', desc: 'Mentors are invested in your success. A quick update when you get something merged goes a long way.' },
-      { icon: '❌', title: 'Don\'t ask to be spoon-fed', desc: 'A mentor\'s job is to guide, not to do the work for you. Asking for solutions without effort is disrespectful.' },
-      { icon: '❌', title: 'Don\'t disappear', desc: 'If you start working with a mentor on something, follow through. Going silent is a waste of everyone\'s time.' },
-    ],
-  },
 ];
 
 const guidelines = [
@@ -136,6 +109,18 @@ export default function GetStartedPage() {
           <div className="absolute top-0 right-1/4 w-[400px] h-[300px] rounded-full bg-blue-600/6 blur-[100px]" />
         </div>
         <div className="relative max-w-3xl mx-auto text-center">
+          <div className="flex justify-start mb-6">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-white/30 hover:text-white/60 transition-colors text-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+              </svg>
+              Home
+            </Link>
+          </div>
+
           <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-xs text-emerald-300/70 mb-6">
             Your guide to open source contribution
           </div>
@@ -175,17 +160,6 @@ export default function GetStartedPage() {
                 {s.content.map((p, i) => (
                   <p key={i} className="text-white/60 leading-relaxed">{p}</p>
                 ))}
-                {'cta' in s && s.cta && (
-                  <div className="pt-2">
-                    <Link href={s.cta.href}
-                      className={`inline-flex items-center gap-2 text-sm font-medium ${s.color} hover:opacity-80 transition-opacity`}>
-                      {s.cta.label}
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
-                  </div>
-                )}
               </div>
             )}
 
@@ -275,19 +249,19 @@ export default function GetStartedPage() {
         {/* CTA */}
         <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-8 text-center">
           <h2 className="text-xl font-bold text-white mb-2">Ready to start?</h2>
-          <p className="text-white/40 text-sm mb-6">See who is contributing and find a mentor to guide you.</p>
+          <p className="text-white/40 text-sm mb-6">See who is contributing and check out our hall of fame.</p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link href="/contributors"
               className="px-5 py-2.5 rounded-xl bg-white/[0.07] border border-white/10 text-white/80 text-sm font-medium hover:bg-white/[0.1] transition-all">
               View Contributors
             </Link>
-            <Link href="/mentors"
-              className="px-5 py-2.5 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-300 text-sm font-medium hover:bg-blue-500/20 transition-all">
-              Find a Mentor
-            </Link>
             <Link href="/achievers"
               className="px-5 py-2.5 rounded-xl bg-yellow-500/10 border border-yellow-500/25 text-yellow-300 text-sm font-medium hover:bg-yellow-500/15 transition-all">
               Hall of Fame
+            </Link>
+            <Link href="/issues"
+              className="px-5 py-2.5 rounded-xl bg-orange-500/10 border border-orange-500/25 text-orange-300 text-sm font-medium hover:bg-orange-500/15 transition-all">
+              🔧 Common Issues
             </Link>
           </div>
         </section>

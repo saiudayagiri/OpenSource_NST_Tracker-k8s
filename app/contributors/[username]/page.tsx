@@ -1,9 +1,7 @@
 import {
   getStudentPRs,
   getStudentIssues,
-  getStudentCounts,
   getStudentProfile,
-  getMentorForStudent,
   StudentPR,
   StudentIssue,
   repoFromUrl,
@@ -11,6 +9,9 @@ import {
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
+import { ShareButton } from '../ShareButton';
+import { RefreshButton } from '../RefreshButton';
+import { readProfileCache, writeProfileCache, isProfileFresh } from '@/lib/profile-cache';
 
 export const revalidate = 3600;
 
@@ -224,47 +225,6 @@ function IssuesSection({ issues }: { issues: StudentIssue[] }) {
   );
 }
 
-function ReviewsSection({ reviews }: { reviews: StudentPR[] }) {
-  const byRepo = new Map<string, StudentPR[]>();
-  for (const pr of reviews) {
-    const repo = repoFromUrl(pr.repository_url);
-    if (!byRepo.has(repo)) byRepo.set(repo, []);
-    byRepo.get(repo)!.push(pr);
-  }
-
-  if (reviews.length === 0)
-    return <Empty text="No pull request reviews found." />;
-
-  return (
-    <div className="space-y-8">
-      {Array.from(byRepo.entries()).map(([repo, repoPRs]) => (
-        <div key={repo}>
-          <RepoHeader repo={repo} count={repoPRs.length} />
-          <div className="space-y-2">
-            {repoPRs.map((pr) => (
-              <a key={pr.id} href={pr.pull_request?.html_url ?? pr.html_url} target="_blank" rel="noopener noreferrer"
-                className="group flex items-start gap-4 bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 hover:bg-white/[0.045] hover:border-white/[0.1] transition-all">
-                <div className="flex-shrink-0 mt-0.5"><PRBadge pr={pr} /></div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-white/85 font-medium group-hover:text-white transition-colors leading-snug">{pr.title}</h3>
-                    <span className="text-white/20 text-xs flex-shrink-0 tabular-nums mt-0.5">#{pr.number}</span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-3 mt-2">
-                    <span className="text-white/25 text-xs">{formatDate(pr.created_at)}</span>
-                    <Labels labels={pr.labels} />
-                  </div>
-                </div>
-                <ExternalIcon />
-              </a>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function RepoHeader({ repo, count }: { repo: string; count: number }) {
   return (
     <div className="flex items-center gap-3 mb-3">
@@ -293,29 +253,67 @@ export default async function ContributorPage({
   searchParams,
 }: {
   params: Promise<{ username: string }>;
-  searchParams: Promise<{ tab?: string; rank?: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
-  const [{ username }, { tab: rawTab, rank }] = await Promise.all([params, searchParams]);
+  const [{ username }, { tab: rawTab }] = await Promise.all([params, searchParams]);
   const tab: Tab = rawTab === 'issues' ? 'issues' : rawTab === 'merged' ? 'merged' : rawTab === 'open' ? 'open' : 'prs';
 
-  const [profile, counts] = await Promise.all([
-    getStudentProfile(username),
-    getStudentCounts(username),
-  ]);
+  let profile = null;
+  let allPRs: StudentPR[] = [];
+  let issues: StudentIssue[] = [];
+  let cachedAt: string | null = null;
+
+  const cached = await readProfileCache(username);
+  if (cached && isProfileFresh(cached)) {
+    profile = cached.profile;
+    allPRs = cached.prs;
+    issues = cached.issues;
+    cachedAt = cached.cachedAt;
+  } else {
+    try {
+      const [freshProfile, freshPRs, freshIssues] = await Promise.all([
+        getStudentProfile(username),
+        getStudentPRs(username),
+        getStudentIssues(username),
+      ]);
+      if (freshProfile) {
+        profile = freshProfile;
+        allPRs = freshPRs;
+        issues = freshIssues;
+        await writeProfileCache(username, freshProfile, freshPRs, freshIssues);
+        cachedAt = new Date().toISOString();
+      } else if (cached) {
+        // Fallback to stale cache if API limit hit
+        profile = cached.profile;
+        allPRs = cached.prs;
+        issues = cached.issues;
+        cachedAt = cached.cachedAt;
+      }
+    } catch {
+      if (cached) {
+        // Fallback to stale cache on network error
+        profile = cached.profile;
+        allPRs = cached.prs;
+        issues = cached.issues;
+        cachedAt = cached.cachedAt;
+      }
+    }
+  }
+
   if (!profile) notFound();
 
-  const mentor = getMentorForStudent(username);
-
-  // Fetch PRs for any PR-related tab, issues only for issues tab
-  const prTab = tab === 'prs' || tab === 'merged' || tab === 'open';
-  const [allPRs, issues] = await Promise.all([
-    prTab                ? getStudentPRs(username)   : Promise.resolve([] as StudentPR[]),
-    tab === 'issues'     ? getStudentIssues(username) : Promise.resolve([] as StudentIssue[]),
-  ]);
+  const counts = {
+    prs: allPRs.length,
+    mergedPRs: allPRs.filter(pr => pr.pull_request?.merged_at).length,
+    openPRs: allPRs.filter(pr => pr.state === 'open').length,
+    issues: issues.length,
+  };
 
   const prs = tab === 'merged' ? allPRs.filter(pr => pr.pull_request?.merged_at)
             : tab === 'open'   ? allPRs.filter(pr => pr.state === 'open')
             : allPRs;
+
+  const badges = getBadges(allPRs, counts.mergedPRs);
 
   return (
     <main className="min-h-screen bg-[#0d0d14]">
@@ -337,45 +335,42 @@ export default async function ContributorPage({
 
         <div className="relative max-w-4xl mx-auto">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-            {/* Avatar + mentor badge */}
+            {/* Avatar */}
             <div className="relative flex-shrink-0">
               <Image src={profile.avatar_url} alt={profile.login} width={112} height={112}
                 className="w-28 h-28 rounded-full ring-4 ring-purple-500/25 shadow-2xl shadow-purple-900/30 object-cover" />
-              {mentor && (
-                <a href={`https://github.com/${mentor}`} target="_blank" rel="noopener noreferrer"
-                  title={`Mentored by @${mentor}`}
-                  className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full overflow-hidden ring-4 ring-[#0d0d14] shadow-lg hover:scale-110 transition-transform">
-                  <Image src={`https://avatars.githubusercontent.com/${mentor}`} alt={`Mentor: ${mentor}`} width={40} height={40} className="w-full h-full object-cover" />
-                </a>
-              )}
             </div>
 
             <div className="flex-1 text-center sm:text-left">
-              <div className="flex items-center gap-3 justify-center sm:justify-start">
+              <div className="flex items-center gap-3 justify-center sm:justify-start flex-wrap">
                 <h1 className="text-3xl font-bold text-white">{profile.name ?? profile.login}</h1>
-                {rank && (
-                  <span className={`flex-shrink-0 w-8 h-8 rounded-full border flex items-center justify-center text-xs font-bold ${
-                    rank === '1' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40' :
-                    rank === '2' ? 'bg-slate-400/20 text-slate-300 border-slate-400/40' :
-                    rank === '3' ? 'bg-orange-600/20 text-orange-400 border-orange-600/40' :
-                    'bg-white/5 text-white/40 border-white/15'
-                  }`}>
-                    #{rank}
+                {counts.mergedPRs > 0 && counts.mergedPRs <= 5 && (
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 font-medium">
+                    🌱 New Contributor
                   </span>
                 )}
               </div>
               <p className="text-white/40 text-sm mt-0.5">@{profile.login}</p>
 
-              {mentor && (
-                <a href={`https://github.com/${mentor}`} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 mt-2 bg-purple-500/10 border border-purple-500/20 rounded-full px-3 py-1 hover:bg-purple-500/20 transition-colors">
-                  <Image src={`https://avatars.githubusercontent.com/${mentor}`} alt={mentor} width={16} height={16} className="w-4 h-4 rounded-full object-cover" />
-                  <span className="text-xs text-purple-300/80">Mentored by</span>
-                  <span className="text-xs text-purple-300 font-medium">@{mentor}</span>
-                </a>
-              )}
+
 
               {profile.bio && <p className="text-white/55 mt-3 max-w-lg leading-relaxed">{profile.bio}</p>}
+
+              {/* Badges showcase */}
+              {badges.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-4 justify-center sm:justify-start">
+                  {badges.map((b) => (
+                    <div
+                      key={b.id}
+                      title={b.desc}
+                      className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-lg border transition-all cursor-help ${b.style}`}
+                    >
+                      <span>{b.emoji}</span>
+                      <span>{b.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="flex flex-wrap gap-4 mt-4 justify-center sm:justify-start text-sm text-white/35">
                 {profile.company && (
@@ -401,6 +396,12 @@ export default async function ContributorPage({
                   </svg>
                   GitHub Profile
                 </a>
+              </div>
+
+              {/* Actions: Share + Refresh */}
+              <div className="mt-4 flex flex-wrap items-center gap-3 justify-center sm:justify-start">
+                <ShareButton username={profile.login} displayName={profile.name ?? profile.login} />
+                <RefreshButton cachedAt={cachedAt} username={profile.login} />
               </div>
             </div>
           </div>
@@ -434,11 +435,303 @@ export default async function ContributorPage({
         </div>
       </div>
 
+      {/* Contribution trend chart */}
+      <div className="max-w-4xl mx-auto px-4 mb-6">
+        <ContributionChart prs={allPRs} />
+      </div>
+
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 pb-24">
         {tab !== 'issues' && <PRsSection prs={prs} />}
         {tab === 'issues' && <IssuesSection issues={issues} />}
       </div>
     </main>
+  );
+}
+
+// ─── Helpers for Visual Chart and Badges ─────────────────────────────────────
+
+interface Badge {
+  id: string;
+  name: string;
+  emoji: string;
+  desc: string;
+  style: string;
+}
+
+function getBadges(allPRs: StudentPR[], mergedCount: number): Badge[] {
+  const list: Badge[] = [];
+
+  // 1. 🌱 First Merge
+  if (mergedCount >= 1) {
+    list.push({
+      id: 'first_merge',
+      name: 'First Merge',
+      emoji: '🌱',
+      desc: 'First collaborative pull request merged',
+      style: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/15',
+    });
+  }
+
+  // 2. 🔥 Merging Machine
+  if (mergedCount >= 10) {
+    list.push({
+      id: 'merging_machine',
+      name: 'Merging Machine',
+      emoji: '🔥',
+      desc: '10+ open-source contributions merged',
+      style: 'bg-orange-500/10 border-orange-500/20 text-orange-400 hover:bg-orange-500/15',
+    });
+  }
+
+  // 3. 🐞 Bug Squasher
+  const hasBugFix = allPRs.some((pr) => {
+    const title = pr.title.toLowerCase();
+    const hasBugLabel = pr.labels.some((l) => {
+      const name = l.name.toLowerCase();
+      return name.includes('bug') || name.includes('fix');
+    });
+    return pr.pull_request?.merged_at && (title.includes('fix') || title.includes('bug') || hasBugLabel);
+  });
+  if (hasBugFix) {
+    list.push({
+      id: 'bug_squasher',
+      name: 'Bug Squasher',
+      emoji: '🐞',
+      desc: 'Squashed bugs in collaborative projects',
+      style: 'bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/15',
+    });
+  }
+
+  // 4. 📚 Documentation Hero
+  const hasDocs = allPRs.some((pr) => {
+    const title = pr.title.toLowerCase();
+    const hasDocLabel = pr.labels.some((l) => {
+      const name = l.name.toLowerCase();
+      return name.includes('doc') || name.includes('documentation') || name.includes('readme');
+    });
+    return pr.pull_request?.merged_at && (title.includes('doc') || title.includes('readme') || hasDocLabel);
+  });
+  if (hasDocs) {
+    list.push({
+      id: 'doc_hero',
+      name: 'Doc Hero',
+      emoji: '📚',
+      desc: 'Merged documentation improvements',
+      style: 'bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/15',
+    });
+  }
+
+  // 5. ⚡ Speed Demon (3+ merged PRs in a 7-day window)
+  const mergedPRs = allPRs.filter((pr) => pr.pull_request?.merged_at);
+  let isSpeedDemon = false;
+  
+  if (mergedPRs.length >= 3) {
+    const sortedDates = mergedPRs
+      .map((pr) => new Date(pr.pull_request.merged_at!).getTime())
+      .sort((a, b) => a - b);
+      
+    for (let i = 0; i <= sortedDates.length - 3; i++) {
+      const diffDays = (sortedDates[i + 2] - sortedDates[i]) / (1000 * 60 * 60 * 24);
+      if (diffDays <= 7) {
+        isSpeedDemon = true;
+        break;
+      }
+    }
+  }
+  
+  if (isSpeedDemon) {
+    list.push({
+      id: 'speed_demon',
+      name: 'Speed Demon',
+      emoji: '⚡',
+      desc: 'Merged 3+ pull requests within a single week',
+      style: 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400 hover:bg-yellow-500/15',
+    });
+  }
+
+  return list;
+}
+
+function getChartData(prs: StudentPR[]) {
+  const months: Array<{ label: string; year: number; month: number; count: number }> = [];
+  const now = new Date();
+  
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({
+      label: d.toLocaleDateString('en-US', { month: 'short' }),
+      year: d.getFullYear(),
+      month: d.getMonth(),
+      count: 0,
+    });
+  }
+
+  for (const pr of prs) {
+    const prDate = new Date(pr.created_at);
+    const y = prDate.getFullYear();
+    const m = prDate.getMonth();
+    const match = months.find((mo) => mo.year === y && mo.month === m);
+    if (match) {
+      match.count++;
+    }
+  }
+
+  return months;
+}
+
+function ContributionChart({ prs }: { prs: StudentPR[] }) {
+  const months = getChartData(prs);
+  const maxVal = Math.max(...months.map((m) => m.count));
+  const displayMax = maxVal === 0 ? 5 : maxVal;
+
+  const width = 500;
+  const height = 140;
+  const paddingLeft = 35;
+  const paddingRight = 15;
+  const paddingTop = 15;
+  const paddingBottom = 25;
+
+  const chartWidth = width - paddingLeft - paddingRight;
+  const chartHeight = height - paddingTop - paddingBottom;
+
+  const points = months.map((m, i) => {
+    const x = paddingLeft + (i * chartWidth) / 5;
+    const y = paddingTop + chartHeight - (m.count / displayMax) * chartHeight;
+    return { x, y, value: m.count, label: m.label };
+  });
+
+  const lineD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const areaD = `${lineD} L ${points[points.length - 1].x} ${paddingTop + chartHeight} L ${points[0].x} ${paddingTop + chartHeight} Z`;
+
+  return (
+    <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 relative overflow-hidden backdrop-blur-sm">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-white/60 text-xs font-semibold uppercase tracking-wider">Contribution Trend (PRs / Month)</h2>
+        {maxVal > 0 && (
+          <span className="text-purple-400 text-xs font-medium">
+            Peak: {maxVal} PR{maxVal > 1 ? 's' : ''}/mo
+          </span>
+        )}
+      </div>
+
+      <div className="w-full">
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto overflow-visible">
+          <defs>
+            <linearGradient id="area-glow" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#a855f7" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.01" />
+            </linearGradient>
+            <linearGradient id="line-glow" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#c084fc" />
+              <stop offset="50%" stopColor="#818cf8" />
+              <stop offset="100%" stopColor="#60a5fa" />
+            </linearGradient>
+          </defs>
+
+          {/* Grid lines */}
+          {[0, 0.5, 1].map((ratio) => {
+            const y = paddingTop + ratio * chartHeight;
+            const labelValue = Math.round(displayMax - ratio * displayMax);
+            return (
+              <g key={ratio}>
+                <line
+                  x1={paddingLeft}
+                  y1={y}
+                  x2={width - paddingRight}
+                  y2={y}
+                  className="stroke-white/[0.05] stroke-1"
+                  strokeDasharray="4 4"
+                />
+                <text
+                  x={paddingLeft - 8}
+                  y={y + 3}
+                  textAnchor="end"
+                  className="text-[9px] fill-white/20 font-mono font-medium"
+                >
+                  {maxVal === 0 && ratio > 0 ? '' : labelValue}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Area fill */}
+          {maxVal > 0 && <path d={areaD} fill="url(#area-glow)" />}
+
+          {/* Glowing Line */}
+          {maxVal > 0 ? (
+            <path
+              d={lineD}
+              fill="none"
+              stroke="url(#line-glow)"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ) : (
+            <line
+              x1={paddingLeft}
+              y1={paddingTop + chartHeight}
+              x2={width - paddingRight}
+              y2={paddingTop + chartHeight}
+              className="stroke-white/10 stroke-[1.5px]"
+            />
+          )}
+
+          {/* Data Points */}
+          {maxVal > 0 &&
+            points.map((p, i) => (
+              <g key={i} className="group/point">
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r="6"
+                  className="fill-purple-500/0 stroke-purple-500/0 cursor-help"
+                />
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r="3.5"
+                  className="fill-[#0d0d14] stroke-purple-400 stroke-2 transition-all group-hover/point:r-5 group-hover/point:fill-purple-400"
+                />
+                {/* Value tooltip label displayed on hover */}
+                {p.value > 0 && (
+                  <g className="opacity-0 group-hover/point:opacity-100 transition-opacity pointer-events-none">
+                    <rect
+                      x={p.x - 14}
+                      y={p.y - 22}
+                      width="28"
+                      height="15"
+                      rx="4"
+                      className="fill-[#141424] stroke-white/10 stroke-[0.5px]"
+                    />
+                    <text
+                      x={p.x}
+                      y={p.y - 12}
+                      textAnchor="middle"
+                      className="text-[9px] font-bold fill-white/80 font-mono"
+                    >
+                      {p.value}
+                    </text>
+                  </g>
+                )}
+              </g>
+            ))}
+
+          {/* X-axis Month Labels */}
+          {points.map((p, i) => (
+            <text
+              key={i}
+              x={p.x}
+              y={height - 5}
+              textAnchor="middle"
+              className="text-[9px] fill-white/30 font-medium"
+            >
+              {p.label}
+            </text>
+          ))}
+        </svg>
+      </div>
+    </div>
   );
 }

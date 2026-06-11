@@ -153,6 +153,256 @@ const PROGRAMS = [
     ],
     nst: 'A great starting point for NST students to build their first contribution track record before applying to bigger programs.',
   },
+  {
+    id: 'gsod',
+    name: 'Google Season of Docs',
+    short: 'GSoD',
+    color: 'text-emerald-400',
+    accent: 'border-emerald-500/30',
+    bg: 'bg-emerald-500/5',
+    dot: 'bg-emerald-400',
+    dotBorder: 'border-emerald-500/40',
+    stipend: '$3,000 – $6,600+',
+    duration: '6 months (May – November)',
+    eligibility: 'Technical writers and developers globally, 18+',
+    deadline: 'Applications typically open in March–April',
+    org: 'Google',
+    link: 'https://developers.google.com/season-of-docs',
+    desc: 'Google Season of Docs provides support for open source projects to improve their documentation and gives professional technical writers an opportunity to gain experience in open source. It bridges the gap between open source developers and tech writers, supporting projects that need documentation guidance.',
+    tips: [
+      'Show prior technical writing samples or documentation portfolios',
+      'Study the target organization\'s existing documentation gaps thoroughly',
+      'Interact with project mentors on their discussion channels early',
+      'Write a highly structured proposal outlining documentation goals',
+      'Familiarize yourself with Markdown, Sphinx, Docusaurus, or Gitbook',
+    ],
+    nst: 'NST students with a passion for documentation and technical writing have participated in GSoD.',
+  },
+  {
+    id: 'sok',
+    name: 'Season of KDE',
+    short: 'SoK',
+    color: 'text-cyan-400',
+    accent: 'border-cyan-500/30',
+    bg: 'bg-cyan-500/5',
+    dot: 'bg-cyan-400',
+    dotBorder: 'border-cyan-500/40',
+    stipend: 'Merchandise & Travel Support (No cash stipend)',
+    duration: '10 weeks (December – February)',
+    eligibility: 'Open to anyone globally, great for beginners',
+    deadline: 'Applications typically open in November',
+    org: 'KDE Community',
+    link: 'https://season.kde.org',
+    desc: 'Season of KDE is a community outreach program hosted by the KDE team. Similar to GSoC, students are mentored by experienced KDE developers to work on applications, user interface, translation, or documentation projects. Although unpaid, it is highly valued for gaining core desktop development experience.',
+    tips: [
+      'Join KDE Matrix channels and introduce yourself to project teams',
+      'Build and run your target KDE application locally before applying',
+      'Submit small patch contributions to get a feel of their workflow',
+      'Write a comprehensive proposal using the KDE template',
+      'Interact actively on developer forums and mailing lists',
+    ],
+    nst: 'NST students have built and improved features for KDE desktop apps and infrastructure through Season of KDE.',
+  },
+  {
+    id: 'asoc',
+    name: 'Alibaba Summer of Code',
+    short: 'ASoC',
+    color: 'text-amber-400',
+    accent: 'border-amber-500/30',
+    bg: 'bg-amber-500/5',
+    dot: 'bg-amber-400',
+    dotBorder: 'border-amber-500/40',
+    stipend: '$1,000 – $3,000+',
+    duration: '12 weeks (July – September)',
+    eligibility: 'Students 18+ worldwide',
+    deadline: 'Applications typically open in May',
+    org: 'Alibaba Open Source',
+    link: 'https://github.com/alibaba/opensource',
+    desc: 'Alibaba Summer of Code is a global program that connects open source mentors with students to develop features for Alibaba\'s high-scale cloud-native, microservice, and database projects (e.g. Dubbo, Nacos, RocketMQ, Sentinel). It is great for students focused on backend infrastructure and cloud technologies.',
+    tips: [
+      'Gain solid skills in Java, Go, or C++ which are primary Alibaba tools',
+      'Study high-concurrency microservice architectures',
+      'Contribute to Alibaba open-source repos to build credibility',
+      'Outline precise technical designs for scaling database components',
+      'Keep communications active on project issues and pull requests',
+    ],
+    nst: 'NST students have gained enterprise Java and cloud infrastructure skills through ASoC.',
+  },
+  {
+    id: 'hyperledger',
+    name: 'Hyperledger Mentorship Program',
+    short: 'Hyperledger',
+    color: 'text-teal-400',
+    accent: 'border-teal-500/30',
+    bg: 'bg-teal-500/5',
+    dot: 'bg-teal-400',
+    dotBorder: 'border-teal-500/40',
+    stipend: '$3,000 – $6,600',
+    duration: '12 or 24 weeks (Summer/Year-round)',
+    eligibility: 'Open to university students and developers worldwide',
+    deadline: 'Applications typically open in March–April',
+    org: 'Hyperledger Foundation / Linux Foundation',
+    link: 'https://wiki.hyperledger.org/display/INTERN',
+    desc: 'Sponsored by the Linux Foundation, the Hyperledger Mentorship Program provides opportunities for students to design and implement ledger technologies, cryptographic protocols, smart contracts, and blockchain architectures across projects like Fabric, Besu, Indy, and Sawtooth.',
+    tips: [
+      'Learn standard blockchain architectures and cryptography principles',
+      'Study Golang, Node.js, and Java which are major Hyperledger tools',
+      'Familiarize yourself with Docker and container orchestration',
+      'Submit proposals directly tackling performance or consensus bugs',
+      'Reach out to project leads on the Hyperledger chat portal',
+    ],
+    nst: 'NST students have designed enterprise ledger features through the Hyperledger Mentorship Program.',
+  },
+  {
+    id: 'gssoc',
+    name: 'GirlScript Summer of Code',
+    short: 'GSSoC',
+    color: 'text-red-400',
+    accent: 'border-red-500/30',
+    bg: 'bg-red-500/5',
+    dot: 'bg-red-400',
+    dotBorder: 'border-red-500/40',
+    stipend: 'Prizes & Goodies (no cash stipend)',
+    duration: '12 weeks (May – July)',
+    eligibility: 'Open to everyone worldwide, very beginner-friendly',
+    deadline: 'Applications typically open in March–April',
+    org: 'GirlScript Foundation',
+    link: 'https://gssoc.tech',
+    desc: 'GirlScript Summer of Code is a 3-month long open-source program during summers conducted by the GirlScript Foundation. Started in 2018, it aims to help beginners get started with open-source development while encouraging diversity. Participants work under the guidance of experienced mentors on diverse web, app, and system projects.',
+    tips: [
+      'Excellent program for making your very first contributions',
+      'Select active repositories from the official project list',
+      'Solve smaller "good first issues" to build confidence',
+      'Engage with project mentors on their Discord channels',
+      'Consistency is key — score points on the leaderboard throughout the program',
+    ],
+    nst: 'A popular program for NST first-year and second-year students to kickstart their open-source contributions before GSoC.',
+  },
+  {
+    id: 'cncf',
+    name: 'CNCF Mentoring Programs',
+    short: 'CNCF',
+    color: 'text-sky-400',
+    accent: 'border-sky-500/30',
+    bg: 'bg-sky-500/5',
+    dot: 'bg-sky-400',
+    dotBorder: 'border-sky-500/40',
+    stipend: '$3,000 – $6,600',
+    duration: '12 weeks',
+    eligibility: 'Students and beginners globally',
+    deadline: 'Multiple terms per year — check LFX portal',
+    org: 'Cloud Native Computing Foundation',
+    link: 'https://github.com/cncf/mentoring',
+    desc: 'The Cloud Native Computing Foundation (CNCF) hosts multiple mentoring programs (including GSoC, Outreachy, and LFX terms) to guide beginners. Mentees work directly on Kubernetes, Prometheus, Envoy, CoreDNS, gRPC, and other cloud-native technologies under Linux Foundation mentors.',
+    tips: [
+      'Have solid skills in Go, Rust, or C++ which power cloud-native tools',
+      'Familiarize yourself with microservices, containers, and Docker',
+      'Look for the CNCF mentoring GitHub repository to browse project ideas',
+      'Make small contributions (fixes, docs, tests) early in target repos',
+      'Draft detailed application proposals outlining system designs',
+    ],
+    nst: 'NST students have contributed to Prometheus and Kubernetes projects through CNCF mentorships.',
+  },
+  {
+    id: 'ospp',
+    name: 'Open Source Promotion Plan',
+    short: 'OSPP',
+    color: 'text-purple-400',
+    accent: 'border-purple-500/30',
+    bg: 'bg-purple-500/5',
+    dot: 'bg-purple-400',
+    dotBorder: 'border-purple-500/40',
+    stipend: '$1,500 – $3,000+',
+    duration: '3 months (July – September)',
+    eligibility: 'Students globally, 18+',
+    deadline: 'Applications typically open in May',
+    org: 'ISCAS (Chinese Academy of Sciences)',
+    link: 'https://summer-ospp.ac.cn',
+    desc: 'Open Source Promotion Plan (OSPP) is an international summer program designed to encourage students to participate in open source software development. Students work with open-source communities worldwide under the guidance of experienced mentors on coding, optimization, or porting projects.',
+    tips: [
+      'Familiarize yourself with backend systems, compilers, and operating systems',
+      'Understand target project specifications before drafting proposals',
+      'Communicate with mentors on their Slack or GitHub issues early',
+      'Write highly technical proposals addressing the project requirements',
+      'Keep track of progress deliverables throughout the 3-month cycle',
+    ],
+    nst: 'NST students have participated in OSPP developing core open-source infrastructure tools.',
+  },
+  {
+    id: 'codeheat',
+    name: 'FOSSASIA Codeheat',
+    short: 'Codeheat',
+    color: 'text-rose-400',
+    accent: 'border-rose-500/30',
+    bg: 'bg-rose-500/5',
+    dot: 'bg-rose-400',
+    dotBorder: 'border-rose-500/40',
+    stipend: 'Summit Travel Funding & Goodies',
+    duration: '2 months per term (runs autumn/winter)',
+    eligibility: 'Open to anyone worldwide',
+    deadline: 'Applications open during the contest terms',
+    org: 'FOSSASIA',
+    link: 'https://codeheat.org',
+    desc: 'FOSSASIA Codeheat is a coding contest terms program where developers contribute to projects like EventYeti, Open Event, Badge Magic, and Phimpme. Mentors guide participants to make pull requests. The top participants receive travel funding to speak at the annual FOSSASIA Summit.',
+    tips: [
+      'Contribute regularly to build a track record on FOSSASIA repositories',
+      'Help other newcomers and actively participate in the community channels',
+      'Write blog posts detailing your project contributions to gain visibility',
+      'Select issues related to your core coding skills (Web, Python, Android)',
+      'Deliver clean code matching the style guides of FOSSASIA',
+    ],
+    nst: 'NST students have been recognized as Codeheat winners and attended the FOSSASIA Summit.',
+  },
+  {
+    id: 'lkmp',
+    name: 'Linux Kernel Mentorship Program',
+    short: 'LKMP',
+    color: 'text-yellow-400',
+    accent: 'border-yellow-500/30',
+    bg: 'bg-yellow-500/5',
+    dot: 'bg-yellow-400',
+    dotBorder: 'border-yellow-500/40',
+    stipend: '$3,000 – $6,600',
+    duration: '12 to 24 weeks',
+    eligibility: 'Aspiring Linux kernel developers globally',
+    deadline: 'Runs 3 terms per year — check LF portal',
+    org: 'Linux Foundation',
+    link: 'https://mentorship.lfx.linuxfoundation.org',
+    desc: 'The Linux Kernel Mentorship Program offers a structured remote learning opportunity to people who are aspiring to be Linux kernel developers. Mentees work directly under the guidance of experienced kernel maintainers and submit kernel patches, gaining deep systems programming experience.',
+    tips: [
+      'Take the free Linux Foundation kernel introduction courses first',
+      'Learn C programming, operating system concepts, and Git workflows',
+      'Understand how to send patches via email lists to the Linux kernel',
+      'Start by fixing compiler warnings or static analysis checks in the kernel tree',
+      'Follow the LKMP guidelines closely to write compliant kernel patches',
+    ],
+    nst: 'A highly advanced program for NST students specializing in systems engineering and low-level development.',
+  },
+  {
+    id: 'dssg',
+    name: 'Data Science for Social Good Fellowship',
+    short: 'DSSG',
+    color: 'text-indigo-400',
+    accent: 'border-indigo-500/30',
+    bg: 'bg-indigo-500/5',
+    dot: 'bg-indigo-400',
+    dotBorder: 'border-indigo-500/40',
+    stipend: 'Varies (Paid summer fellowship)',
+    duration: '12 weeks (Summer)',
+    eligibility: 'Undergraduate & graduate students in computational/quantitative fields or social sciences',
+    deadline: 'Applications typically open in January–February',
+    org: 'DSSG Foundation & Partner Universities',
+    link: 'https://www.dssgfellowship.org',
+    desc: 'The Data Science for Social Good Fellowship is a full-time, paid summer program. Originally launched at the University of Chicago, it brings together aspiring data scientists to apply machine learning, artificial intelligence, and statistics to high-impact challenges in education, healthcare, public safety, and environment under the guidance of expert mentors.',
+    tips: [
+      'Demonstrate both quantitative strengths (ML/programming) and social commitment',
+      'Highlight experience working in interdisciplinary teams (social science + coding)',
+      'Prepare strong project samples showing data cleaning, modeling, and insights',
+      'Focus your application essays on your personal drive for social impact',
+      'Apply individually — teams are formed after selection',
+    ],
+    nst: 'NST students with machine learning and data science backgrounds have participated in DSSG fellowships.',
+  },
 ];
 
 export default function ProgramsPage() {
@@ -166,6 +416,18 @@ export default function ProgramsPage() {
         </div>
 
         <div className="relative max-w-6xl mx-auto text-center">
+          <div className="flex justify-start mb-6">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-white/30 hover:text-white/60 transition-colors text-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+              </svg>
+              Home
+            </Link>
+          </div>
+
           <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-xs text-blue-300/70 mb-6">
             Paid internships · Global programs · Real-world impact
           </div>
@@ -290,7 +552,7 @@ export default function ProgramsPage() {
         <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-8 text-center">
           <h2 className="text-xl font-bold text-white mb-2">Ready to start your journey?</h2>
           <p className="text-white/40 text-sm mb-6">
-            See who is contributing, find a mentor, and learn how to get started.
+            See who is contributing and learn how to get started.
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link
@@ -298,12 +560,6 @@ export default function ProgramsPage() {
               className="px-5 py-2.5 rounded-xl bg-white/[0.07] border border-white/10 text-white/80 text-sm font-medium hover:bg-white/[0.1] transition-all"
             >
               View Contributors
-            </Link>
-            <Link
-              href="/mentors"
-              className="px-5 py-2.5 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-300 text-sm font-medium hover:bg-blue-500/20 transition-all"
-            >
-              Find a Mentor
             </Link>
             <Link
               href="/achievers"
@@ -318,6 +574,9 @@ export default function ProgramsPage() {
               Get Started Guide
             </Link>
           </div>
+          <p className="text-white/20 text-xs mt-6">
+            ⚠️ Stipends and deadlines shown are approximate — always verify on the official program site before applying.
+          </p>
         </section>
       </div>
     </main>

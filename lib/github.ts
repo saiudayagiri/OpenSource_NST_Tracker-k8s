@@ -62,16 +62,16 @@ export interface GitHubUser {
 
 export interface Student {
   github: string;
-  mentor?: string;
 }
 
 export interface StudentSummary {
   profile: GitHubUser;
-  mentor?: string;
   totalPRs: number;
   mergedPRs: number;
   openPRs: number;
   closedPRs: number;
+  /** mergedPRs minus any flagged merged PRs — used for ranking */
+  scoreMergedPRs: number;
 }
 
 export function getStudents(): Student[] {
@@ -84,20 +84,13 @@ export function getStudents(): Student[] {
       .map((s) => {
         if (typeof s === 'string') return { github: s };
         if (typeof s === 'object' && s !== null && typeof s.github === 'string')
-          return { github: s.github, mentor: s.mentor || undefined };
+          return { github: s.github };
         return null;
       })
       .filter((s): s is Student => s !== null);
   } catch {
     return [];
   }
-}
-
-export function getMentorForStudent(username: string): string | undefined {
-  const students = getStudents();
-  return students.find(
-    (s) => s.github.toLowerCase() === username.toLowerCase()
-  )?.mentor;
 }
 
 export async function getStudentProfile(username: string): Promise<GitHubUser | null> {
@@ -166,20 +159,6 @@ export async function getStudentReviews(username: string): Promise<StudentPR[]> 
   return all;
 }
 
-export async function getStudentCounts(username: string) {
-  const count = async (q: string) => {
-    const data = await githubSearch(q, 1, 1);
-    return data?.total_count ?? 0;
-  };
-  const [prs, mergedPRs, openPRs, issues, reviews] = await Promise.all([
-    count(`is:pr author:${username} -user:${username}`),
-    count(`is:pr is:merged author:${username} -user:${username}`),
-    count(`is:pr is:open author:${username} -user:${username}`),
-    count(`is:issue author:${username} -user:${username}`),
-    count(`is:pr reviewed-by:${username} -user:${username} -author:${username}`),
-  ]);
-  return { prs, mergedPRs, openPRs, issues, reviews };
-}
 
 export async function getStudentPRs(username: string): Promise<StudentPR[]> {
   const allPRs: StudentPR[] = [];
@@ -197,17 +176,21 @@ export async function getStudentPRs(username: string): Promise<StudentPR[]> {
   return allPRs;
 }
 
-export async function getStudentSummary(student: Student, dateQuery = ''): Promise<StudentSummary | null> {
+export async function getStudentSummary(
+  student: Student,
+  dateQuery = '',
+  flaggedPRIds: Set<string> = new Set()
+): Promise<StudentSummary | null> {
   const [profile, data] = await Promise.all([
     getStudentProfile(student.github),
     searchPRs(student.github, dateQuery, 1, 100),
   ]);
-  if (!profile || !data) return null;
+  if (!profile) return null;
 
-  const items = data.items;
-  const total = data.total_count;
+  const items = data ? data.items : [];
+  const total = data ? data.total_count : 0;
 
-  const mergedInSample = items.filter((pr) => pr.pull_request?.merged_at).length;
+  const mergedItems = items.filter((pr) => pr.pull_request?.merged_at);
   const openInSample = items.filter((pr) => pr.state === 'open').length;
   const closedInSample = items.filter(
     (pr) => !pr.pull_request?.merged_at && pr.state === 'closed'
@@ -216,17 +199,31 @@ export async function getStudentSummary(student: Student, dateQuery = ''): Promi
   const sampleSize = items.length || 1;
   const scale = total / sampleSize;
 
+  const mergedInSample = mergedItems.length;
+  const mergedPRs = Math.round(mergedInSample * scale);
+
+  // Count flagged merged PRs in this sample and scale proportionally
+  const flaggedMergedInSample = mergedItems.filter((pr) => {
+    const repo = pr.repository_url.replace('https://api.github.com/repos/', '');
+    const key = `${repo}#${pr.number}`;
+    return flaggedPRIds.has(key);
+  }).length;
+  const flaggedMerged = Math.round(flaggedMergedInSample * scale);
+
   return {
     profile,
-    mentor: student.mentor,
     totalPRs: total,
-    mergedPRs: Math.round(mergedInSample * scale),
+    mergedPRs,
     openPRs: Math.round(openInSample * scale),
     closedPRs: Math.round(closedInSample * scale),
+    scoreMergedPRs: Math.max(0, mergedPRs - flaggedMerged),
   };
 }
 
-export async function getAllStudentSummaries(dateQuery = ''): Promise<StudentSummary[]> {
+export async function getAllStudentSummaries(
+  dateQuery = '',
+  flaggedPRIds: Set<string> = new Set()
+): Promise<StudentSummary[]> {
   const students = getStudents();
   if (students.length === 0) return [];
 
@@ -235,14 +232,17 @@ export async function getAllStudentSummaries(dateQuery = ''): Promise<StudentSum
 
   for (let i = 0; i < students.length; i += batchSize) {
     const batch = students.slice(i, i + batchSize);
-    const batchResults = await Promise.all(batch.map((s) => getStudentSummary(s, dateQuery)));
+    const batchResults = await Promise.all(
+      batch.map((s) => getStudentSummary(s, dateQuery, flaggedPRIds))
+    );
     results.push(...batchResults.filter((r): r is StudentSummary => r !== null));
     if (i + batchSize < students.length) {
       await new Promise((res) => setTimeout(res, 800));
     }
   }
 
-  return results.sort((a, b) => b.totalPRs - a.totalPRs);
+  // Rank by effective merged PRs (raw merged minus flagged merged)
+  return results.sort((a, b) => b.scoreMergedPRs - a.scoreMergedPRs);
 }
 
 export function repoFromUrl(repoUrl: string): string {

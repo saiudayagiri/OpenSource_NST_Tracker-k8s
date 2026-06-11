@@ -1,10 +1,14 @@
-import { getAllStudentSummaries, getStudents, buildDateQuery } from '@/lib/github';
+import { getAllStudentSummaries, getStudents, buildDateQuery, StudentSummary } from '@/lib/github';
+import { getFlaggedPRs } from '@/lib/flagged';
+import { readSummaryCache, writeSummaryCache } from '@/lib/summary-cache';
+import { RefreshButton } from './RefreshButton';
 import { FilterBar } from './FilterBar';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Suspense } from 'react';
 
-export const revalidate = 3600;
+// Dynamic so router.refresh() re-renders with updated cache
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Contributors — Opensource Tracker',
@@ -22,11 +26,6 @@ function PRBar({ merged, open, closed, total }: { merged: number; open: number; 
   );
 }
 
-const rankStyles = [
-  'bg-yellow-500/20 text-yellow-400 border-yellow-500/40',
-  'bg-slate-400/20 text-slate-300 border-slate-400/40',
-  'bg-orange-600/20 text-orange-400 border-orange-600/40',
-];
 
 export default async function ContributorsPage({
   searchParams,
@@ -55,15 +54,43 @@ export default async function ContributorsPage({
     );
   }
 
-  const allSummaries = await getAllStudentSummaries(dateQuery);
+  const flaggedPRIds = new Set(getFlaggedPRs().map((f) => f.id));
+
+  // ── Cache-first data loading ──────────────────────────────────────────────
+  // Cache predefined period summaries to avoid hitting GitHub API rate limits
+  const isPredefinedPeriod = ['all', '1day', 'week', 'month', '3months', '6months', 'year'].includes(period);
+  let allSummaries: StudentSummary[] | null = null;
+  let cachedAt: string | null = null;
+
+  if (isPredefinedPeriod) {
+    const cache = await readSummaryCache(period);
+    // Only use cache if it exists and hasn't been explicitly invalidated (epoch timestamp)
+    if (cache && cache.cachedAt !== '1970-01-01T00:00:00.000Z') {
+      allSummaries = cache.summaries;
+      cachedAt = cache.cachedAt;
+    }
+  }
+
+  if (!allSummaries) {
+    // No cache, stale cache, or custom range — fetch live
+    allSummaries = await getAllStudentSummaries(dateQuery, flaggedPRIds);
+    if (isPredefinedPeriod) {
+      await writeSummaryCache(allSummaries, period);
+      cachedAt = new Date().toISOString();
+    }
+  } else {
+    // Keep scores sorted in descending order
+    allSummaries = [...allSummaries].sort((a, b) => b.scoreMergedPRs - a.scoreMergedPRs);
+  }
+
   const summaries = search
     ? allSummaries.filter((s) => {
-        const q = search.toLowerCase();
-        return (
-          s.profile.login.toLowerCase().includes(q) ||
-          (s.profile.name ?? '').toLowerCase().includes(q)
-        );
-      })
+      const q = search.toLowerCase();
+      return (
+        s.profile.login.toLowerCase().includes(q) ||
+        (s.profile.name ?? '').toLowerCase().includes(q)
+      );
+    })
     : allSummaries;
   const totalPRs = allSummaries.reduce((s, c) => s + c.totalPRs, 0);
   const totalMerged = allSummaries.reduce((s, c) => s + c.mergedPRs, 0);
@@ -78,15 +105,17 @@ export default async function ContributorsPage({
         </div>
 
         <div className="relative max-w-6xl mx-auto text-center">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-white/30 hover:text-white/60 transition-colors text-sm mb-8"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-            </svg>
-            Home
-          </Link>
+          <div className="flex justify-start mb-6">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-white/30 hover:text-white/60 transition-colors text-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+              </svg>
+              Home
+            </Link>
+          </div>
 
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight">
             Opensource Tracker{' '}
@@ -95,27 +124,37 @@ export default async function ContributorsPage({
             </span>
           </h1>
           <p className="text-white/40 text-lg max-w-lg mx-auto mb-3">
-            Track all opensource contributions and celebrate our contributors
+            {period !== 'all' ? `Contributions filtered by: ${period === 'week' ? 'last 7 days' : period === 'month' ? 'last 30 days' : 'custom range'}` : 'Every PR, every merge — all in one place.'}
           </p>
-          <p className="text-white/25 text-sm max-w-lg mx-auto mb-12">
-            Let&apos;s celebrate our Open Source contributors!
+          <p className="text-white/20 text-xs max-w-lg mx-auto mb-12">
+            Sorted by clean merged PRs. Flagged or low-quality contributions don&apos;t count.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-3">
-            {[
-              { label: 'Students', value: summaries.length },
-              { label: 'Total PRs', value: totalPRs },
-              { label: 'Merged PRs', value: totalMerged },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                className="bg-white/[0.04] border border-white/[0.08] rounded-2xl px-8 py-4 backdrop-blur-sm"
-              >
-                <div className="text-3xl font-bold text-white tabular-nums">{stat.value}</div>
-                <div className="text-white/35 text-sm mt-0.5">{stat.label}</div>
-              </div>
-            ))}
+          {/* Stats + refresh */}
+          <div className="flex flex-wrap justify-center items-center gap-4">
+            <div className="flex flex-wrap justify-center gap-3">
+              {[
+                { label: 'Students', value: summaries.length },
+                { label: 'Total PRs', value: totalPRs },
+                { label: 'Merged PRs', value: totalMerged },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="bg-white/[0.04] border border-white/[0.08] rounded-2xl px-8 py-4 backdrop-blur-sm"
+                >
+                  <div className="text-3xl font-bold text-white tabular-nums">{stat.value}</div>
+                  <div className="text-white/35 text-sm mt-0.5">{stat.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
+
+          {/* Last updated + public refresh */}
+          {isPredefinedPeriod && (
+            <div className="mt-4 flex justify-center">
+              <RefreshButton cachedAt={cachedAt} period={period} />
+            </div>
+          )}
         </div>
       </div>
 
@@ -127,22 +166,14 @@ export default async function ContributorsPage({
       {/* Grid */}
       <div className="max-w-6xl mx-auto px-4 pb-24">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {summaries.map((summary, index) => (
+          {summaries.map((summary) => (
             <Link
               key={summary.profile.login}
-              href={`/contributors/${summary.profile.login}?rank=${index + 1}`}
+              href={`/contributors/${summary.profile.login}`}
               className="group relative bg-white/[0.025] border border-white/[0.07] rounded-2xl p-6 hover:bg-white/[0.05] hover:border-purple-500/25 transition-all duration-200 hover:shadow-xl hover:shadow-purple-900/20 hover:-translate-y-0.5"
             >
-              {index < 3 && (
-                <div
-                  className={`absolute top-4 right-4 w-7 h-7 rounded-full border flex items-center justify-center text-xs font-bold ${rankStyles[index]}`}
-                >
-                  #{index + 1}
-                </div>
-              )}
-
               <div className="flex items-start gap-4 mb-5">
-                {/* Avatar with optional mentor overlay */}
+                {/* Avatar */}
                 <div className="relative flex-shrink-0">
                   <Image
                     src={summary.profile.avatar_url}
@@ -151,32 +182,12 @@ export default async function ContributorsPage({
                     height={52}
                     className="w-[52px] h-[52px] rounded-full ring-2 ring-white/10 group-hover:ring-purple-500/40 transition-all object-cover"
                   />
-                  {summary.mentor && (
-                    <div
-                      className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full ring-2 ring-[#0d0d14] overflow-hidden"
-                      title={`Mentored by @${summary.mentor}`}
-                    >
-                      <Image
-                        src={`https://avatars.githubusercontent.com/${summary.mentor}`}
-                        alt={`Mentor: ${summary.mentor}`}
-                        width={24}
-                        height={24}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
                 </div>
                 <div className="flex-1 min-w-0 pt-0.5">
                   <h3 className="font-semibold text-white/90 group-hover:text-white truncate transition-colors">
                     {summary.profile.name ?? summary.profile.login}
                   </h3>
                   <p className="text-white/35 text-xs mt-0.5 truncate">@{summary.profile.login}</p>
-                  {summary.mentor && (
-                    <p className="text-white/25 text-xs mt-0.5 truncate">
-                      mentored by{' '}
-                      <span className="text-purple-400/70">@{summary.mentor}</span>
-                    </p>
-                  )}
                   <p className="text-white/40 text-sm mt-1">
                     {summary.totalPRs} contribution{summary.totalPRs !== 1 ? 's' : ''}
                   </p>

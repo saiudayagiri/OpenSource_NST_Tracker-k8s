@@ -145,6 +145,18 @@ export default async function AchieversPage() {
         </div>
 
         <div className="relative max-w-6xl mx-auto text-center">
+          <div className="flex justify-start mb-6">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-white/30 hover:text-white/60 transition-colors text-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+              </svg>
+              Home
+            </Link>
+          </div>
+
           <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-xs text-yellow-300/70 mb-6">
             Students who cracked top open source programs
           </div>
@@ -181,21 +193,16 @@ export default async function AchieversPage() {
       <div className="max-w-6xl mx-auto px-4 pb-24">
         {achievers.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-white/30 mb-4">No achievers added yet.</p>
-            <pre className="bg-white/5 border border-white/10 rounded-xl p-4 text-left text-xs text-white/50 font-mono max-w-md mx-auto">
-{`// data/achievers.json
-[
-  {
-    "name": "Display Name",
-    "github": "username",
-    "headline": "GSoC 2024 at Mozilla",
-    "programs": [
-      { "name": "GSoC", "year": 2024,
-        "org": "Mozilla", "url": "" }
-    ]
-  }
-]`}
-            </pre>
+            <div className="text-6xl mb-4">🏆</div>
+            <h2 className="text-2xl font-bold text-white mb-2">Coming Soon</h2>
+            <p className="text-white/35 text-sm max-w-xs mx-auto">
+              Our Hall of Fame is being built. NST students who crack GSoC, LFX, Outreachy and more will be celebrated here.
+            </p>
+            <div className="mt-6 flex justify-center gap-3">
+              <Link href="/programs" className="text-xs px-4 py-2 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-400/70 hover:text-yellow-400 transition-all">
+                Learn about programs →
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

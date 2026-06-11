@@ -8,7 +8,6 @@ export interface Program {
   year?: number;
   org?: string;
   url?: string;
-  mentors?: string[];
 }
 
 export interface PersonEntry {
@@ -29,7 +28,6 @@ function readEntries(filename: string): PersonEntry[] {
   }
 }
 
-export const getMentors   = () => readEntries('mentors.json');
 export const getAchievers = () => readEntries('achievers.json');
 
 // ─── Events ───────────────────────────────────────────────────────────────────

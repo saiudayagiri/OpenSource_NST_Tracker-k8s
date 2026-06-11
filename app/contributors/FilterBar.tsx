@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 
 const PRESETS = [
   { label: 'All',      value: 'all'     },
@@ -23,13 +23,17 @@ export function FilterBar() {
   const [search, setSearch] = useState(searchQuery);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
+  const [prevPeriod, setPrevPeriod] = useState(period);
+  if (period !== prevPeriod) {
+    setPrevPeriod(period);
     if (period !== 'custom') setShowCustom(false);
-  }, [period]);
+  }
 
-  useEffect(() => {
+  const [prevSearchQuery, setPrevSearchQuery] = useState(searchQuery);
+  if (searchQuery !== prevSearchQuery) {
+    setPrevSearchQuery(searchQuery);
     setSearch(searchQuery);
-  }, [searchQuery]);
+  }
 
   function buildParams(overrides: Record<string, string>) {
     const p = new URLSearchParams();
