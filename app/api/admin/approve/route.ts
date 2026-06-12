@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const { id } = body as { id?: string };
   if (!id) return Response.json({ error: 'Missing id' }, { status: 400 });
-  markReviewed(id);
+  await markReviewed(id);
   return Response.json({ ok: true });
 }
 
@@ -28,6 +28,6 @@ export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
   if (!id) return Response.json({ error: 'Missing ?id= param' }, { status: 400 });
-  unmarkReviewed(id);
+  await unmarkReviewed(id);
   return Response.json({ ok: true });
 }

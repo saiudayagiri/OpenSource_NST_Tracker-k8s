@@ -1,4 +1,5 @@
-import { getAchievers, getProgramMeta, type PersonEntry } from '@/lib/data';
+import { getProgramMeta, type PersonEntry } from '@/lib/data';
+import { getAchieversKV } from '@/lib/kv-achievers';
 import { getStudentProfile, type GitHubUser } from '@/lib/github';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -124,7 +125,7 @@ function AchieverCard({
 }
 
 export default async function AchieversPage() {
-  const entries = getAchievers();
+  const entries = await getAchieversKV();
 
   const achievers = await Promise.all(
     entries.map(async (e) => ({

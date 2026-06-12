@@ -400,7 +400,14 @@ export default async function ContributorPage({
 
               {/* Actions: Share + Refresh */}
               <div className="mt-4 flex flex-wrap items-center gap-3 justify-center sm:justify-start">
-                <ShareButton username={profile.login} displayName={profile.name ?? profile.login} />
+                <ShareButton
+                  username={profile.login}
+                  displayName={profile.name ?? profile.login}
+                  avatarUrl={profile.avatar_url}
+                  mergedCount={counts.mergedPRs}
+                  totalCount={counts.prs}
+                  badges={badges}
+                />
                 <RefreshButton cachedAt={cachedAt} username={profile.login} />
               </div>
             </div>

@@ -1,4 +1,5 @@
-import { getEntry, getProgramMeta } from '@/lib/data';
+import { getProgramMeta } from '@/lib/data';
+import { getAchieverKV } from '@/lib/kv-achievers';
 import { getStudentProfile, getStudentPRs, repoFromUrl } from '@/lib/github';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -18,7 +19,7 @@ function formatDate(d: string) {
 export default async function AchieverPage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
 
-  const entry = getEntry('achievers.json', username);
+  const entry = await getAchieverKV(username);
   if (!entry) notFound();
 
   const [profile, prs] = await Promise.all([

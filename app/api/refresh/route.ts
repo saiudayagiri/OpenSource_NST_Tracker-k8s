@@ -5,7 +5,7 @@ import {
   getStudentIssues,
   buildDateQuery,
 } from '@/lib/github';
-import { getFlaggedPRs } from '@/lib/flagged';
+import { getFlaggedPRIdSet } from '@/lib/flagged';
 import {
   readSummaryCache,
   writeSummaryCache,
@@ -116,7 +116,7 @@ export async function POST(request: Request) {
   }
 
   // Fetch fresh summaries from GitHub
-  const flaggedPRIds = new Set(getFlaggedPRs().map((f) => f.id));
+  const flaggedPRIds = await getFlaggedPRIdSet();
   const dateQuery = buildDateQuery(period);
   const summaries = await getAllStudentSummaries(dateQuery, flaggedPRIds);
   await writeSummaryCache(summaries, period);

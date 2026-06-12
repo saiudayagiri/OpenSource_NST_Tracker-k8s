@@ -1,5 +1,6 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { getStudentsKV } from './kv-students';
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
@@ -74,24 +75,7 @@ export interface StudentSummary {
   scoreMergedPRs: number;
 }
 
-export function getStudents(): Student[] {
-  try {
-    const filePath = join(process.cwd(), 'data', 'students.json');
-    const content = readFileSync(filePath, 'utf-8');
-    const data = JSON.parse(content);
-    if (!Array.isArray(data)) return [];
-    return data
-      .map((s) => {
-        if (typeof s === 'string') return { github: s };
-        if (typeof s === 'object' && s !== null && typeof s.github === 'string')
-          return { github: s.github };
-        return null;
-      })
-      .filter((s): s is Student => s !== null);
-  } catch {
-    return [];
-  }
-}
+// getStudents() has been replaced with getStudentsKV() from './kv-students'
 
 export async function getStudentProfile(username: string): Promise<GitHubUser | null> {
   const res = await fetch(`https://api.github.com/users/${username}`, {
@@ -224,7 +208,7 @@ export async function getAllStudentSummaries(
   dateQuery = '',
   flaggedPRIds: Set<string> = new Set()
 ): Promise<StudentSummary[]> {
-  const students = getStudents();
+  const students = await getStudentsKV();
   if (students.length === 0) return [];
 
   const results: StudentSummary[] = [];

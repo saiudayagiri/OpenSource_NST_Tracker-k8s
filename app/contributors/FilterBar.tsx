@@ -50,7 +50,7 @@ export function FilterBar() {
     if (value === 'custom') { setShowCustom(true); return; }
     setShowCustom(false);
     const qs = buildParams({ period: value, from: '', to: '' });
-    router.push(qs ? `/contributors?${qs}` : '/contributors');
+    router.push(qs ? `/contributors?${qs}` : '/contributors', { scroll: false });
   }
 
   function applyCustom() {
@@ -58,7 +58,7 @@ export function FilterBar() {
     const p = new URLSearchParams({ period: 'custom', from });
     if (to) p.set('to', to);
     if (search) p.set('search', search);
-    router.push(`/contributors?${p.toString()}`);
+    router.push(`/contributors?${p.toString()}`, { scroll: false });
     setShowCustom(false);
   }
 
@@ -67,7 +67,7 @@ export function FilterBar() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       const qs = buildParams({ search: value });
-      router.push(qs ? `/contributors?${qs}` : '/contributors');
+      router.push(qs ? `/contributors?${qs}` : '/contributors', { scroll: false });
     }, 350);
   }
 
@@ -189,7 +189,7 @@ export function FilterBar() {
           {search && <span>Searching &ldquo;{search}&rdquo;</span>}
           <span className="text-white/15">·</span>
           <button
-            onClick={() => { setSearch(''); router.push('/contributors'); }}
+            onClick={() => { setSearch(''); router.push('/contributors', { scroll: false }); }}
             className="underline hover:text-white/50 transition-colors"
           >
             Clear all

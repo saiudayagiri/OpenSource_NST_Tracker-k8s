@@ -1,5 +1,6 @@
-import { getAllStudentSummaries, getStudents, buildDateQuery, StudentSummary } from '@/lib/github';
-import { getFlaggedPRs } from '@/lib/flagged';
+import { getAllStudentSummaries, buildDateQuery, StudentSummary } from '@/lib/github';
+import { getStudentsKV } from '@/lib/kv-students';
+import { getFlaggedPRIdSet } from '@/lib/flagged';
 import { readSummaryCache, writeSummaryCache } from '@/lib/summary-cache';
 import { RefreshButton } from './RefreshButton';
 import { FilterBar } from './FilterBar';
@@ -25,6 +26,24 @@ function PRBar({ merged, open, closed, total }: { merged: number; open: number; 
     </div>
   );
 }
+function FilterBarSkeleton() {
+  return (
+    <div className="max-w-6xl mx-auto px-4 pb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
+        {/* Search input skeleton */}
+        <div className="h-8 bg-white/[0.04] border border-white/[0.09] rounded-full w-full max-w-sm animate-pulse" />
+        {/* Divider */}
+        <div className="hidden sm:block h-5 w-px bg-white/[0.08]" />
+        {/* Pills skeleton */}
+        <div className="flex flex-wrap items-center gap-2">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-8 bg-white/[0.03] border border-white/[0.08] rounded-full w-16 animate-pulse" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 
 export default async function ContributorsPage({
@@ -34,7 +53,7 @@ export default async function ContributorsPage({
 }) {
   const { period = 'all', from, to, search = '' } = await searchParams;
   const dateQuery = buildDateQuery(period, from, to);
-  const students = getStudents();
+  const students = await getStudentsKV();
 
   if (students.length === 0) {
     return (
@@ -54,7 +73,7 @@ export default async function ContributorsPage({
     );
   }
 
-  const flaggedPRIds = new Set(getFlaggedPRs().map((f) => f.id));
+  const flaggedPRIds = await getFlaggedPRIdSet();
 
   // ── Cache-first data loading ──────────────────────────────────────────────
   // Cache predefined period summaries to avoid hitting GitHub API rate limits
@@ -159,7 +178,7 @@ export default async function ContributorsPage({
       </div>
 
       {/* Filter bar */}
-      <Suspense>
+      <Suspense fallback={<FilterBarSkeleton />}>
         <FilterBar />
       </Suspense>
 

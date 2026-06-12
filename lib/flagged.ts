@@ -1,12 +1,20 @@
-import { readFileSync, writeFileSync } from 'fs';
+/**
+ * lib/flagged.ts
+ *
+ * Stores flagged PRs in Vercel KV (or local disk KV fallback).
+ * Previously used writeFileSync which was wiped on every Vercel deploy.
+ */
+
+import { kvGet, kvSet } from './kv';
+import { readFileSync } from 'fs';
 import { join } from 'path';
 
-const FILE = join(process.cwd(), 'data', 'flagged_prs.json');
+const KV_KEY = 'flagged_prs';
 
 export type FlagReason = 'fake' | 'self_pr' | 'low_quality';
 
 export interface FlaggedPR {
-  /** GitHub PR node id or "<owner>/<repo>#<number>" string */
+  /** "<owner>/<repo>#<number>" string */
   id: string;
   /** PR HTML URL for display */
   url: string;
@@ -22,34 +30,49 @@ export interface FlaggedPR {
   note?: string;
 }
 
-export function getFlaggedPRs(): FlaggedPR[] {
+/** Read all flagged PRs from KV. Falls back to seeding from the committed JSON file. */
+export async function getFlaggedPRs(): Promise<FlaggedPR[]> {
+  const cached = await kvGet<FlaggedPR[]>(KV_KEY);
+  if (cached !== null) return cached;
+
+  // First-time seed: read from the committed JSON file if KV has nothing yet
   try {
-    const raw = readFileSync(FILE, 'utf-8');
+    const raw = readFileSync(join(process.cwd(), 'data', 'flagged_prs.json'), 'utf-8');
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    const list: FlaggedPR[] = Array.isArray(parsed) ? parsed : [];
+    // Persist into KV so next reads are fast (no TTL — flags never expire)
+    await kvSet(KV_KEY, list);
+    return list;
   } catch {
     return [];
   }
 }
 
-export function saveFlaggedPRs(list: FlaggedPR[]): void {
-  writeFileSync(FILE, JSON.stringify(list, null, 2), 'utf-8');
+async function saveFlaggedPRs(list: FlaggedPR[]): Promise<void> {
+  await kvSet(KV_KEY, list);
 }
 
-export function isFlagged(prId: string): boolean {
-  return getFlaggedPRs().some((f) => f.id === prId);
+export async function isFlagged(prId: string): Promise<boolean> {
+  const list = await getFlaggedPRs();
+  return list.some((f) => f.id === prId);
 }
 
-export function flagPR(entry: FlaggedPR): void {
-  const list = getFlaggedPRs().filter((f) => f.id !== entry.id);
+export async function flagPR(entry: FlaggedPR): Promise<void> {
+  const list = (await getFlaggedPRs()).filter((f) => f.id !== entry.id);
   list.push(entry);
-  saveFlaggedPRs(list);
+  await saveFlaggedPRs(list);
 }
 
-export function unflagPR(prId: string): boolean {
-  const before = getFlaggedPRs();
+export async function unflagPR(prId: string): Promise<boolean> {
+  const before = await getFlaggedPRs();
   const after = before.filter((f) => f.id !== prId);
   if (after.length === before.length) return false;
-  saveFlaggedPRs(after);
+  await saveFlaggedPRs(after);
   return true;
+}
+
+/** Returns a Set of flagged PR ids for fast O(1) lookup in ranking calculations. */
+export async function getFlaggedPRIdSet(): Promise<Set<string>> {
+  const list = await getFlaggedPRs();
+  return new Set(list.map((f) => f.id));
 }

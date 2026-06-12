@@ -1,10 +1,8 @@
 export interface EventItem {
   id: string;
-  type: 'deadline' | 'milestone';
+  type: 'session' | 'deadline' | 'announcement';
   title: string;
   description: string;
-  datetime: string;
-  program?: string;
-  programColor?: string;
-  url?: string;
+  date: string;
+  link?: string;
 }

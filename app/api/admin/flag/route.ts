@@ -15,7 +15,7 @@ export async function GET() {
   if (!(await isAuthenticated())) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  return Response.json(getFlaggedPRs());
+  return Response.json(await getFlaggedPRs());
 }
 
 /** POST /api/admin/flag — flag a PR (also marks it reviewed so it leaves the queue) */
@@ -43,11 +43,11 @@ export async function POST(request: Request) {
     return Response.json({ error: `reason must be one of: ${validReasons.join(', ')}` }, { status: 400 });
   }
 
-  flagPR({ id, url, title, author, reason, note, flaggedAt: new Date().toISOString() });
+  await flagPR({ id, url, title, author, reason, note, flaggedAt: new Date().toISOString() });
   // Also mark reviewed so it leaves the queue
-  markReviewed(id);
+  await markReviewed(id);
   // Invalidate summary cache so public sees updated scores on next refresh
-  invalidateSummaryCache();
+  await invalidateSummaryCache();
   return Response.json({ ok: true });
 }
 
@@ -63,10 +63,10 @@ export async function DELETE(request: Request) {
     return Response.json({ error: 'Missing ?id= param' }, { status: 400 });
   }
 
-  const removed = unflagPR(id);
+  const removed = await unflagPR(id);
   // Also unmark reviewed so admin can re-review if needed
-  if (removed) unmarkReviewed(id);
+  if (removed) await unmarkReviewed(id);
   // Invalidate summary cache so public sees restored scores on next refresh
-  if (removed) invalidateSummaryCache();
+  if (removed) await invalidateSummaryCache();
   return Response.json({ ok: removed });
 }

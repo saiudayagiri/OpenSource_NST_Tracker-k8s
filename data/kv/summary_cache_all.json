@@ -1,6 +1,6 @@
 {
   "value": {
-    "cachedAt": "2026-06-11T19:55:40.125Z",
+    "cachedAt": "2026-06-12T06:46:22.504Z",
     "summaries": [
       {
         "profile": {
@@ -42,7 +42,7 @@
         "mergedPRs": 28,
         "openPRs": 3,
         "closedPRs": 8,
-        "scoreMergedPRs": 25
+        "scoreMergedPRs": 28
       },
       {
         "profile": {
@@ -117,7 +117,7 @@
           "twitter_username": null,
           "public_repos": 22,
           "public_gists": 0,
-          "followers": 4,
+          "followers": 3,
           "following": 5,
           "created_at": "2025-07-26T13:06:42Z",
           "updated_at": "2026-06-11T14:00:35Z"
@@ -466,5 +466,5 @@
       }
     ]
   },
-  "expiresAt": 1781294140125
+  "expiresAt": 1781333182504
 }

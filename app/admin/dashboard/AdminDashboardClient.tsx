@@ -209,30 +209,30 @@ function PRRow({ pr, showAuthor, onApprove, onFlag, onUnflag, onUnapprove }: PRR
       <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
         {pr.flagged ? (
           onUnflag && (
-            <button onClick={() => onUnflag(pr.prKey)}
-              className="text-xs px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/40 hover:text-white/70 hover:bg-white/[0.08] transition-all">
+            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUnflag(pr.prKey); }}
+              className="text-xs px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/40 hover:text-white/70 hover:bg-white/[0.08] transition-all cursor-pointer">
               Unflag
             </button>
           )
         ) : pr.approved ? (
           onUnapprove && (
-            <button onClick={() => onUnapprove(pr)}
-              className="text-xs px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/40 hover:text-white/70 transition-all opacity-0 group-hover:opacity-100">
+            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUnapprove(pr); }}
+              className="text-xs px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/40 hover:text-white/70 transition-all opacity-60 sm:opacity-0 group-hover:opacity-100 cursor-pointer">
               Undo
             </button>
           )
         ) : (
           <>
             {onApprove && (
-              <button onClick={() => onApprove(pr)}
+              <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onApprove(pr); }}
                 title="Looks good — approve"
-                className="text-xs px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-all opacity-0 group-hover:opacity-100">
+                className="text-xs px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-all opacity-60 sm:opacity-0 group-hover:opacity-100 cursor-pointer">
                 ✓ Approve
               </button>
             )}
-            <button onClick={() => onFlag(pr)}
+            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onFlag(pr); }}
               title="Flag this PR"
-              className="text-xs px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all opacity-0 group-hover:opacity-100">
+              className="text-xs px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all opacity-60 sm:opacity-0 group-hover:opacity-100 cursor-pointer">
               ⚑ Flag
             </button>
           </>
@@ -432,14 +432,14 @@ interface Props {
   students: string[];
 }
 
-type DashboardTab = 'queue' | 'browse' | 'flagged';
+type DashboardTab = 'queue' | 'browse' | 'flagged' | 'students' | 'events' | 'achievers';
 
 export default function AdminDashboardClient({ flaggedPRs: initialFlagged, reviewedPRIds: initialReviewed, students }: Props) {
   const router = useRouter();
 
   const [tab, setTab] = useState<DashboardTab>('queue');
-  const [selectedUser, setSelectedUser] = useState(students[0] ?? '');
-  const [searchQuery, setSearchQuery] = useState(students[0] ?? '');
+  const [selectedUser, setSelectedUser] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [browsePRs, setBrowsePRs] = useState<PRWithMeta[]>([]);
   const [queuePRs, setQueuePRs] = useState<PRWithMeta[]>([]);
@@ -591,14 +591,17 @@ export default function AdminDashboardClient({ flaggedPRs: initialFlagged, revie
 
       <div className="relative max-w-6xl mx-auto px-4 py-8">
         {/* Tabs */}
-        <div className="flex gap-1 mb-8 bg-white/[0.03] border border-white/[0.07] rounded-xl p-1 w-fit">
+        <div className="flex flex-wrap gap-1 mb-8 bg-white/[0.03] border border-white/[0.07] rounded-xl p-1 w-fit">
           {([
-            { id: 'queue',   label: '📥 Queue', badge: pendingCount > 0 ? pendingCount : null },
-            { id: 'browse',  label: '🔍 Browse', badge: null },
-            { id: 'flagged', label: '⚑ Flagged', badge: allFlagged.length > 0 ? allFlagged.length : null },
+            { id: 'queue',    label: '📥 Queue',    badge: pendingCount > 0 ? pendingCount : null },
+            { id: 'browse',   label: '🔍 Browse',   badge: null },
+            { id: 'flagged',  label: '⚑ Flagged',  badge: allFlagged.length > 0 ? allFlagged.length : null },
+            { id: 'students', label: '👥 Students', badge: null },
+            { id: 'events',   label: '📅 Events',   badge: null },
+            { id: 'achievers',label: '🏆 Achievers',badge: null },
           ] as const).map(({ id, label, badge }) => (
-            <button key={id} id={`tab-${id}`} onClick={() => setTab(id)}
-              className={`relative px-5 py-2 rounded-lg text-sm font-medium transition-all ${
+            <button key={id} id={`tab-${id}`} onClick={() => setTab(id as DashboardTab)}
+              className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 tab === id ? 'bg-white/[0.08] text-white border border-white/[0.12]' : 'text-white/40 hover:text-white/60'
               }`}>
               {label}
@@ -641,12 +644,32 @@ export default function AdminDashboardClient({ flaggedPRs: initialFlagged, revie
                     placeholder="Search and select contributor..."
                     value={searchQuery}
                     onChange={(e) => {
-                      setSearchQuery(e.target.value);
+                      const val = e.target.value;
+                      setSearchQuery(val);
                       setIsDropdownOpen(true);
+                      if (students.includes(val)) {
+                        setSelectedUser(val);
+                      } else {
+                        setSelectedUser('');
+                      }
                     }}
                     onFocus={() => setIsDropdownOpen(true)}
-                    className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-purple-500/40 cursor-text"
+                    className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl pl-4 pr-14 py-2.5 text-white text-sm focus:outline-none focus:border-purple-500/40 cursor-text"
                   />
+                  {searchQuery && (
+                    <button
+                      onClick={() => {
+                        setSearchQuery('');
+                        setSelectedUser('');
+                        setBrowsePRs([]);
+                      }}
+                      className="absolute right-9 top-3.5 text-white/20 hover:text-white/50 transition-colors cursor-pointer"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
                   <div
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="absolute right-3 top-3 text-white/30 hover:text-white/60 cursor-pointer"
@@ -679,7 +702,18 @@ export default function AdminDashboardClient({ flaggedPRs: initialFlagged, revie
                               </div>
                             ))
                         ) : (
-                          <div className="px-4 py-3 text-xs text-white/25 text-center">No contributors match search</div>
+                          <div className="px-4 py-3 text-xs text-white/25 text-center">
+                            No contributors match search.
+                            <button
+                              onClick={() => {
+                                setTab('students');
+                                setIsDropdownOpen(false);
+                              }}
+                              className="block mx-auto mt-1.5 text-purple-400 hover:text-purple-300 underline font-medium cursor-pointer"
+                            >
+                              Add student to track list
+                            </button>
+                          </div>
                         )}
                       </div>
                     </>
@@ -687,8 +721,8 @@ export default function AdminDashboardClient({ flaggedPRs: initialFlagged, revie
                 </div>
               </div>
               <div className="flex items-end">
-                <button id="load-prs-btn" onClick={() => fetchBrowsePRs(selectedUser)} disabled={browseLoading}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 disabled:opacity-50 text-white font-semibold px-6 py-2.5 rounded-xl transition-all shadow-lg shadow-purple-900/20 flex items-center gap-2 text-sm">
+                <button id="load-prs-btn" onClick={() => fetchBrowsePRs(selectedUser)} disabled={browseLoading || !selectedUser}
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 disabled:opacity-50 text-white font-semibold px-6 py-2.5 rounded-xl transition-all shadow-lg shadow-purple-900/20 flex items-center gap-2 text-sm cursor-pointer">
                   {browseLoading ? (
                     <><svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Loading…</>
                   ) : (
@@ -713,11 +747,21 @@ export default function AdminDashboardClient({ flaggedPRs: initialFlagged, revie
             {browseError && <div className="bg-red-500/10 border border-red-500/25 rounded-xl p-4 text-red-400 text-sm mb-6">{browseError}</div>}
 
             {!browseLoading && browsePRs.length === 0 && !browseError && (
-              <div className="text-center py-20 text-white/20">
+              <div className="text-center py-20 text-white/20 animate-in fade-in duration-300">
                 <svg className="w-10 h-10 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                Select a contributor and click "Load PRs"
+                {!selectedUser ? (
+                  <>
+                    <p className="text-base font-medium text-white/35 mb-1">No contributor selected</p>
+                    <p className="text-sm">Search and select a tracked contributor from the dropdown above, or add a new student under the <strong>Students</strong> tab.</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-base font-medium text-white/35 mb-1">Contributor selected: @{selectedUser}</p>
+                    <p className="text-sm">Click "Load PRs" to fetch their pull requests from GitHub.</p>
+                  </>
+                )}
               </div>
             )}
 
@@ -786,6 +830,14 @@ export default function AdminDashboardClient({ flaggedPRs: initialFlagged, revie
             )}
           </div>
         )}
+        {/* ── Students Tab ── */}
+        {tab === 'students' && <StudentsTab />}
+
+        {/* ── Events Tab ── */}
+        {tab === 'events' && <EventsTab />}
+
+        {/* ── Achievers Tab ── */}
+        {tab === 'achievers' && <AchieversTab />}
       </div>
 
       {/* Flag modal */}
@@ -793,5 +845,377 @@ export default function AdminDashboardClient({ flaggedPRs: initialFlagged, revie
         <FlagModal pr={modalPR} onClose={() => setModalPR(null)} onFlagged={handleFlagged} />
       )}
     </main>
+  );
+}
+
+// ─── Students Tab ─────────────────────────────────────────────────────────────
+
+function StudentsTab() {
+  const [students, setStudents] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newGithub, setNewGithub] = useState('');
+  const [adding, setAdding] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  async function load() {
+    setLoading(true);
+    const res = await fetch('/api/admin/students');
+    if (res.ok) {
+      const data = await res.json();
+      setStudents(data.map((s: { github: string }) => s.github));
+    }
+    setLoading(false);
+  }
+
+  useEffect(() => { load(); }, []);
+
+  async function handleAdd(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newGithub.trim()) return;
+    setAdding(true); setError(''); setSuccess('');
+    const res = await fetch('/api/admin/students', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ github: newGithub.trim() }),
+    });
+    const data = await res.json();
+    if (res.ok) { setSuccess(`@${newGithub.trim()} added!`); setNewGithub(''); await load(); }
+    else setError(data.error ?? 'Failed to add');
+    setAdding(false);
+  }
+
+  const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
+
+  async function executeRemove(github: string) {
+    setConfirmRemove(null);
+    setError(''); setSuccess('');
+    const res = await fetch(`/api/admin/students?github=${encodeURIComponent(github)}`, { method: 'DELETE' });
+    if (res.ok) { setSuccess(`@${github} removed.`); await load(); }
+    else setError('Failed to remove');
+  }
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h2 className="text-white font-semibold">Tracked Students</h2>
+        <p className="text-white/35 text-sm mt-0.5">Add or remove GitHub usernames from the contributor leaderboard.</p>
+      </div>
+
+      <form onSubmit={handleAdd} className="flex gap-3 mb-6">
+        <input type="text" value={newGithub} onChange={(e) => setNewGithub(e.target.value)}
+          placeholder="GitHub username" id="new-student-input"
+          className="flex-1 bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-2.5 text-white placeholder-white/20 text-sm focus:outline-none focus:border-purple-500/40" />
+        <button type="submit" disabled={adding || !newGithub.trim()} id="add-student-btn"
+          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 disabled:opacity-40 text-white font-semibold px-5 py-2.5 rounded-xl transition-all text-sm">
+          {adding ? 'Adding…' : '+ Add'}
+        </button>
+      </form>
+
+      {error && <p className="text-red-400 text-sm mb-4 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">{error}</p>}
+      {success && <p className="text-emerald-400 text-sm mb-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-2.5">{success}</p>}
+
+      {loading ? (
+        <div className="text-center py-12 text-white/25">Loading…</div>
+      ) : (
+        <div className="space-y-2">
+          {students.map((s) => {
+            const isConfirming = confirmRemove === s;
+            return (
+              <div key={s} className="group flex items-center justify-between gap-4 bg-white/[0.025] border border-white/[0.07] rounded-xl px-4 py-3 hover:bg-white/[0.04] transition-all">
+                <div className="flex items-center gap-3">
+                  <img src={`https://avatars.githubusercontent.com/${s}?s=32`} alt={s} className="w-8 h-8 rounded-full ring-1 ring-white/10" />
+                  <div>
+                    <p className="text-white/80 text-sm font-medium">@{s}</p>
+                    <a href={`https://github.com/${s}`} target="_blank" rel="noopener noreferrer" className="text-white/25 text-xs hover:text-purple-400 transition-colors">github.com/{s}</a>
+                  </div>
+                </div>
+                {isConfirming ? (
+                  <div className="flex items-center gap-1.5 flex-shrink-0 animate-in fade-in zoom-in-95 duration-150">
+                    <span className="text-xs text-white/40 mr-1 hidden xs:inline">Are you sure?</span>
+                    <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); executeRemove(s); }}
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-semibold transition-all cursor-pointer shadow-lg shadow-red-900/15">
+                      Delete
+                    </button>
+                    <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmRemove(null); }}
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/40 hover:text-white/70 transition-all cursor-pointer">
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmRemove(s); }}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all opacity-60 sm:opacity-0 group-hover:opacity-100 cursor-pointer">
+                    Remove
+                  </button>
+                )}
+              </div>
+            );
+          })}
+          {students.length === 0 && <div className="text-center py-12 text-white/25">No students tracked yet.</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Events Tab ───────────────────────────────────────────────────────────────
+
+interface EventItem { id: string; title: string; date: string; type: string; description: string; link?: string; }
+
+function EventsTab() {
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [form, setForm] = useState({ title: '', date: '', type: 'session', description: '', link: '' });
+  const [adding, setAdding] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<Partial<EventItem>>({});
+
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  async function load() {
+    setLoading(true);
+    const res = await fetch('/api/admin/events');
+    if (res.ok) setEvents(await res.json());
+    setLoading(false);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function handleAdd(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.title.trim() || !form.date || !form.type) return;
+    setAdding(true); setError(''); setSuccess('');
+    const res = await fetch('/api/admin/events', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...form, title: form.title.trim(), description: form.description.trim(), link: form.link.trim() || undefined }),
+    });
+    if (res.ok) { setSuccess('Event added!'); setForm({ title: '', date: '', type: 'session', description: '', link: '' }); await load(); }
+    else { const d = await res.json(); setError(d.error ?? 'Failed'); }
+    setAdding(false);
+  }
+
+  async function executeDeleteEvent(id: string) {
+    setConfirmDeleteId(null);
+    setError(''); setSuccess('');
+    const res = await fetch(`/api/admin/events?id=${id}`, { method: 'DELETE' });
+    if (res.ok) { setSuccess('Event deleted.'); await load(); }
+    else setError('Failed to delete');
+  }
+
+  async function handleSaveEdit(id: string) {
+    const res = await fetch('/api/admin/events', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, ...editForm }),
+    });
+    if (res.ok) { setSuccess('Event updated.'); setEditId(null); await load(); }
+    else setError('Failed to update');
+  }
+
+  const EVENT_TYPES = ['session', 'deadline', 'announcement'];
+  const TYPE_COLORS: Record<string, string> = {
+    session: 'text-blue-400 bg-blue-500/10 border-blue-500/25',
+    deadline: 'text-red-400 bg-red-500/10 border-red-500/25',
+    announcement: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/25',
+  };
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h2 className="text-white font-semibold">Upcoming Events</h2>
+        <p className="text-white/35 text-sm mt-0.5">Manage sessions, deadlines, and announcements shown on the home page.</p>
+      </div>
+
+      {/* Add form */}
+      <form onSubmit={handleAdd} className="bg-white/[0.02] border border-white/[0.08] rounded-2xl p-5 mb-6 space-y-3">
+        <p className="text-white/50 text-xs font-semibold uppercase tracking-wider">New Event</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <input value={form.title} onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Title *" required
+            className="bg-white/[0.04] border border-white/[0.1] rounded-xl px-3 py-2.5 text-white placeholder-white/20 text-sm focus:outline-none focus:border-purple-500/40" />
+          <input type="date" value={form.date} onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))} required
+            className="bg-white/[0.04] border border-white/[0.1] rounded-xl px-3 py-2.5 text-white/70 text-sm focus:outline-none focus:border-purple-500/40 [color-scheme:dark]" />
+          <select value={form.type} onChange={(e) => setForm(f => ({ ...f, type: e.target.value }))}
+            className="bg-white/[0.04] border border-white/[0.1] rounded-xl px-3 py-2.5 text-white/70 text-sm focus:outline-none focus:border-purple-500/40">
+            {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <input value={form.link} onChange={(e) => setForm(f => ({ ...f, link: e.target.value }))} placeholder="Link (optional)"
+            className="bg-white/[0.04] border border-white/[0.1] rounded-xl px-3 py-2.5 text-white placeholder-white/20 text-sm focus:outline-none focus:border-purple-500/40" />
+        </div>
+        <input value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Description"
+          className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-3 py-2.5 text-white placeholder-white/20 text-sm focus:outline-none focus:border-purple-500/40" />
+        <button type="submit" disabled={adding || !form.title.trim() || !form.date}
+          className="bg-gradient-to-r from-purple-600 to-blue-600 disabled:opacity-40 text-white font-semibold px-5 py-2 rounded-xl text-sm transition-all">
+          {adding ? 'Adding…' : '+ Add Event'}
+        </button>
+      </form>
+
+      {error && <p className="text-red-400 text-sm mb-4 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">{error}</p>}
+      {success && <p className="text-emerald-400 text-sm mb-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-2.5">{success}</p>}
+
+      {loading ? <div className="text-center py-12 text-white/25">Loading…</div> : (
+        <div className="space-y-2">
+          {events.map((ev) => editId === ev.id ? (
+            <div key={ev.id} className="bg-white/[0.04] border border-purple-500/25 rounded-xl p-4 space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input value={editForm.title ?? ev.title} onChange={(e) => setEditForm(f => ({ ...f, title: e.target.value }))}
+                  className="bg-white/[0.04] border border-white/[0.1] rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500/40" />
+                <input type="date" value={editForm.date ?? ev.date} onChange={(e) => setEditForm(f => ({ ...f, date: e.target.value }))}
+                  className="bg-white/[0.04] border border-white/[0.1] rounded-xl px-3 py-2 text-white/70 text-sm focus:outline-none [color-scheme:dark]" />
+              </div>
+              <div className="flex gap-2">
+                <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSaveEdit(ev.id); }} className="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded-lg transition-all cursor-pointer">Save</button>
+                <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditId(null); }} className="px-4 py-1.5 bg-white/[0.04] text-white/40 hover:text-white/70 text-xs rounded-lg border border-white/[0.08] transition-all cursor-pointer">Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <div key={ev.id} className="group flex items-start justify-between gap-4 bg-white/[0.025] border border-white/[0.07] rounded-xl px-4 py-3 hover:bg-white/[0.04] transition-all">
+              <div className="flex items-start gap-3 min-w-0">
+                <span className={`flex-shrink-0 text-xs px-2 py-0.5 rounded-full border whitespace-nowrap mt-0.5 ${TYPE_COLORS[ev.type] ?? 'text-white/50 bg-white/5 border-white/10'}`}>{ev.type}</span>
+                <div className="min-w-0">
+                  <p className="text-white/80 text-sm font-medium">{ev.title}</p>
+                  <p className="text-white/30 text-xs">{ev.date}{ev.description ? ` · ${ev.description}` : ''}</p>
+                </div>
+              </div>
+              {confirmDeleteId === ev.id ? (
+                <div className="flex items-center gap-1.5 flex-shrink-0 animate-in fade-in zoom-in-95 duration-150">
+                  <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); executeDeleteEvent(ev.id); }} className="text-xs px-2.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-semibold transition-all cursor-pointer shadow-lg shadow-red-900/15">Delete</button>
+                  <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDeleteId(null); }} className="text-xs px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/40 hover:text-white/70 transition-all cursor-pointer">Cancel</button>
+                </div>
+              ) : (
+                <div className="flex gap-1.5 flex-shrink-0 opacity-60 sm:opacity-0 group-hover:opacity-100 transition-all">
+                  <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditId(ev.id); setEditForm({}); }} className="text-xs px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/40 hover:text-white/70 transition-all cursor-pointer">Edit</button>
+                  <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDeleteId(ev.id); }} className="text-xs px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all cursor-pointer">Delete</button>
+                </div>
+              )}
+            </div>
+          ))}
+          {events.length === 0 && <div className="text-center py-12 text-white/25">No events yet.</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Achievers Tab ────────────────────────────────────────────────────────────
+
+interface AchieverEntry { github: string; name?: string; programs: Array<{ name: string; year?: number; org?: string; url?: string }>; }
+
+const PROGRAM_OPTIONS = ['GSoC', 'LFX', 'Outreachy', 'Summer of Bitcoin', 'ESoC', 'MLH', 'Hacktoberfest'];
+
+function AchieversTab() {
+  const [achievers, setAchievers] = useState<AchieverEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [form, setForm] = useState({ github: '', name: '', programName: 'GSoC', year: new Date().getFullYear().toString(), org: '', url: '' });
+  const [adding, setAdding] = useState(false);
+
+  async function load() {
+    setLoading(true);
+    const res = await fetch('/api/admin/achievers');
+    if (res.ok) setAchievers(await res.json());
+    setLoading(false);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function handleAdd(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.github.trim() || !form.programName) return;
+    setAdding(true); setError(''); setSuccess('');
+    const res = await fetch('/api/admin/achievers', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        github: form.github.trim(),
+        ...(form.name.trim() ? { name: form.name.trim() } : {}),
+        programs: [{
+          name: form.programName,
+          ...(form.year ? { year: parseInt(form.year) } : {}),
+          ...(form.org.trim() ? { org: form.org.trim() } : {}),
+          ...(form.url.trim() ? { url: form.url.trim() } : {}),
+        }],
+      }),
+    });
+    if (res.ok) { setSuccess(`@${form.github.trim()} added to Hall of Fame!`); setForm({ github: '', name: '', programName: 'GSoC', year: new Date().getFullYear().toString(), org: '', url: '' }); await load(); }
+    else { const d = await res.json(); setError(d.error ?? 'Failed'); }
+    setAdding(false);
+  }
+
+  const [confirmDeleteGithub, setConfirmDeleteGithub] = useState<string | null>(null);
+
+  async function executeDeleteAchiever(github: string) {
+    setConfirmDeleteGithub(null);
+    setError(''); setSuccess('');
+    const res = await fetch(`/api/admin/achievers?github=${encodeURIComponent(github)}`, { method: 'DELETE' });
+    if (res.ok) { setSuccess(`@${github} removed.`); await load(); }
+    else setError('Failed to remove');
+  }
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h2 className="text-white font-semibold">Hall of Fame</h2>
+        <p className="text-white/35 text-sm mt-0.5">Add or remove students from the achievers list. Each student can have multiple programs — add them one at a time.</p>
+      </div>
+
+      <form onSubmit={handleAdd} className="bg-white/[0.02] border border-white/[0.08] rounded-2xl p-5 mb-6 space-y-3">
+        <p className="text-white/50 text-xs font-semibold uppercase tracking-wider">Add Achiever</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <input value={form.github} onChange={(e) => setForm(f => ({ ...f, github: e.target.value }))} placeholder="GitHub username *" required
+            className="bg-white/[0.04] border border-white/[0.1] rounded-xl px-3 py-2.5 text-white placeholder-white/20 text-sm focus:outline-none focus:border-purple-500/40" />
+          <input value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Full name (optional)"
+            className="bg-white/[0.04] border border-white/[0.1] rounded-xl px-3 py-2.5 text-white placeholder-white/20 text-sm focus:outline-none focus:border-purple-500/40" />
+          <select value={form.programName} onChange={(e) => setForm(f => ({ ...f, programName: e.target.value }))}
+            className="bg-white/[0.04] border border-white/[0.1] rounded-xl px-3 py-2.5 text-white/70 text-sm focus:outline-none focus:border-purple-500/40">
+            {PROGRAM_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
+          <input value={form.year} onChange={(e) => setForm(f => ({ ...f, year: e.target.value }))} placeholder="Year" type="number" min="2010" max="2035"
+            className="bg-white/[0.04] border border-white/[0.1] rounded-xl px-3 py-2.5 text-white placeholder-white/20 text-sm focus:outline-none focus:border-purple-500/40" />
+          <input value={form.org} onChange={(e) => setForm(f => ({ ...f, org: e.target.value }))} placeholder="Organization (optional)"
+            className="bg-white/[0.04] border border-white/[0.1] rounded-xl px-3 py-2.5 text-white placeholder-white/20 text-sm focus:outline-none focus:border-purple-500/40" />
+          <input value={form.url} onChange={(e) => setForm(f => ({ ...f, url: e.target.value }))} placeholder="Project URL (optional)"
+            className="bg-white/[0.04] border border-white/[0.1] rounded-xl px-3 py-2.5 text-white placeholder-white/20 text-sm focus:outline-none focus:border-purple-500/40" />
+        </div>
+        <button type="submit" disabled={adding || !form.github.trim()}
+          className="bg-gradient-to-r from-yellow-600 to-orange-600 disabled:opacity-40 text-white font-semibold px-5 py-2 rounded-xl text-sm transition-all">
+          {adding ? 'Adding…' : '+ Add to Hall of Fame'}
+        </button>
+      </form>
+
+      {error && <p className="text-red-400 text-sm mb-4 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">{error}</p>}
+      {success && <p className="text-emerald-400 text-sm mb-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-2.5">{success}</p>}
+
+      {loading ? <div className="text-center py-12 text-white/25">Loading…</div> : (
+        <div className="space-y-2">
+          {achievers.map((a) => (
+            <div key={a.github} className="group flex items-center justify-between gap-4 bg-white/[0.025] border border-white/[0.07] rounded-xl px-4 py-3 hover:bg-white/[0.04] transition-all">
+              <div className="flex items-center gap-3 min-w-0">
+                <img src={`https://avatars.githubusercontent.com/${a.github}?s=32`} alt={a.github} className="w-8 h-8 rounded-full ring-1 ring-yellow-500/30" />
+                <div className="min-w-0">
+                  <p className="text-white/80 text-sm font-medium">{a.name ?? `@${a.github}`}</p>
+                  <p className="text-white/30 text-xs">{a.programs.map(p => `${p.name}${p.year ? ` ${p.year}` : ''}`).join(' · ')}</p>
+                </div>
+              </div>
+              {confirmDeleteGithub === a.github ? (
+                <div className="flex items-center gap-1.5 flex-shrink-0 animate-in fade-in zoom-in-95 duration-150">
+                  <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); executeDeleteAchiever(a.github); }}
+                    className="text-xs px-2.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-semibold transition-all cursor-pointer shadow-lg shadow-red-900/15">
+                    Remove
+                  </button>
+                  <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDeleteGithub(null); }}
+                    className="text-xs px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/40 hover:text-white/70 transition-all cursor-pointer">
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDeleteGithub(a.github); }}
+                  className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all opacity-60 sm:opacity-0 group-hover:opacity-100 cursor-pointer">
+                  Remove
+                </button>
+              )}
+            </div>
+          ))}
+          {achievers.length === 0 && <div className="text-center py-12 text-white/25">No achievers yet.</div>}
+        </div>
+      )}
+    </div>
   );
 }

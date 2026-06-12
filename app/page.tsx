@@ -1,13 +1,14 @@
 import Link from 'next/link';
-import { getEvents, getAchievers } from '@/lib/data';
+import { getAchieversKV } from '@/lib/kv-achievers';
+import { getEventsKV } from '@/lib/kv-events';
 import { UpcomingEvents } from './components/UpcomingEvents';
 import { readSummaryCache } from '@/lib/summary-cache';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  const events = getEvents();
-  const achievers = getAchievers();
+  const events = await getEventsKV();
+  const achievers = await getAchieversKV();
   const cache = await readSummaryCache();
 
   // Stats from achievers
