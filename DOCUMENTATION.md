@@ -89,7 +89,8 @@ OpenSource_NST_Tracker/
 │   │
 │   ├── components/
 │   │   ├── Nav.tsx               # Sticky top navigation (Client Component)
-│   │   └── UpcomingEvents.tsx    # Events timeline widget (Client Component)
+│   │   ├── UpcomingEvents.tsx    # Events timeline widget (Client Component)
+│   │   └── SmoothScroll.tsx      # Lenis smooth scroll wrapper (Client Component)
 │   │
 │   ├── contributors/
 │   │   ├── page.tsx              # Leaderboard (/contributors)
@@ -642,6 +643,20 @@ Three share actions:
 **Type:** Client Component (needs countdown logic)
 
 Renders events timeline on the Home page. Color-coded by type. Shows live countdowns using `Date.now()` — requires client-side rendering.
+
+---
+
+### 8.6 `SmoothScroll` (`app/components/SmoothScroll.tsx`)
+
+**Type:** Client Component
+
+Initializes **Lenis smooth inertial scrolling** across the application. 
+
+**Features:**
+- Custom ease-out exponential deceleration function: `(t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))`.
+- Integrates with the browser's `requestAnimationFrame` render loop.
+- Automatically handles device wheel, trackpad, and keyboard scrolls.
+- Cleans up anim frames and destroys instance on unmount to prevent memory leaks.
 
 ---
 
