@@ -48,7 +48,7 @@ export default async function Home() {
 
         <p className="text-white/40 text-lg mb-10 max-w-lg leading-relaxed">
           Every PR merged, every issue closed — tracked, celebrated, and remembered.
-          NST's open source contributions, all in one place.
+          NST&apos;s open source contributions, all in one place.
         </p>
 
         <div className="flex flex-wrap gap-3 justify-center">

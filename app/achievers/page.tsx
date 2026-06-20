@@ -1,6 +1,7 @@
 import { getProgramMeta, type PersonEntry } from '@/lib/data';
 import { getAchieversKV } from '@/lib/kv-achievers';
 import { getStudentProfile, type GitHubUser } from '@/lib/github';
+import { readProfileCache } from '@/lib/profile-cache';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -128,10 +129,23 @@ export default async function AchieversPage() {
   const entries = await getAchieversKV();
 
   const achievers = await Promise.all(
-    entries.map(async (e) => ({
-      entry: e,
-      profile: await getStudentProfile(e.github),
-    }))
+    entries.map(async (e) => {
+      let profile = null;
+      try {
+        const cached = await readProfileCache(e.github);
+        if (cached) {
+          profile = cached.profile;
+        } else {
+          profile = await getStudentProfile(e.github);
+        }
+      } catch (err) {
+        console.error(`Failed to load profile for achiever ${e.github}:`, err);
+      }
+      return {
+        entry: e,
+        profile,
+      };
+    })
   );
 
   const programCount = achievers.reduce((n, a) => n + a.entry.programs.length, 0);

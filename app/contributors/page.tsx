@@ -77,7 +77,7 @@ export default async function ContributorsPage({
 
   // ── Cache-first data loading ──────────────────────────────────────────────
   // Cache predefined period summaries to avoid hitting GitHub API rate limits
-  const isPredefinedPeriod = ['all', '1day', 'week', 'month', '3months', '6months', 'year'].includes(period);
+  const isPredefinedPeriod = ['all', '1day', 'week', 'month', '2months', '3months', '6months', 'year'].includes(period);
   let allSummaries: StudentSummary[] | null = null;
   let cachedAt: string | null = null;
 
@@ -91,11 +91,26 @@ export default async function ContributorsPage({
   }
 
   if (!allSummaries) {
-    // No cache, stale cache, or custom range — fetch live
-    allSummaries = await getAllStudentSummaries(dateQuery, flaggedPRIds);
-    if (isPredefinedPeriod) {
-      await writeSummaryCache(allSummaries, period);
-      cachedAt = new Date().toISOString();
+    try {
+      // No cache, stale cache, or custom range — fetch live
+      allSummaries = await getAllStudentSummaries(dateQuery, flaggedPRIds);
+      if (isPredefinedPeriod) {
+        await writeSummaryCache(allSummaries, period);
+        cachedAt = new Date().toISOString();
+      }
+    } catch (err) {
+      console.error('Failed to fetch student summaries from GitHub API:', err);
+      if (isPredefinedPeriod) {
+        const staleCache = await readSummaryCache(period);
+        if (staleCache) {
+          console.warn(`Falling back to stale summary cache for ${period} (cached at ${staleCache.cachedAt})`);
+          allSummaries = staleCache.summaries;
+          cachedAt = staleCache.cachedAt;
+        }
+      }
+      if (!allSummaries) {
+        allSummaries = [];
+      }
     }
   } else {
     // Keep scores sorted in descending order
@@ -153,7 +168,7 @@ export default async function ContributorsPage({
           <div className="flex flex-wrap justify-center items-center gap-4">
             <div className="flex flex-wrap justify-center gap-3">
               {[
-                { label: 'Students', value: summaries.length },
+                { label: 'Contributors', value: summaries.length },
                 { label: 'Total PRs', value: totalPRs },
                 { label: 'Merged PRs', value: totalMerged },
               ].map((stat) => (
@@ -188,7 +203,7 @@ export default async function ContributorsPage({
           {summaries.map((summary) => (
             <Link
               key={summary.profile.login}
-              href={`/contributors/${summary.profile.login}`}
+              href={`/contributors/${summary.profile.login}?period=${period}${from ? `&from=${from}` : ''}${to ? `&to=${to}` : ''}`}
               className="group relative bg-white/[0.025] border border-white/[0.07] rounded-2xl p-6 hover:bg-white/[0.05] hover:border-purple-500/25 transition-all duration-200 hover:shadow-xl hover:shadow-purple-900/20 hover:-translate-y-0.5"
             >
               <div className="flex items-start gap-4 mb-5">
@@ -228,6 +243,12 @@ export default async function ContributorsPage({
                   <span className="flex items-center gap-1.5 text-red-400/60">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-400/60 flex-shrink-0" />
                     {summary.closedPRs} closed
+                  </span>
+                )}
+                {(summary.issuesCount ?? 0) > 0 && (
+                  <span className="flex items-center gap-1.5 text-purple-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0" />
+                    {summary.issuesCount} issue{summary.issuesCount !== 1 ? 's' : ''}
                   </span>
                 )}
               </div>

@@ -1,24 +1,74 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { getStudentsKV } from './kv-students';
+import { readProfileCache, writeProfileCache, isProfileFresh, type ProfileCacheEntry } from './profile-cache';
+import { execSync } from 'child_process';
+import { cookies } from 'next/headers';
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+let cachedToken: string | undefined = process.env.GITHUB_TOKEN;
+let checkedGhCli = false;
 
-const baseHeaders: HeadersInit = {
-  Accept: 'application/vnd.github.v3+json',
-  ...(GITHUB_TOKEN ? { Authorization: `Bearer ${GITHUB_TOKEN}` } : {}),
-};
+export function getGitHubToken(): string | undefined {
+  if (cachedToken) return cachedToken;
+  if (checkedGhCli) return undefined;
+  checkedGhCli = true;
+  try {
+    const token = execSync('gh auth token', { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    if (token && token.startsWith('gh')) {
+      console.log('Successfully loaded GitHub token from GitHub CLI.');
+      cachedToken = token;
+      return token;
+    }
+  } catch (e) {
+    // gh CLI not installed or not logged in
+  }
+  return undefined;
+}
+
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN || (typeof window === 'undefined' ? getGitHubToken() : undefined);
+
+export class GitHubRateLimitError extends Error {
+  constructor(message = 'GitHub API rate limit exceeded') {
+    super(message);
+    this.name = 'GitHubRateLimitError';
+  }
+}
+
+export async function getGitHubHeaders(): Promise<HeadersInit> {
+  let token: string | undefined = undefined;
+  try {
+    const cookieStore = await cookies();
+    token = cookieStore.get('github_oauth_token')?.value;
+  } catch {
+    // cookies() can throw when evaluated outside of request contexts (e.g. static rendering)
+  }
+
+  if (!token) {
+    token = GITHUB_TOKEN;
+  }
+
+  return {
+    Accept: 'application/vnd.github.v3+json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
 
 async function githubSearch<T>(
   q: string,
   page = 1,
   perPage = 100
 ): Promise<{ total_count: number; items: T[] } | null> {
+  const headers = await getGitHubHeaders();
   const res = await fetch(
     `https://api.github.com/search/issues?q=${encodeURIComponent(q)}&sort=created&order=desc&per_page=${perPage}&page=${page}`,
-    { headers: baseHeaders, next: { revalidate: 3600 } }
+    { headers, next: { revalidate: 3600 } }
   );
-  if (!res.ok) return null;
+  if (!res.ok) {
+    if (res.status === 403 || res.status === 429) {
+      throw new GitHubRateLimitError();
+    }
+    return null;
+  }
   return res.json();
 }
 
@@ -73,16 +123,23 @@ export interface StudentSummary {
   closedPRs: number;
   /** mergedPRs minus any flagged merged PRs — used for ranking */
   scoreMergedPRs: number;
+  issuesCount: number;
 }
 
 // getStudents() has been replaced with getStudentsKV() from './kv-students'
 
 export async function getStudentProfile(username: string): Promise<GitHubUser | null> {
+  const headers = await getGitHubHeaders();
   const res = await fetch(`https://api.github.com/users/${username}`, {
-    headers: baseHeaders,
+    headers,
     next: { revalidate: 3600 },
   });
-  if (!res.ok) return null;
+  if (!res.ok) {
+    if (res.status === 403 || res.status === 429) {
+      throw new GitHubRateLimitError();
+    }
+    return null;
+  }
   return res.json();
 }
 
@@ -160,73 +217,355 @@ export async function getStudentPRs(username: string): Promise<StudentPR[]> {
   return allPRs;
 }
 
+function getSummaryFromCache(
+  cached: ProfileCacheEntry,
+  dateQuery: string,
+  flaggedPRIds: Set<string>
+): StudentSummary {
+  let prs = cached.prs || [];
+  let issues = cached.issues || [];
+
+  if (dateQuery) {
+    const gtMatch = dateQuery.match(/created:>([0-9-]{10})/);
+    const rangeMatch = dateQuery.match(/created:([0-9-]{10})\.\.([0-9-]{10})/);
+
+    if (gtMatch) {
+      const minDate = new Date(gtMatch[1]);
+      prs = prs.filter((pr) => new Date(pr.created_at) > minDate);
+      issues = issues.filter((is) => new Date(is.created_at) > minDate);
+    } else if (rangeMatch) {
+      const minDate = new Date(rangeMatch[1]);
+      const maxDate = new Date(rangeMatch[2]);
+      minDate.setHours(0, 0, 0, 0);
+      maxDate.setHours(23, 59, 59, 999);
+      prs = prs.filter((pr) => {
+        const d = new Date(pr.created_at);
+        return d >= minDate && d <= maxDate;
+      });
+      issues = issues.filter((is) => {
+        const d = new Date(is.created_at);
+        return d >= minDate && d <= maxDate;
+      });
+    }
+  }
+
+  const totalPRs = prs.length;
+  const mergedPRsList = prs.filter((pr) => pr.pull_request?.merged_at);
+  const mergedPRs = mergedPRsList.length;
+  const openPRs = prs.filter((pr) => pr.state === 'open').length;
+  const closedPRs = prs.filter((pr) => pr.state === 'closed' && !pr.pull_request?.merged_at).length;
+
+  const flaggedMerged = mergedPRsList.filter((pr) => {
+    const repo = pr.repository_url.replace('https://api.github.com/repos/', '');
+    const key = `${repo}#${pr.number}`;
+    return flaggedPRIds.has(key);
+  }).length;
+
+  return {
+    profile: cached.profile,
+    totalPRs,
+    mergedPRs,
+    openPRs,
+    closedPRs,
+    scoreMergedPRs: Math.max(0, mergedPRs - flaggedMerged),
+    issuesCount: issues.length,
+  };
+}
+
 export async function getStudentSummary(
   student: Student,
   dateQuery = '',
   flaggedPRIds: Set<string> = new Set()
 ): Promise<StudentSummary | null> {
-  const [profile, data] = await Promise.all([
-    getStudentProfile(student.github),
-    searchPRs(student.github, dateQuery, 1, 100),
-  ]);
-  if (!profile) return null;
+  let cached: ProfileCacheEntry | null = null;
+  try {
+    cached = await readProfileCache(student.github);
+  } catch (err) {
+    console.error(`Failed to read profile cache for ${student.github}:`, err);
+  }
 
-  const items = data ? data.items : [];
-  const total = data ? data.total_count : 0;
+  // If we have profile cache, use it immediately to avoid hitting the rate limit
+  if (cached) {
+    try {
+      return getSummaryFromCache(cached, dateQuery, flaggedPRIds);
+    } catch (err) {
+      console.error(`Error generating summary from cache for ${student.github}:`, err);
+    }
+  }
 
-  const mergedItems = items.filter((pr) => pr.pull_request?.merged_at);
-  const openInSample = items.filter((pr) => pr.state === 'open').length;
-  const closedInSample = items.filter(
-    (pr) => !pr.pull_request?.merged_at && pr.state === 'closed'
-  ).length;
+  try {
+    const [profile, data, issueData] = await Promise.all([
+      getStudentProfile(student.github),
+      searchPRs(student.github, dateQuery, 1, 100),
+      githubSearch<StudentIssue>(
+        `is:issue author:${student.github} -user:${student.github}${dateQuery ? ' ' + dateQuery : ''}`,
+        1,
+        100
+      )
+    ]);
+    if (!profile) {
+      if (cached) {
+        console.warn(`Profile fetch failed but fallback cache exists for ${student.github}`);
+        return getSummaryFromCache(cached, dateQuery, flaggedPRIds);
+      }
+      return null;
+    }
 
-  const sampleSize = items.length || 1;
-  const scale = total / sampleSize;
+    const items = data ? data.items : [];
+    const total = data ? data.total_count : 0;
 
-  const mergedInSample = mergedItems.length;
-  const mergedPRs = Math.round(mergedInSample * scale);
+    const mergedItems = items.filter((pr) => pr.pull_request?.merged_at);
+    const openInSample = items.filter((pr) => pr.state === 'open').length;
+    const closedInSample = items.filter(
+      (pr) => !pr.pull_request?.merged_at && pr.state === 'closed'
+    ).length;
 
-  // Count flagged merged PRs in this sample and scale proportionally
-  const flaggedMergedInSample = mergedItems.filter((pr) => {
-    const repo = pr.repository_url.replace('https://api.github.com/repos/', '');
-    const key = `${repo}#${pr.number}`;
-    return flaggedPRIds.has(key);
-  }).length;
-  const flaggedMerged = Math.round(flaggedMergedInSample * scale);
+    const sampleSize = items.length || 1;
+    const scale = total / sampleSize;
 
-  return {
-    profile,
-    totalPRs: total,
-    mergedPRs,
-    openPRs: Math.round(openInSample * scale),
-    closedPRs: Math.round(closedInSample * scale),
-    scoreMergedPRs: Math.max(0, mergedPRs - flaggedMerged),
-  };
+    const mergedInSample = mergedItems.length;
+    const mergedPRs = Math.round(mergedInSample * scale);
+
+    const flaggedMergedInSample = mergedItems.filter((pr) => {
+      const repo = pr.repository_url.replace('https://api.github.com/repos/', '');
+      const key = `${repo}#${pr.number}`;
+      return flaggedPRIds.has(key);
+    }).length;
+    const flaggedMerged = Math.round(flaggedMergedInSample * scale);
+
+    if (!dateQuery && profile) {
+      try {
+        const prsList = data ? data.items : [];
+        const issuesList = issueData ? issueData.items : [];
+        writeProfileCache(student.github, profile, prsList, issuesList).catch((err) =>
+          console.error(`Failed to write profile cache in summary:`, err)
+        );
+      } catch (cacheErr) {
+        console.error(`Failed to trigger cache write for ${student.github}:`, cacheErr);
+      }
+    }
+
+    return {
+      profile,
+      totalPRs: total,
+      mergedPRs,
+      openPRs: Math.round(openInSample * scale),
+      closedPRs: Math.round(closedInSample * scale),
+      scoreMergedPRs: Math.max(0, mergedPRs - flaggedMerged),
+      issuesCount: issueData ? issueData.total_count : 0,
+    };
+  } catch (error) {
+    console.warn(`Error or rate limit hit during live summary fetch for ${student.github}:`, error);
+    if (cached) {
+      console.info(`Falling back to cached profile data for ${student.github}`);
+      try {
+        return getSummaryFromCache(cached, dateQuery, flaggedPRIds);
+      } catch (err) {
+        console.error(`Error generating summary from stale cache for ${student.github}:`, err);
+      }
+    }
+    return null;
+  }
 }
 
 export async function getAllStudentSummaries(
   dateQuery = '',
-  flaggedPRIds: Set<string> = new Set()
+  flaggedPRIds: Set<string> = new Set(),
+  forceLive = false
 ): Promise<StudentSummary[]> {
   const students = await getStudentsKV();
   if (students.length === 0) return [];
 
-  const results: StudentSummary[] = [];
-  const batchSize = 5;
+  const summaries: StudentSummary[] = [];
+  const uncachedStudents: Student[] = [];
 
-  for (let i = 0; i < students.length; i += batchSize) {
-    const batch = students.slice(i, i + batchSize);
-    const batchResults = await Promise.all(
-      batch.map((s) => getStudentSummary(s, dateQuery, flaggedPRIds))
-    );
-    results.push(...batchResults.filter((r): r is StudentSummary => r !== null));
-    if (i + batchSize < students.length) {
-      await new Promise((res) => setTimeout(res, 800));
+  // ── Phase 1: Resolve from individual profile caches (zero API calls) ──
+  if (!forceLive) {
+    for (const student of students) {
+      try {
+        const cached = await readProfileCache(student.github);
+        if (cached) {
+          const summary = getSummaryFromCache(cached, dateQuery, flaggedPRIds);
+          if (summary.totalPRs > 0 || summary.issuesCount > 0) {
+            summaries.push(summary);
+          }
+          // Student resolved from cache — skip live API even if 0 contributions in range
+        } else {
+          uncachedStudents.push(student);
+        }
+      } catch {
+        uncachedStudents.push(student);
+      }
+    }
+
+    // Every student resolved from cache — no API calls needed
+    if (uncachedStudents.length === 0) {
+      return summaries.sort((a, b) => b.scoreMergedPRs - a.scoreMergedPRs);
     }
   }
 
-  // Rank by effective merged PRs (raw merged minus flagged merged)
-  return results.sort((a, b) => b.scoreMergedPRs - a.scoreMergedPRs);
+  // ── Phase 2: Batch-query GitHub for remaining (or all) students ────
+  const studentsToFetch = forceLive ? students : uncachedStudents;
+  const usernames = studentsToFetch.map((s) => s.github);
+  const batchSize = 15;
+  const allPRs: StudentPR[] = [];
+  const allIssues: StudentIssue[] = [];
+  let rateLimitHit = false;
+
+  for (let i = 0; i < usernames.length; i += batchSize) {
+    // Cool down after a rate-limit detection (search limit resets every 60s)
+    if (rateLimitHit) {
+      console.log(`Rate limit cooldown: waiting 65s before batch at index ${i}...`);
+      await new Promise((r) => setTimeout(r, 65_000));
+      rateLimitHit = false;
+    }
+
+    const batch = usernames.slice(i, i + batchSize);
+    const authorQuery = `(${batch.map((u) => `author:${u}`).join(' OR ')})`;
+    const prQuery = `is:pr ${authorQuery}${dateQuery ? ' ' + dateQuery : ''}`;
+    const issueQuery = `is:issue ${authorQuery}${dateQuery ? ' ' + dateQuery : ''}`;
+
+    const results = await Promise.allSettled([
+      githubSearch<StudentPR>(prQuery, 1, 100),
+      githubSearch<StudentIssue>(issueQuery, 1, 100),
+    ]);
+
+    let batchRateLimited = false;
+
+    if (results[0].status === 'fulfilled' && results[0].value?.items) {
+      allPRs.push(...results[0].value.items);
+    } else if (results[0].status === 'rejected') {
+      if (results[0].reason instanceof GitHubRateLimitError) batchRateLimited = true;
+      else console.error(`PR batch ${i} error:`, results[0].reason);
+    }
+
+    if (results[1].status === 'fulfilled' && results[1].value?.items) {
+      allIssues.push(...results[1].value.items);
+    } else if (results[1].status === 'rejected') {
+      if (results[1].reason instanceof GitHubRateLimitError) batchRateLimited = true;
+      else console.error(`Issue batch ${i} error:`, results[1].reason);
+    }
+
+    // On rate limit: wait for reset and retry the batch once
+    if (batchRateLimited) {
+      console.log(`Rate limit on batch ${i}, waiting 65s and retrying...`);
+      await new Promise((r) => setTimeout(r, 65_000));
+
+      const retry = await Promise.allSettled([
+        githubSearch<StudentPR>(prQuery, 1, 100),
+        githubSearch<StudentIssue>(issueQuery, 1, 100),
+      ]);
+
+      if (retry[0].status === 'fulfilled' && retry[0].value?.items) {
+        allPRs.push(...retry[0].value.items);
+      } else if (retry[0].status === 'rejected' && retry[0].reason instanceof GitHubRateLimitError) {
+        rateLimitHit = true; // Triggers cooldown before next batch
+      }
+
+      if (retry[1].status === 'fulfilled' && retry[1].value?.items) {
+        allIssues.push(...retry[1].value.items);
+      }
+    }
+
+    if (i + batchSize < usernames.length && !rateLimitHit) {
+      await new Promise((r) => setTimeout(r, GITHUB_TOKEN ? 1500 : 6500));
+    }
+  }
+
+  // ── Group contributions by student username (lowercase key) ────────
+  const studentPRMap = new Map<string, StudentPR[]>();
+  const studentIssueMap = new Map<string, StudentIssue[]>();
+
+  for (const pr of allPRs) {
+    const login = pr.user.login.toLowerCase();
+    const repoOwner = pr.repository_url.split('/repos/')[1]?.split('/')[0];
+    if (repoOwner && repoOwner.toLowerCase() !== login) {
+      if (!studentPRMap.has(login)) studentPRMap.set(login, []);
+      studentPRMap.get(login)!.push(pr);
+    }
+  }
+
+  for (const issue of allIssues) {
+    const login = issue.user.login.toLowerCase();
+    const repoOwner = issue.repository_url.split('/repos/')[1]?.split('/')[0];
+    if (repoOwner && repoOwner.toLowerCase() !== login) {
+      if (!studentIssueMap.has(login)) studentIssueMap.set(login, []);
+      studentIssueMap.get(login)!.push(issue);
+    }
+  }
+
+  // ── Build summaries for fetched students ───────────────────────────
+  for (const student of studentsToFetch) {
+    const lowerName = student.github.toLowerCase();
+    const prs = studentPRMap.get(lowerName) || [];
+    const issues = studentIssueMap.get(lowerName) || [];
+
+    if (prs.length === 0 && issues.length === 0) continue;
+
+    // Resolve profile (cache → live → placeholder)
+    let profile: GitHubUser | null = null;
+    const cached = await readProfileCache(student.github);
+    if (cached) {
+      profile = cached.profile;
+    } else {
+      try {
+        profile = await getStudentProfile(student.github);
+      } catch (err) {
+        console.error(`Failed to load profile for ${student.github}:`, err);
+      }
+    }
+
+    if (!profile) {
+      profile = {
+        login: student.github,
+        avatar_url: `https://github.com/${student.github}.png`,
+        html_url: `https://github.com/${student.github}`,
+        name: student.github,
+        bio: null,
+        public_repos: 0,
+        followers: 0,
+        following: 0,
+        company: null,
+        location: null,
+        blog: null,
+        twitter_username: null,
+        created_at: new Date().toISOString(),
+      };
+    }
+
+    // Persist to profile cache when fetching ALL-TIME data (no date filter)
+    // so future custom date queries can compute locally from cache
+    if (!dateQuery) {
+      writeProfileCache(student.github, profile, prs, issues).catch((err) =>
+        console.error(`Failed to write profile cache for ${student.github}:`, err)
+      );
+    }
+
+    const totalPRs = prs.length;
+    const mergedPRsList = prs.filter((pr) => pr.pull_request?.merged_at);
+    const mergedPRs = mergedPRsList.length;
+    const openPRs = prs.filter((pr) => pr.state === 'open').length;
+    const closedPRs = prs.filter((pr) => pr.state === 'closed' && !pr.pull_request?.merged_at).length;
+
+    const flaggedMerged = mergedPRsList.filter((pr) => {
+      const repo = pr.repository_url.replace('https://api.github.com/repos/', '');
+      const key = `${repo}#${pr.number}`;
+      return flaggedPRIds.has(key);
+    }).length;
+
+    summaries.push({
+      profile,
+      totalPRs,
+      mergedPRs,
+      openPRs,
+      closedPRs,
+      scoreMergedPRs: Math.max(0, mergedPRs - flaggedMerged),
+      issuesCount: issues.length,
+    });
+  }
+
+  // Rank by effective merged PRs
+  return summaries.sort((a, b) => b.scoreMergedPRs - a.scoreMergedPRs);
 }
 
 export function repoFromUrl(repoUrl: string): string {
@@ -240,6 +579,7 @@ export function buildDateQuery(period: string, from?: string, to?: string): stri
     case '1day':    return `created:>${ago(1)}`;
     case 'week':    return `created:>${ago(7)}`;
     case 'month':   return `created:>${ago(30)}`;
+    case '2months': return `created:>${ago(60)}`;
     case '3months': return `created:>${ago(90)}`;
     case '6months': return `created:>${ago(180)}`;
     case 'year':    return `created:>${ago(365)}`;

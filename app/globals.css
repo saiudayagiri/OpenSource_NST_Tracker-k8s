@@ -50,3 +50,21 @@ html.lenis, html.lenis body {
   pointer-events: none;
 }
 
+/* Floating animation for weekly contributions celebration */
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-115vh) translateX(var(--drift-x, 15px));
+    opacity: 0;
+  }
+}
+

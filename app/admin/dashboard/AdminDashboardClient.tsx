@@ -432,12 +432,23 @@ interface Props {
   students: string[];
 }
 
-type DashboardTab = 'queue' | 'browse' | 'flagged' | 'students' | 'events' | 'achievers';
+type DashboardTab = 'queue' | 'browse' | 'flagged' | 'students' | 'events' | 'achievers' | 'requests';
 
 export default function AdminDashboardClient({ flaggedPRs: initialFlagged, reviewedPRIds: initialReviewed, students }: Props) {
   const router = useRouter();
 
   const [tab, setTab] = useState<DashboardTab>('queue');
+  const [pendingReqCount, setPendingReqCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch('/api/admin/join-requests')
+      .then(res => res.json())
+      .then((data: any[]) => {
+        setPendingReqCount(data.filter(r => r.status === 'pending').length);
+      })
+      .catch(() => {});
+  }, []);
+
   const [selectedUser, setSelectedUser] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -594,6 +605,7 @@ export default function AdminDashboardClient({ flaggedPRs: initialFlagged, revie
         <div className="flex flex-wrap gap-1 mb-8 bg-white/[0.03] border border-white/[0.07] rounded-xl p-1 w-fit">
           {([
             { id: 'queue',    label: '📥 Queue',    badge: pendingCount > 0 ? pendingCount : null },
+            { id: 'requests', label: '📨 Requests', badge: pendingReqCount && pendingReqCount > 0 ? pendingReqCount : null },
             { id: 'browse',   label: '🔍 Browse',   badge: null },
             { id: 'flagged',  label: '⚑ Flagged',  badge: allFlagged.length > 0 ? allFlagged.length : null },
             { id: 'students', label: '👥 Students', badge: null },
@@ -838,6 +850,9 @@ export default function AdminDashboardClient({ flaggedPRs: initialFlagged, revie
 
         {/* ── Achievers Tab ── */}
         {tab === 'achievers' && <AchieversTab />}
+
+        {/* ── Requests Tab ── */}
+        {tab === 'requests' && <RequestsTab onCountChange={setPendingReqCount} />}
       </div>
 
       {/* Flag modal */}
@@ -1219,3 +1234,158 @@ function AchieversTab() {
     </div>
   );
 }
+
+// ─── Requests Tab ─────────────────────────────────────────────────────────────
+
+interface JoinRequest {
+  github: string;
+  name?: string;
+  avatarUrl?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+}
+
+function RequestsTab({ onCountChange }: { onCountChange: (count: number) => void }) {
+  const [requests, setRequests] = useState<JoinRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  async function load() {
+    setLoading(true);
+    const res = await fetch('/api/admin/join-requests');
+    if (res.ok) {
+      const data = await res.json() as JoinRequest[];
+      // Sort: pending first, then newest
+      data.sort((a, b) => {
+        if (a.status === 'pending' && b.status !== 'pending') return -1;
+        if (a.status !== 'pending' && b.status === 'pending') return 1;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+      setRequests(data);
+      const pending = data.filter((r) => r.status === 'pending').length;
+      onCountChange(pending);
+    }
+    setLoading(false);
+  }
+
+  useEffect(() => { load(); }, []);
+
+  async function handleAction(github: string, action: 'approve' | 'reject') {
+    setProcessing(github);
+    setError('');
+    setSuccess('');
+    try {
+      const res = await fetch('/api/admin/join-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ github, action }),
+      });
+      if (res.ok) {
+        setSuccess(`Successfully ${action === 'approve' ? 'approved' : 'rejected'} @${github}`);
+        await load();
+      } else {
+        const d = await res.json();
+        setError(d.error ?? `Failed to ${action} request`);
+      }
+    } catch {
+      setError('Network error');
+    } finally {
+      setProcessing(null);
+    }
+  }
+
+  const pendingRequests = requests.filter((r) => r.status === 'pending');
+  const historyRequests = requests.filter((r) => r.status !== 'pending');
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h2 className="text-white font-semibold">Join Leaderboard Requests</h2>
+        <p className="text-white/35 text-sm mt-0.5">Approve or reject requests from students to be tracked on the leaderboard.</p>
+      </div>
+
+      {error && <p className="text-red-400 text-sm mb-4 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">{error}</p>}
+      {success && <p className="text-emerald-400 text-sm mb-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-2.5">{success}</p>}
+
+      {loading ? (
+        <div className="text-center py-12 text-white/25">Loading…</div>
+      ) : (
+        <div className="space-y-6">
+          {/* Pending Queue */}
+          <div className="space-y-3">
+            <h3 className="text-white/60 text-xs font-semibold uppercase tracking-wider">Pending Queue ({pendingRequests.length})</h3>
+            <div className="space-y-2">
+              {pendingRequests.map((r) => (
+                <div key={r.github} className="flex items-center justify-between gap-4 bg-white/[0.025] border border-white/[0.07] rounded-xl px-4 py-3 hover:bg-white/[0.04] transition-all">
+                  <div className="flex items-center gap-3">
+                    <img src={r.avatarUrl || `https://avatars.githubusercontent.com/${r.github}?s=32`} alt={r.github} className="w-8 h-8 rounded-full ring-1 ring-white/10" />
+                    <div>
+                      <p className="text-white/80 text-sm font-medium">
+                        {r.name && r.name !== r.github ? `${r.name} (@${r.github})` : `@${r.github}`}
+                      </p>
+                      <p className="text-white/25 text-xs">Requested on {new Date(r.createdAt).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={processing !== null}
+                      onClick={() => handleAction(r.github, 'approve')}
+                      className="text-xs px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-all font-semibold disabled:opacity-50 cursor-pointer"
+                    >
+                      {processing === r.github ? '...' : 'Approve'}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={processing !== null}
+                      onClick={() => handleAction(r.github, 'reject')}
+                      className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all font-semibold disabled:opacity-50 cursor-pointer"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {pendingRequests.length === 0 && (
+                <div className="text-center py-8 bg-white/[0.01] border border-white/[0.04] rounded-xl text-white/25 text-sm">
+                  No pending join requests.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* History */}
+          {historyRequests.length > 0 && (
+            <div className="space-y-3 pt-4 border-t border-white/[0.05]">
+              <h3 className="text-white/60 text-xs font-semibold uppercase tracking-wider">Processed History</h3>
+              <div className="space-y-2 max-h-96 overflow-y-auto scrollbar-thin">
+                {historyRequests.map((r) => (
+                  <div key={r.github} className="flex items-center justify-between gap-4 bg-white/[0.015] border border-white/[0.05] rounded-xl px-4 py-2 text-white/50">
+                    <div className="flex items-center gap-3">
+                      <img src={r.avatarUrl || `https://avatars.githubusercontent.com/${r.github}?s=32`} alt={r.github} className="w-6 h-6 rounded-full opacity-60" />
+                      <div className="text-xs">
+                        <span className="font-medium text-white/70">@{r.github}</span>
+                        {r.name && r.name !== r.github && <span className="text-white/40 ml-1">({r.name})</span>}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        r.status === 'approved' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+                      }`}>
+                        {r.status}
+                      </span>
+                      <span className="text-white/20">{new Date(r.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+

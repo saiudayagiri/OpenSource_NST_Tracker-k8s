@@ -118,7 +118,7 @@ export async function POST(request: Request) {
   // Fetch fresh summaries from GitHub
   const flaggedPRIds = await getFlaggedPRIdSet();
   const dateQuery = buildDateQuery(period);
-  const summaries = await getAllStudentSummaries(dateQuery, flaggedPRIds);
+  const summaries = await getAllStudentSummaries(dateQuery, flaggedPRIds, true);
   await writeSummaryCache(summaries, period);
 
   // Tell Next.js to re-render the pages

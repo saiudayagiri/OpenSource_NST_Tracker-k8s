@@ -1,6 +1,7 @@
 import { getProgramMeta } from '@/lib/data';
 import { getAchieverKV } from '@/lib/kv-achievers';
-import { getStudentProfile, getStudentPRs, repoFromUrl } from '@/lib/github';
+import { getStudentProfile, getStudentPRs, getStudentIssues, repoFromUrl, StudentPR } from '@/lib/github';
+import { readProfileCache, writeProfileCache, isProfileFresh } from '@/lib/profile-cache';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -22,10 +23,36 @@ export default async function AchieverPage({ params }: { params: Promise<{ usern
   const entry = await getAchieverKV(username);
   if (!entry) notFound();
 
-  const [profile, prs] = await Promise.all([
-    getStudentProfile(username),
-    getStudentPRs(username),
-  ]);
+  let profile = null;
+  let prs: StudentPR[] = [];
+
+  const cached = await readProfileCache(username);
+  if (cached && isProfileFresh(cached)) {
+    profile = cached.profile;
+    prs = cached.prs;
+  } else {
+    try {
+      const [freshProfile, freshPRs] = await Promise.all([
+        getStudentProfile(username),
+        getStudentPRs(username),
+      ]);
+      if (freshProfile) {
+        profile = freshProfile;
+        prs = freshPRs;
+        const freshIssues = await getStudentIssues(username);
+        await writeProfileCache(username, freshProfile, freshPRs, freshIssues);
+      } else if (cached) {
+        profile = cached.profile;
+        prs = cached.prs;
+      }
+    } catch {
+      if (cached) {
+        profile = cached.profile;
+        prs = cached.prs;
+      }
+    }
+  }
+
   if (!profile) notFound();
 
   const mergedCount = prs.filter(pr => pr.pull_request?.merged_at).length;

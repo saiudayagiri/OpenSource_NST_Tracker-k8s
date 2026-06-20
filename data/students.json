@@ -1,13 +1,464 @@
 [
-  { "github": "sarthak-gupta229" },
-  { "github": "Dreamstick9" },
-  { "github": "sujayxbarui" },
-  { "github": "shiveshsaini" },
-  { "github": "awantika-m" },
-  { "github": "yats0x7" },
-  { "github": "buildwithprachi" },
-  { "github": "singlakinjal" },
-  { "github": "poorvanshtonk" },
-  { "github": "shubhammittal2241" },
-  { "github": "Arpan-Kaur2006" }
+  {
+    "github": "sarthak-gupta229"
+  },
+  {
+    "github": "Dreamstick9"
+  },
+  {
+    "github": "sujayxbarui"
+  },
+  {
+    "github": "shiveshsaini"
+  },
+  {
+    "github": "awantika-m"
+  },
+  {
+    "github": "yats0x7"
+  },
+  {
+    "github": "buildwithprachi"
+  },
+  {
+    "github": "singlakinjal"
+  },
+  {
+    "github": "poorvanshtonk"
+  },
+  {
+    "github": "shubhammittal2241"
+  },
+  {
+    "github": "Arpan-Kaur2006"
+  },
+  {
+    "github": "AnimeshPriyanshu"
+  },
+  {
+    "github": "palak22291"
+  },
+  {
+    "github": "1-navneet"
+  },
+  {
+    "github": "69Igris"
+  },
+  {
+    "github": "ABUDIYAAAA"
+  },
+  {
+    "github": "AKRITI-ENG"
+  },
+  {
+    "github": "Aayush2141"
+  },
+  {
+    "github": "Abhi-2206"
+  },
+  {
+    "github": "Abhinavbajpai30"
+  },
+  {
+    "github": "AbnormalPilot"
+  },
+  {
+    "github": "Adhyatm2717"
+  },
+  {
+    "github": "AdityaGupta-2006"
+  },
+  {
+    "github": "Aggarwalmansi"
+  },
+  {
+    "github": "AnanyaSoni2004"
+  },
+  {
+    "github": "Aniruddhadwivedi07"
+  },
+  {
+    "github": "AnuShreeBirla"
+  },
+  {
+    "github": "Aritra162006"
+  },
+  {
+    "github": "Aujasyarajput18"
+  },
+  {
+    "github": "AvgBlank"
+  },
+  {
+    "github": "Bored-brain"
+  },
+  {
+    "github": "CWAbhi"
+  },
+  {
+    "github": "Codehuman07"
+  },
+  {
+    "github": "Darain24"
+  },
+  {
+    "github": "deepanshu-sharma425"
+  },
+  {
+    "github": "dipu01-code"
+  },
+  {
+    "github": "dishaab03"
+  },
+  {
+    "github": "Divyanshu-s13"
+  },
+  {
+    "github": "ElusiveParadox"
+  },
+  {
+    "github": "EncrypterParv"
+  },
+  {
+    "github": "Garvit-png"
+  },
+  {
+    "github": "Gaurav-meena95"
+  },
+  {
+    "github": "Hashicy"
+  },
+  {
+    "github": "Harshita-SM"
+  },
+  {
+    "github": "HeheAnanya"
+  },
+  {
+    "github": "iamsamarth1011"
+  },
+  {
+    "github": "ipsitdebnath"
+  },
+  {
+    "github": "Jatin07s"
+  },
+  {
+    "github": "japinderofficial-hub"
+  },
+  {
+    "github": "Ji-samarth"
+  },
+  {
+    "github": "Jivit87"
+  },
+  {
+    "github": "kanikasharma-18"
+  },
+  {
+    "github": "KatalKavya96"
+  },
+  {
+    "github": "Kavya-Jain-coder"
+  },
+  {
+    "github": "kartikeyg0104"
+  },
+  {
+    "github": "keshavgoel2101"
+  },
+  {
+    "github": "kevish-is-building"
+  },
+  {
+    "github": "khushigupta-kg"
+  },
+  {
+    "github": "krishajogiya"
+  },
+  {
+    "github": "krishna-dave206"
+  },
+  {
+    "github": "krishnaverma09"
+  },
+  {
+    "github": "kumarroushan9898"
+  },
+  {
+    "github": "Kunal241207"
+  },
+  {
+    "github": "lakshay122007"
+  },
+  {
+    "github": "lakshyaramchandani18"
+  },
+  {
+    "github": "ManshaAgarwal716"
+  },
+  {
+    "github": "Mr1ARC"
+  },
+  {
+    "github": "muditagrawal2007"
+  },
+  {
+    "github": "MythiCODE25"
+  },
+  {
+    "github": "Naman67780"
+  },
+  {
+    "github": "namanjain24-sudo"
+  },
+  {
+    "github": "naveenkumar29052006"
+  },
+  {
+    "github": "Nehanowal"
+  },
+  {
+    "github": "Nitanshu12"
+  },
+  {
+    "github": "oceankumar"
+  },
+  {
+    "github": "pankajbaid567"
+  },
+  {
+    "github": "RajaJi007"
+  },
+  {
+    "github": "rajatrsrivastav"
+  },
+  {
+    "github": "rakshityadav1868"
+  },
+  {
+    "github": "Rameez-dev17"
+  },
+  {
+    "github": "RedRangerWentWild"
+  },
+  {
+    "github": "rishik92"
+  },
+  {
+    "github": "r0c0y"
+  },
+  {
+    "github": "r0hansng"
+  },
+  {
+    "github": "roboayushh"
+  },
+  {
+    "github": "Rudra-choudhary"
+  },
+  {
+    "github": "RxThetaxx"
+  },
+  {
+    "github": "sAmbhvcOdebasE"
+  },
+  {
+    "github": "sarthakcontrigit"
+  },
+  {
+    "github": "SatyamKumarCS"
+  },
+  {
+    "github": "SammyBanner45"
+  },
+  {
+    "github": "shekhar871"
+  },
+  {
+    "github": "shiavm006"
+  },
+  {
+    "github": "ShivamDixit20"
+  },
+  {
+    "github": "shivamchoubey2004"
+  },
+  {
+    "github": "Shresth-14"
+  },
+  {
+    "github": "Shubhansh28"
+  },
+  {
+    "github": "smoky4g4h"
+  },
+  {
+    "github": "soham-founder"
+  },
+  {
+    "github": "sohamdhande"
+  },
+  {
+    "github": "somraj112"
+  },
+  {
+    "github": "sps-exe"
+  },
+  {
+    "github": "suhanisingh2608"
+  },
+  {
+    "github": "suryaprakashsingh1705-sys"
+  },
+  {
+    "github": "tejuuu-7774"
+  },
+  {
+    "github": "TistaRoy"
+  },
+  {
+    "github": "treeshax"
+  },
+  {
+    "github": "unnati-09m"
+  },
+  {
+    "github": "unnati-jaiswal24"
+  },
+  {
+    "github": "UserAkku"
+  },
+  {
+    "github": "vanshadhlakha"
+  },
+  {
+    "github": "vanshikasoni22"
+  },
+  {
+    "github": "vedpawar2254"
+  },
+  {
+    "github": "vikgenix"
+  },
+  {
+    "github": "Yash990-bit"
+  },
+  {
+    "github": "YugShah1510"
+  },
+  {
+    "github": "Yuvanshj"
+  },
+  {
+    "github": "abhinavsingh-hub"
+  },
+  {
+    "github": "abhinavv-dev"
+  },
+  {
+    "github": "aditya1411-gif"
+  },
+  {
+    "github": "agrawalshreyansh"
+  },
+  {
+    "github": "akhileshsude"
+  },
+  {
+    "github": "amimishra990-cpu"
+  },
+  {
+    "github": "amreshanand"
+  },
+  {
+    "github": "anishakujur367-alt"
+  },
+  {
+    "github": "anoopalase29"
+  },
+  {
+    "github": "anuragkumart16"
+  },
+  {
+    "github": "anveshap103-tomato"
+  },
+  {
+    "github": "aryan118335"
+  },
+  {
+    "github": "ashyou09"
+  },
+  {
+    "github": "avikeshgurjar"
+  },
+  {
+    "github": "avkashs0521"
+  },
+  {
+    "github": "banerjeetanushri9-arch"
+  },
+  {
+    "github": "batranitika505-tech"
+  },
+  {
+    "github": "bitflicker64"
+  },
+  {
+    "github": "divyansha12"
+  },
+  {
+    "github": "gigibyte2024"
+  },
+  {
+    "github": "jhaayushkumar"
+  },
+  {
+    "github": "kapish9741"
+  },
+  {
+    "github": "kush11-m"
+  },
+  {
+    "github": "madaankartik"
+  },
+  {
+    "github": "nihaaljangam-glitch"
+  },
+  {
+    "github": "nishtha-09-gupta"
+  },
+  {
+    "github": "preetk25627-dotcom"
+  },
+  {
+    "github": "raajpatre"
+  },
+  {
+    "github": "sammy200-ui"
+  },
+  {
+    "github": "sathvik89"
+  },
+  {
+    "github": "shalini-saloni"
+  },
+  {
+    "github": "Shreyashgol"
+  },
+  {
+    "github": "slayplayagrima"
+  },
+  {
+    "github": "soumyatiw"
+  },
+  {
+    "github": "viruchafale"
+  },
+  {
+    "github": "vtushar06"
+  },
+  {
+    "github": "nyxsky404"
+  }
 ]

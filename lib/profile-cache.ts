@@ -2,7 +2,7 @@ import type { GitHubUser, StudentPR, StudentIssue } from './github';
 import { kvGet, kvSet } from './kv';
 
 const TTL_MS = 60 * 60 * 1000; // 1 hour (in ms for freshness check)
-const TTL_SECS = 3600; // 1 hour (in seconds)
+const TTL_SECS = 30 * 24 * 3600; // 30 days physical cache TTL
 
 export interface ProfileCacheEntry {
   cachedAt: string;

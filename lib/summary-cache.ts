@@ -34,7 +34,7 @@ export function isCacheFresh(cache: SummaryCache): boolean {
 
 /** Stamps cachedAt as epoch so all predefined caches are immediately stale (used after flagging) */
 export async function invalidateSummaryCache(): Promise<void> {
-  const periods = ['all', 'week', 'month', '1day', '3months', '6months', 'year'];
+  const periods = ['all', 'week', 'month', '1day', '2months', '3months', '6months', 'year'];
   for (const period of periods) {
     try {
       const cache = await readSummaryCache(period);

@@ -8,6 +8,7 @@ const PRESETS = [
   { label: '1 Day',    value: '1day'    },
   { label: '1 Week',   value: 'week'    },
   { label: '1 Month',  value: 'month'   },
+  { label: '2 Months', value: '2months' },
   { label: '3 Months', value: '3months' },
 ];
 
@@ -180,6 +181,7 @@ export function FilterBar() {
                     period === '1day' ? '24 hours' :
                     period === 'week' ? '7 days' :
                     period === 'month' ? '30 days' :
+                    period === '2months' ? '2 months' :
                     '3 months'
                   }`
               }

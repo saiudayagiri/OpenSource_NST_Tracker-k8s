@@ -246,6 +246,59 @@ function Empty({ text }: { text: string }) {
   return <div className="text-center py-16 text-white/25">{text}</div>;
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function filterByPeriod<T extends { created_at: string }>(
+  items: T[],
+  period?: string,
+  from?: string,
+  to?: string
+): T[] {
+  if (!period || period === 'all') return items;
+
+  const getMsAgo = (days: number) => Date.now() - days * 24 * 60 * 60 * 1000;
+
+  let minTime = 0;
+  let maxTime = Infinity;
+
+  switch (period) {
+    case '1day':
+      minTime = getMsAgo(1);
+      break;
+    case 'week':
+      minTime = getMsAgo(7);
+      break;
+    case 'month':
+      minTime = getMsAgo(30);
+      break;
+    case '2months':
+      minTime = getMsAgo(60);
+      break;
+    case '3months':
+      minTime = getMsAgo(90);
+      break;
+    case '6months':
+      minTime = getMsAgo(180);
+      break;
+    case 'year':
+      minTime = getMsAgo(365);
+      break;
+    case 'custom':
+      if (from) minTime = new Date(from).getTime();
+      if (to) {
+        const toDate = new Date(to);
+        toDate.setHours(23, 59, 59, 999);
+        maxTime = toDate.getTime();
+      }
+      break;
+  }
+
+  return items.filter((item) => {
+    const time = new Date(item.created_at).getTime();
+    return time >= minTime && time <= maxTime;
+  });
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function ContributorPage({
@@ -253,9 +306,9 @@ export default async function ContributorPage({
   searchParams,
 }: {
   params: Promise<{ username: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; period?: string; from?: string; to?: string }>;
 }) {
-  const [{ username }, { tab: rawTab }] = await Promise.all([params, searchParams]);
+  const [{ username }, { tab: rawTab, period, from, to }] = await Promise.all([params, searchParams]);
   const tab: Tab = rawTab === 'issues' ? 'issues' : rawTab === 'merged' ? 'merged' : rawTab === 'open' ? 'open' : 'prs';
 
   let profile = null;
@@ -302,24 +355,31 @@ export default async function ContributorPage({
 
   if (!profile) notFound();
 
+  const filteredPRs = filterByPeriod(allPRs, period, from, to);
+  const filteredIssues = filterByPeriod(issues, period, from, to);
+
   const counts = {
-    prs: allPRs.length,
-    mergedPRs: allPRs.filter(pr => pr.pull_request?.merged_at).length,
-    openPRs: allPRs.filter(pr => pr.state === 'open').length,
-    issues: issues.length,
+    prs: filteredPRs.length,
+    mergedPRs: filteredPRs.filter(pr => pr.pull_request?.merged_at).length,
+    openPRs: filteredPRs.filter(pr => pr.state === 'open').length,
+    issues: filteredIssues.length,
   };
 
-  const prs = tab === 'merged' ? allPRs.filter(pr => pr.pull_request?.merged_at)
-            : tab === 'open'   ? allPRs.filter(pr => pr.state === 'open')
-            : allPRs;
+  const prs = tab === 'merged' ? filteredPRs.filter(pr => pr.pull_request?.merged_at)
+            : tab === 'open'   ? filteredPRs.filter(pr => pr.state === 'open')
+            : filteredPRs;
 
-  const badges = getBadges(allPRs, counts.mergedPRs);
+  const lifetimeMergedCount = allPRs.filter(pr => pr.pull_request?.merged_at).length;
+  const badges = getBadges(allPRs, lifetimeMergedCount);
 
   return (
     <main className="min-h-screen bg-[#0d0d14]">
       {/* Back nav */}
       <div className="max-w-4xl mx-auto px-4 pt-6">
-        <Link href="/contributors" className="inline-flex items-center gap-2 text-white/30 hover:text-white/70 transition-colors text-sm">
+        <Link 
+          href={`/contributors${period ? `?period=${period}` : ''}${from ? `&from=${from}` : ''}${to ? `&to=${to}` : ''}`} 
+          className="inline-flex items-center gap-2 text-white/30 hover:text-white/70 transition-colors text-sm"
+        >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
           </svg>
@@ -425,7 +485,7 @@ export default async function ContributorPage({
               return (
                 <Link
                   key={tabId}
-                  href={`/contributors/${username}?tab=${tabId}`}
+                  href={`/contributors/${username}?tab=${tabId}${period ? `&period=${period}` : ''}${from ? `&from=${from}` : ''}${to ? `&to=${to}` : ''}`}
                   className={`rounded-xl p-4 text-center transition-all border ${
                     active
                       ? `bg-white/[0.07] border-white/[0.15] ring-1 ${ring}`
@@ -442,6 +502,35 @@ export default async function ContributorPage({
         </div>
       </div>
 
+      {/* Active period filter banner */}
+      {period && period !== 'all' && (
+        <div className="max-w-4xl mx-auto px-4 mb-6">
+          <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl px-5 py-4 text-sm text-purple-300/90 flex flex-wrap items-center justify-between gap-4 backdrop-blur-sm">
+            <span className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse flex-shrink-0" />
+              Showing activity filtered by:{' '}
+              <strong className="text-white/90">
+                {period === 'custom'
+                  ? `${from} to ${to}`
+                  : period === '1day'
+                  ? 'last 24 hours'
+                  : period === 'week'
+                  ? 'last 7 days'
+                  : period === 'month'
+                  ? 'last 30 days'
+                  : `last ${period.replace('months', ' months').replace('year', 'year')}`}
+              </strong>
+            </span>
+            <Link
+              href={`/contributors/${username}${rawTab ? `?tab=${rawTab}` : ''}`}
+              className="bg-white/5 border border-white/10 hover:bg-white/10 px-3.5 py-1.5 rounded-xl transition-all text-xs font-semibold text-white/80"
+            >
+              Clear filter
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Contribution trend chart */}
       <div className="max-w-4xl mx-auto px-4 mb-6">
         <ContributionChart prs={allPRs} />
@@ -450,7 +539,7 @@ export default async function ContributorPage({
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 pb-24">
         {tab !== 'issues' && <PRsSection prs={prs} />}
-        {tab === 'issues' && <IssuesSection issues={issues} />}
+        {tab === 'issues' && <IssuesSection issues={filteredIssues} />}
       </div>
     </main>
   );

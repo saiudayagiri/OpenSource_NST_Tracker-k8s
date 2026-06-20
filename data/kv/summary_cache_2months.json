@@ -1,6 +1,6 @@
 {
   "value": {
-    "cachedAt": "2026-06-19T12:22:18.597Z",
+    "cachedAt": "2026-06-18T12:27:07.754Z",
     "summaries": [
       {
         "profile": {
@@ -38,57 +38,57 @@
           "created_at": "2025-07-07T19:54:30Z",
           "updated_at": "2026-06-14T19:05:31Z"
         },
-        "totalPRs": 15,
-        "mergedPRs": 12,
+        "totalPRs": 19,
+        "mergedPRs": 16,
         "openPRs": 1,
         "closedPRs": 2,
-        "scoreMergedPRs": 12,
-        "issuesCount": 26
+        "scoreMergedPRs": 16,
+        "issuesCount": 30
       },
       {
         "profile": {
-          "login": "Abhi-2206",
-          "id": 75732517,
-          "node_id": "MDQ6VXNlcjc1NzMyNTE3",
-          "avatar_url": "https://avatars.githubusercontent.com/u/75732517?v=4",
+          "login": "yats0x7",
+          "id": 217891881,
+          "node_id": "U_kgDODPzEKQ",
+          "avatar_url": "https://avatars.githubusercontent.com/u/217891881?v=4",
           "gravatar_id": "",
-          "url": "https://api.github.com/users/Abhi-2206",
-          "html_url": "https://github.com/Abhi-2206",
-          "followers_url": "https://api.github.com/users/Abhi-2206/followers",
-          "following_url": "https://api.github.com/users/Abhi-2206/following{/other_user}",
-          "gists_url": "https://api.github.com/users/Abhi-2206/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/Abhi-2206/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/Abhi-2206/subscriptions",
-          "organizations_url": "https://api.github.com/users/Abhi-2206/orgs",
-          "repos_url": "https://api.github.com/users/Abhi-2206/repos",
-          "events_url": "https://api.github.com/users/Abhi-2206/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/Abhi-2206/received_events",
+          "url": "https://api.github.com/users/yats0x7",
+          "html_url": "https://github.com/yats0x7",
+          "followers_url": "https://api.github.com/users/yats0x7/followers",
+          "following_url": "https://api.github.com/users/yats0x7/following{/other_user}",
+          "gists_url": "https://api.github.com/users/yats0x7/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/yats0x7/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/yats0x7/subscriptions",
+          "organizations_url": "https://api.github.com/users/yats0x7/orgs",
+          "repos_url": "https://api.github.com/users/yats0x7/repos",
+          "events_url": "https://api.github.com/users/yats0x7/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/yats0x7/received_events",
           "type": "User",
           "user_view_type": "public",
           "site_admin": false,
-          "name": "Abhigyan Ganguly",
+          "name": "Yatharth Katta",
           "company": null,
           "blog": "",
           "location": null,
           "email": null,
-          "hireable": null,
+          "hireable": true,
           "bio": null,
           "twitter_username": null,
-          "public_repos": 61,
+          "public_repos": 50,
           "public_gists": 0,
-          "followers": 2,
-          "following": 2,
-          "created_at": "2020-12-09T11:55:08Z",
-          "updated_at": "2026-06-03T20:10:33Z"
+          "followers": 7,
+          "following": 15,
+          "created_at": "2025-06-25T08:01:41Z",
+          "updated_at": "2026-05-24T20:16:18Z"
         },
-        "totalPRs": 1,
-        "mergedPRs": 0,
-        "openPRs": 0,
-        "closedPRs": 1,
-        "scoreMergedPRs": 0,
-        "issuesCount": 0
+        "totalPRs": 8,
+        "mergedPRs": 6,
+        "openPRs": 2,
+        "closedPRs": 0,
+        "scoreMergedPRs": 6,
+        "issuesCount": 3
       }
     ]
   },
-  "expiresAt": 1781958138598
+  "expiresAt": 1781872027754
 }
