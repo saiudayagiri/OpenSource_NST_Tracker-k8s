@@ -95,11 +95,11 @@ export function Nav() {
             })}
           </div>
 
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             {/* GitHub Session Info / Sign In */}
             {session && (
               session.authenticated && session.user ? (
-                <div className="flex items-center gap-2.5 bg-white/[0.03] border border-white/[0.08] px-3 py-1.5 rounded-xl">
+                <div className="flex items-center gap-2.5 bg-white/[0.03] border border-white/[0.08] px-3 py-1.5 rounded-xl whitespace-nowrap shrink-0">
                   <img
                     src={session.user.avatarUrl}
                     alt={session.user.name}
@@ -121,7 +121,7 @@ export function Nav() {
               ) : (
                 <a
                   href="/api/auth/github"
-                  className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.08] hover:border-white/[0.15] text-white/90 transition-all shadow-md shadow-black/10"
+                  className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.08] hover:border-white/[0.15] text-white/90 transition-all shadow-md shadow-black/10 whitespace-nowrap shrink-0"
                 >
                   <GitHubIcon />
                   <span>Sign In</span>
