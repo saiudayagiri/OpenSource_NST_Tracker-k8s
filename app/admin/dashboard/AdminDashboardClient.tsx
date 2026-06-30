@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import type { FlaggedPR, FlagReason } from '@/lib/flagged';
 
@@ -890,6 +890,12 @@ function StudentsTab() {
   const [editCampus, setEditCampus] = useState<'Rishihood' | 'ADYPU' | 'SVYASA' | ''>('');
   const [saving, setSaving] = useState(false);
 
+  // Search & Filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterYear, setFilterYear] = useState<string>('');
+  const [filterCampus, setFilterCampus] = useState<string>('');
+  const [visibleCount, setVisibleCount] = useState(50);
+
   async function load() {
     setLoading(true);
     const res = await fetch('/api/admin/students');
@@ -964,6 +970,15 @@ function StudentsTab() {
     else setError('Failed to remove');
   }
 
+  const filteredStudents = useMemo(() => {
+    return students.filter((s) => {
+      const matchesSearch = s.github.toLowerCase().includes(searchQuery.toLowerCase().trim());
+      const matchesYear = !filterYear || s.year === filterYear;
+      const matchesCampus = !filterCampus || s.campus === filterCampus;
+      return matchesSearch && matchesYear && matchesCampus;
+    });
+  }, [students, searchQuery, filterYear, filterCampus]);
+
   return (
     <div>
       <div className="mb-6">
@@ -999,6 +1014,71 @@ function StudentsTab() {
         </button>
       </form>
 
+      {/* ── Search & Filter Bar ── */}
+      <div className="flex flex-col md:flex-row gap-3 mb-4 bg-white/[0.02] border border-white/[0.05] rounded-xl p-4 animate-in fade-in slide-in-from-top-1 duration-200">
+        <div className="flex-1 relative">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setVisibleCount(50);
+            }}
+            placeholder="Search student by GitHub username..."
+            className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl pl-9 pr-4 py-2 text-white placeholder-white/20 text-sm focus:outline-none focus:border-purple-500/40"
+          />
+          <span className="absolute left-3 top-2.5 text-white/30 text-sm">🔎</span>
+        </div>
+
+        <select
+          value={filterYear}
+          onChange={(e) => {
+            setFilterYear(e.target.value);
+            setVisibleCount(50);
+          }}
+          className="bg-[#0f172a] border border-white/[0.1] rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500/40 cursor-pointer"
+        >
+          <option value="">All Years</option>
+          <option value="1st year">1st Year</option>
+          <option value="2nd year">2nd Year</option>
+          <option value="3rd year">3rd Year</option>
+          <option value="4th year">4th Year</option>
+        </select>
+
+        <select
+          value={filterCampus}
+          onChange={(e) => {
+            setFilterCampus(e.target.value);
+            setVisibleCount(50);
+          }}
+          className="bg-[#0f172a] border border-white/[0.1] rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500/40 cursor-pointer"
+        >
+          <option value="">All Campuses</option>
+          <option value="Rishihood">Rishihood</option>
+          <option value="ADYPU">ADYPU</option>
+          <option value="SVYASA">SVYASA</option>
+        </select>
+
+        {(searchQuery || filterYear || filterCampus) && (
+          <button
+            type="button"
+            onClick={() => {
+              setSearchQuery('');
+              setFilterYear('');
+              setFilterCampus('');
+              setVisibleCount(50);
+            }}
+            className="text-xs px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/60 hover:text-white transition-all cursor-pointer"
+          >
+            Clear Filters
+          </button>
+        )}
+      </div>
+
+      <div className="flex justify-between items-center mb-4 text-xs text-white/40 px-1">
+        <p>Showing {Math.min(filteredStudents.length, visibleCount)} of {filteredStudents.length} students {filteredStudents.length !== students.length && `(filtered from ${students.length})`}</p>
+      </div>
+
       {error && <p className="text-red-400 text-sm mb-4 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">{error}</p>}
       {success && <p className="text-emerald-400 text-sm mb-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-2.5">{success}</p>}
 
@@ -1006,7 +1086,7 @@ function StudentsTab() {
         <div className="text-center py-12 text-white/25">Loading…</div>
       ) : (
         <div className="space-y-2">
-          {students.map((s) => {
+          {filteredStudents.slice(0, visibleCount).map((s) => {
             const isConfirming = confirmRemove === s.github;
             const isEditing = editingGithub === s.github;
             return (
@@ -1095,7 +1175,18 @@ function StudentsTab() {
               </div>
             );
           })}
-          {students.length === 0 && <div className="text-center py-12 text-white/25">No students tracked yet.</div>}
+          {filteredStudents.length === 0 && <div className="text-center py-12 text-white/25">No matching students found.</div>}
+          {filteredStudents.length > visibleCount && (
+            <div className="flex justify-center pt-4">
+              <button
+                type="button"
+                onClick={() => setVisibleCount((prev) => prev + 100)}
+                className="bg-white/5 border border-white/10 hover:bg-white/10 text-white/80 hover:text-white px-6 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer"
+              >
+                Load More (+100)
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
