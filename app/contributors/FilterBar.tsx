@@ -61,11 +61,18 @@ export function FilterBar() {
     return p.toString();
   }
 
+  function pushAndRefresh(url: string) {
+    router.push(url, { scroll: false });
+    setTimeout(() => {
+      router.refresh();
+    }, 20);
+  }
+
   function navigate(value: string) {
     if (value === 'custom') { setShowCustom(true); return; }
     setShowCustom(false);
     const qs = buildParams({ period: value, from: '', to: '' });
-    router.push(qs ? `/contributors?${qs}` : '/contributors', { scroll: false });
+    pushAndRefresh(qs ? `/contributors?${qs}` : '/contributors');
   }
 
   function applyCustom() {
@@ -75,7 +82,7 @@ export function FilterBar() {
     if (search) p.set('search', search);
     if (yearParam) p.set('year', yearParam);
     if (campusParam) p.set('campus', campusParam);
-    router.push(`/contributors?${p.toString()}`, { scroll: false });
+    pushAndRefresh(`/contributors?${p.toString()}`);
     setShowCustom(false);
   }
 
@@ -84,18 +91,18 @@ export function FilterBar() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       const qs = buildParams({ search: value });
-      router.push(qs ? `/contributors?${qs}` : '/contributors', { scroll: false });
+      pushAndRefresh(qs ? `/contributors?${qs}` : '/contributors');
     }, 350);
   }
 
   function handleYearChange(value: string) {
     const qs = buildParams({ year: value });
-    router.push(qs ? `/contributors?${qs}` : '/contributors', { scroll: false });
+    pushAndRefresh(qs ? `/contributors?${qs}` : '/contributors');
   }
 
   function handleCampusChange(value: string) {
     const qs = buildParams({ campus: value });
-    router.push(qs ? `/contributors?${qs}` : '/contributors', { scroll: false });
+    pushAndRefresh(qs ? `/contributors?${qs}` : '/contributors');
   }
 
   const isCustomActive = period === 'custom';
