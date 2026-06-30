@@ -66,7 +66,7 @@ export function Nav() {
   return (
     <>
       <nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#030712]/90 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-4 flex items-center justify-between gap-4" style={{ height: 52 }}>
+        <div className="w-full px-6 md:px-8 flex items-center justify-between gap-4" style={{ height: 52 }}>
           {/* Logo */}
           <Link href="/" className="text-sm font-semibold text-white/80 hover:text-white transition-colors shrink-0">
             Opensource Tracker{' '}
