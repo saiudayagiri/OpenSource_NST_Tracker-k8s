@@ -13,12 +13,18 @@ export async function GET(request: Request) {
     );
   }
 
-  // If Client ID is mock/ADMIN, bypass the OAuth flow and log in using local GITHUB_TOKEN
+  // If Client ID is mock/ADMIN, bypass the OAuth flow and log in using local GITHUB_TOKEN (Local Dev ONLY)
   if (clientId === 'ADMIN' && process.env.GITHUB_TOKEN) {
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json(
+        { error: 'GitHub OAuth application credentials are not configured on production. Please set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET.' },
+        { status: 500 }
+      );
+    }
     const cookieStore = await cookies();
     cookieStore.set('github_oauth_token', process.env.GITHUB_TOKEN, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false,
       sameSite: 'lax',
       path: '/',
       maxAge: 30 * 24 * 60 * 60, // 30 days
