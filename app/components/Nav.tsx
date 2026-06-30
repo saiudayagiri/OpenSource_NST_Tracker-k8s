@@ -76,7 +76,7 @@ export function Nav() {
           </Link>
 
           {/* Desktop links */}
-          <div className="hidden md:flex items-center gap-0.5 overflow-x-auto scrollbar-none">
+          <div className="hidden md:flex items-center gap-0.5 overflow-x-auto scrollbar-none flex-1 min-w-0 justify-center mx-4">
             {LINKS.map(({ href, label }) => {
               const active = href === '/' ? path === '/' : path === href || path.startsWith(href + '/');
               return (
