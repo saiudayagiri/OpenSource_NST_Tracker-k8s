@@ -99,19 +99,19 @@ export function Nav() {
             {/* GitHub Session Info / Sign In */}
             {session && (
               session.authenticated && session.user ? (
-                <div className="flex items-center gap-2 border-r border-white/10 pr-2.5">
+                <div className="flex items-center gap-2 bg-white/[0.03] border border-white/[0.08] px-2.5 py-1.5 rounded-lg">
                   <img
                     src={session.user.avatarUrl}
                     alt={session.user.name}
-                    className="w-5 h-5 rounded-full border border-white/15"
+                    className="w-5 h-5 rounded-full border border-white/15 shrink-0"
                   />
-                  <span className="text-white/60 text-xs hidden lg:inline max-w-[100px] truncate">
+                  <span className="text-white/70 text-xs hidden md:inline max-w-[100px] truncate">
                     @{session.user.username}
                   </span>
                   <a
                     href="/api/auth/logout"
                     title="Sign Out"
-                    className="text-white/30 hover:text-red-400 hover:bg-red-500/10 p-1.5 rounded-lg transition-all"
+                    className="text-white/30 hover:text-red-400 hover:bg-red-500/10 p-1 rounded-md transition-all shrink-0"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -121,30 +121,13 @@ export function Nav() {
               ) : (
                 <a
                   href="/api/auth/github"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.04] text-white/70 border border-white/[0.08] hover:text-white hover:bg-white/[0.08] hover:border-white/[0.15] transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-purple-500/10 to-blue-500/10 hover:from-purple-500/20 hover:to-blue-500/20 text-white/90 border border-purple-500/20 hover:border-purple-500/40 shadow-sm shadow-purple-500/5 transition-all"
                 >
                   <GitHubIcon />
-                  <span className="hidden sm:inline">Sign In</span>
+                  <span>Sign In</span>
                 </a>
               )
             )}
-
-            {/* Admin icon */}
-            <Link
-              href="/admin"
-              title="Admin Panel"
-              id="admin-nav-link"
-              className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
-                path.startsWith('/admin')
-                  ? 'bg-purple-500/20 border border-purple-500/40 text-purple-400'
-                  : 'text-white/15 hover:text-white/40 hover:bg-white/[0.05]'
-              }`}
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </Link>
 
             {/* Mobile hamburger */}
             <button
