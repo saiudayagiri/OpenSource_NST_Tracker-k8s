@@ -13,6 +13,7 @@ import {
   REFRESH_COOLDOWN_MS,
 } from '@/lib/summary-cache';
 import { readProfileCache, writeProfileCache } from '@/lib/profile-cache';
+import { kvGet, kvSet } from '@/lib/kv';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -64,60 +65,80 @@ export async function POST(request: Request) {
   // 1. Refresh individual profile
   if (username) {
     const cached = await readProfileCache(username);
-    const COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes manual refresh cooldown
+    const COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2 hours manual refresh cooldown
 
     if (cached) {
       const ageMs = Date.now() - new Date(cached.cachedAt).getTime();
       if (ageMs < COOLDOWN_MS) {
-        const remainingSecs = Math.ceil((COOLDOWN_MS - ageMs) / 1000);
+        const remainingMins = Math.ceil((COOLDOWN_MS - ageMs) / (60 * 1000));
         return Response.json({
           ok: true,
           fromCache: true,
           cachedAt: cached.cachedAt,
-          message: `Profile was refreshed recently. Try again in ${remainingSecs}s.`,
+          message: `Profile was refreshed recently. Next refresh allowed in ${remainingMins} minutes.`,
         });
       }
     }
 
-    // Fetch fresh profile data
-    const profile = await getStudentProfile(username);
-    if (!profile) {
-      return Response.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    const [prs, issues] = await Promise.all([
-      getStudentPRs(username),
-      getStudentIssues(username),
-    ]);
-
-    if (prs === null || issues === null) {
-      return Response.json({ error: 'Failed to fetch contributions from GitHub' }, { status: 502 });
-    }
-
-    await writeProfileCache(username, profile, prs, issues);
-
-    // Regenerate the global summary caches locally so the leaderboard is immediately updated
     try {
-      const flaggedPRIds = await getFlaggedPRIdSet();
-      const periods = ['all', 'week', 'month'];
-      for (const p of periods) {
-        const dateQuery = buildDateQuery(p);
-        const summaries = await getAllStudentSummaries(dateQuery, flaggedPRIds, false);
-        await writeSummaryCache(summaries, p);
+      // Fetch fresh profile data
+      const profile = await getStudentProfile(username);
+      if (!profile) {
+        return Response.json({ error: 'User not found' }, { status: 404 });
       }
-      revalidatePath('/contributors');
-      revalidatePath('/');
-    } catch (err) {
-      console.error('Failed to update summary caches after individual refresh:', err);
+
+      const [prs, issues] = await Promise.all([
+        getStudentPRs(username),
+        getStudentIssues(username),
+      ]);
+
+      if (prs === null || issues === null) {
+        throw new Error('Failed to fetch contributions from GitHub');
+      }
+
+      await writeProfileCache(username, profile, prs, issues);
+
+      // Regenerate the global summary caches locally so the leaderboard is immediately updated
+      try {
+        const flaggedPRIds = await getFlaggedPRIdSet();
+        const periods = ['all', 'week', 'month'];
+        for (const p of periods) {
+          const dateQuery = buildDateQuery(p);
+          const summaries = await getAllStudentSummaries(dateQuery, flaggedPRIds, false);
+          await writeSummaryCache(summaries, p);
+        }
+        revalidatePath('/contributors');
+        revalidatePath('/');
+      } catch (err) {
+        console.error('Failed to update summary caches after individual refresh:', err);
+      }
+
+      revalidatePath(`/contributors/${username}`);
+
+      return Response.json({
+        ok: true,
+        fromCache: false,
+        cachedAt: new Date().toISOString(),
+      });
+    } catch (err: any) {
+      console.warn(`[Refresh API] Rate limit or error hit for @${username}. Queuing update. Error:`, err.message);
+
+      try {
+        const queue = await kvGet<string[]>('refresh_queue') || [];
+        if (!queue.some(u => u.toLowerCase() === username.toLowerCase())) {
+          queue.push(username);
+          await kvSet('refresh_queue', queue);
+        }
+      } catch (kvErr) {
+        console.error('Failed to add user to refresh_queue KV:', kvErr);
+      }
+
+      return Response.json({
+        ok: false,
+        rateLimited: true,
+        message: 'GitHub rate limit exceeded. We have queued your profile to update automatically in the background shortly.',
+      });
     }
-
-    revalidatePath(`/contributors/${username}`);
-
-    return Response.json({
-      ok: true,
-      fromCache: false,
-      cachedAt: new Date().toISOString(),
-    });
   }
 
   // 2. Refresh summaries list for a specific period

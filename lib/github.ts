@@ -4,6 +4,7 @@ import { getStudentsKV } from './kv-students';
 import { readProfileCache, writeProfileCache, isProfileFresh, type ProfileCacheEntry } from './profile-cache';
 import { execSync } from 'child_process';
 import { cookies } from 'next/headers';
+import { kvGet, kvSet } from './kv';
 
 let cachedToken: string | undefined = process.env.GITHUB_TOKEN;
 let checkedGhCli = false;
@@ -735,35 +736,77 @@ export async function updateStaleProfiles(batchSize = 5): Promise<string[]> {
   const students = await getStudentsKV();
   if (students.length === 0) return [];
 
-  // Read all caches in parallel to find timestamps
-  const studentCaches = await Promise.all(
-    students.map(async (student) => {
-      try {
-        const cached = await readProfileCache(student.github);
-        return {
-          student,
-          cachedAt: cached ? new Date(cached.cachedAt).getTime() : 0,
-        };
-      } catch {
-        return { student, cachedAt: 0 };
-      }
-    })
-  );
+  // 1. Read refresh queue from KV
+  let queue: string[] = [];
+  try {
+    queue = await kvGet<string[]>('refresh_queue') || [];
+  } catch {
+    queue = [];
+  }
 
-  // Sort by cachedAt (oldest or un-cached first)
-  studentCaches.sort((a, b) => a.cachedAt - b.cachedAt);
+  // Filter queue to ensure all usernames exist in students list
+  const studentUsernamesSet = new Set(students.map(s => s.github.toLowerCase()));
+  const validQueue = queue.filter(username => studentUsernamesSet.has(username.toLowerCase()));
 
-  const targets = studentCaches.slice(0, batchSize);
+  // 2. Select targets
+  const targetsUsernames: string[] = [];
+  
+  // Pick from the queue first
+  const queueTargets = validQueue.slice(0, batchSize);
+  targetsUsernames.push(...queueTargets);
+
+  // If queue didn't fill the batch, fill the rest with stale profiles
+  if (targetsUsernames.length < batchSize) {
+    const remainingCount = batchSize - targetsUsernames.length;
+    
+    // Filter out students that are already being updated from the queue
+    const excludedSet = new Set(targetsUsernames.map(u => u.toLowerCase()));
+
+    const studentCaches = await Promise.all(
+      students
+        .filter(s => !excludedSet.has(s.github.toLowerCase()))
+        .map(async (student) => {
+          try {
+            const cached = await readProfileCache(student.github);
+            return {
+              student,
+              cachedAt: cached ? new Date(cached.cachedAt).getTime() : 0,
+            };
+          } catch {
+            return { student, cachedAt: 0 };
+          }
+        })
+    );
+
+    // Sort by cachedAt (oldest or un-cached first)
+    studentCaches.sort((a, b) => a.cachedAt - b.cachedAt);
+    
+    const staleTargets = studentCaches.slice(0, remainingCount).map(c => c.student.github);
+    targetsUsernames.push(...staleTargets);
+  }
+
+  // 3. Process targets
   const updatedUsernames: string[] = [];
 
-  for (const target of targets) {
+  for (const username of targetsUsernames) {
     try {
-      await refreshStudentCache(target.student.github);
-      updatedUsernames.push(target.student.github);
+      await refreshStudentCache(username);
+      updatedUsernames.push(username);
       // Wait 1.5 seconds between students to respect GitHub Search rate limits
       await new Promise((r) => setTimeout(r, 1500));
     } catch (err) {
-      console.error(`Failed to refresh cache for ${target.student.github}:`, err);
+      console.error(`Failed to refresh cache for ${username}:`, err);
+    }
+  }
+
+  // 4. Update the queue in KV by removing the successfully processed users
+  if (validQueue.length > 0) {
+    const processedSet = new Set(updatedUsernames.map(u => u.toLowerCase()));
+    const remainingQueue = validQueue.filter(username => !processedSet.has(username.toLowerCase()));
+    try {
+      await kvSet('refresh_queue', remainingQueue);
+    } catch (err) {
+      console.error('Failed to update refresh_queue KV after stale processing:', err);
     }
   }
 

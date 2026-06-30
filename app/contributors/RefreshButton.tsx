@@ -27,7 +27,7 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
   const [label, setLabel] = useState('');
   const [cooldown, setCooldown] = useState(false);
   const [error, setError] = useState('');
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' | 'warning' } | null>(null);
 
   // Sync state if props change
   useEffect(() => {
@@ -72,6 +72,12 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
         setError(msg);
         setToast({ message: msg, type: 'error' });
         setTimeout(() => { setCooldown(false); setError(''); }, 8000);
+        return;
+      }
+      if (data.rateLimited) {
+        setToast({ message: data.message || 'GitHub rate limit exceeded. Profile queued for update.', type: 'warning' });
+        setError(data.message || 'GitHub rate limit exceeded. Profile queued for update.');
+        setTimeout(() => { setError(''); }, 8000);
         return;
       }
       if (data.cachedAt) setCachedAt(data.cachedAt);
@@ -150,6 +156,12 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+            </span>
+          )}
+          {toast.type === 'warning' && (
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
             </span>
           )}
           <span className="text-white/80 font-medium">{toast.message}</span>
