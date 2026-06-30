@@ -13,6 +13,19 @@ import { ShareButton } from '../ShareButton';
 import { RefreshButton } from '../RefreshButton';
 import { readProfileCache, writeProfileCache, isProfileFresh } from '@/lib/profile-cache';
 import { getStudentsKV } from '@/lib/kv-students';
+import { kvGet, kvSet } from '@/lib/kv';
+
+async function queueBackgroundRefresh(username: string) {
+  try {
+    const queue = await kvGet<string[]>('refresh_queue') || [];
+    if (!queue.some(u => u.toLowerCase() === username.toLowerCase())) {
+      queue.push(username);
+      await kvSet('refresh_queue', queue);
+    }
+  } catch (err) {
+    console.error('Failed to queue background refresh for:', username, err);
+  }
+}
 
 export const revalidate = 3600;
 
@@ -323,12 +336,20 @@ export default async function ContributorPage({
   let cachedAt: string | null = null;
 
   const cached = await readProfileCache(username);
-  if (cached && isProfileFresh(cached)) {
+  if (cached) {
+    // 1. Always serve cached content instantly to guarantee fast page loads
     profile = cached.profile;
     allPRs = cached.prs;
     issues = cached.issues;
     cachedAt = cached.cachedAt;
+
+    // 2. If the cache is stale (older than 2 hours), queue a background refresh
+    const ageMs = Date.now() - new Date(cached.cachedAt).getTime();
+    if (ageMs > 2 * 60 * 60 * 1000) {
+      queueBackgroundRefresh(username);
+    }
   } else {
+    // 3. No cache exists at all - fetch synchronously so the page loads at least once
     try {
       const [freshProfile, freshPRs, freshIssues] = await Promise.all([
         getStudentProfile(username),
@@ -341,21 +362,9 @@ export default async function ContributorPage({
         issues = freshIssues;
         await writeProfileCache(username, freshProfile, freshPRs, freshIssues);
         cachedAt = new Date().toISOString();
-      } else if (cached) {
-        // Fallback to stale cache if API limit hit or empty results due to API error
-        profile = cached.profile;
-        allPRs = cached.prs;
-        issues = cached.issues;
-        cachedAt = cached.cachedAt;
       }
-    } catch {
-      if (cached) {
-        // Fallback to stale cache on network error
-        profile = cached.profile;
-        allPRs = cached.prs;
-        issues = cached.issues;
-        cachedAt = cached.cachedAt;
-      }
+    } catch (err) {
+      console.error(`Failed to initial fetch profile for ${username}:`, err);
     }
   }
 
