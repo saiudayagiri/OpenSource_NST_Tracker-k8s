@@ -38,6 +38,7 @@ export function Nav() {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Load session info on mount and when path changes
   useEffect(() => {
@@ -55,8 +56,25 @@ export function Nav() {
     checkSession();
   }, [path]);
 
-  // Close menu on route change
-  useEffect(() => { setOpen(false); }, [path]);
+  // Close menus on route change
+  useEffect(() => {
+    setOpen(false);
+    setDropdownOpen(false);
+  }, [path]);
+
+  // Close profile dropdown on click outside
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handleClose = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('#user-profile-dropdown-container')) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClose);
+    return () => document.removeEventListener('click', handleClose);
+  }, [dropdownOpen]);
+
   // Prevent body scroll when menu open
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
@@ -99,24 +117,62 @@ export function Nav() {
             {/* GitHub Session Info / Sign In */}
             {session && (
               session.authenticated && session.user ? (
-                <div className="flex items-center gap-2.5 bg-white/[0.03] border border-white/[0.08] px-3 py-1.5 rounded-xl whitespace-nowrap shrink-0">
-                  <img
-                    src={session.user.avatarUrl}
-                    alt={session.user.name}
-                    className="w-5 h-5 rounded-full border border-white/15 shrink-0"
-                  />
-                  <span className="text-white/70 text-xs hidden md:inline max-w-[100px] truncate">
-                    @{session.user.username}
-                  </span>
-                  <a
-                    href="/api/auth/logout"
-                    title="Sign Out"
-                    className="text-white/30 hover:text-red-400 hover:bg-red-500/10 p-1 rounded-md transition-all shrink-0 ml-0.5"
+                <div id="user-profile-dropdown-container" className="relative">
+                  <button
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="flex items-center gap-2 bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] px-2.5 py-1.5 rounded-xl transition-all whitespace-nowrap shrink-0"
                   >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    <img
+                      src={session.user.avatarUrl}
+                      alt={session.user.name}
+                      className="w-5.5 h-5.5 rounded-full border border-white/15 shrink-0"
+                    />
+                    <span className="text-white/70 text-xs hidden md:inline max-w-[100px] truncate">
+                      @{session.user.username}
+                    </span>
+                    <svg className={`w-3 h-3 text-white/40 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
-                  </a>
+                  </button>
+
+                  {dropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-52 rounded-xl bg-[#0f172a] border border-white/[0.08] p-1.5 shadow-xl shadow-black/80 flex flex-col gap-0.5 animate-in fade-in slide-in-from-top-2 duration-150">
+                      <div className="px-3 py-2 border-b border-white/[0.06] mb-1">
+                        <div className="text-white text-xs font-semibold truncate">{session.user.name}</div>
+                        <div className="text-white/40 text-[10px] truncate">@{session.user.username}</div>
+                      </div>
+                      <Link
+                        href={`/contributors/${session.user.username}`}
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs text-white/70 hover:text-white hover:bg-white/[0.05] transition-all"
+                      >
+                        <svg className="w-3.5 h-3.5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Profile
+                      </Link>
+                      <Link
+                        href={`/check-work/${session.user.username}`}
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs text-white/70 hover:text-white hover:bg-white/[0.05] transition-all"
+                      >
+                        <svg className="w-3.5 h-3.5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                        Your Activity
+                      </Link>
+                      <div className="h-px bg-white/[0.06] my-1" />
+                      <a
+                        href="/api/auth/logout"
+                        className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs text-red-400 hover:bg-red-500/10 transition-all"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Sign Out
+                      </a>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <a
@@ -171,24 +227,49 @@ export function Nav() {
               {session && (
                 <div className="border-t border-white/[0.08] mt-2 pt-2 px-2 pb-2">
                   {session.authenticated && session.user ? (
-                    <div className="flex items-center justify-between gap-3 px-4 py-3 bg-white/[0.02] border border-white/[0.06] rounded-xl">
-                      <div className="flex items-center gap-3">
+                    <div className="flex flex-col gap-2 p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl">
+                      <div className="flex items-center gap-3 pb-3 border-b border-white/[0.06]">
                         <img
                           src={session.user.avatarUrl}
                           alt={session.user.name}
-                          className="w-8 h-8 rounded-full border border-white/10"
+                          className="w-8.5 h-8.5 rounded-full border border-white/10"
                         />
                         <div>
                           <div className="text-white text-sm font-medium">{session.user.name}</div>
                           <div className="text-white/40 text-xs">@{session.user.username}</div>
                         </div>
                       </div>
-                      <a
-                        href="/api/auth/logout"
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-all"
-                      >
-                        Sign Out
-                      </a>
+                      <div className="flex flex-col gap-1 pt-1">
+                        <Link
+                          href={`/contributors/${session.user.username}`}
+                          onClick={() => setOpen(false)}
+                          className="flex items-center gap-2 px-2 py-2 rounded-lg text-xs text-white/70 hover:text-white hover:bg-white/[0.04] transition-all"
+                        >
+                          <svg className="w-3.5 h-3.5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          Profile
+                        </Link>
+                        <Link
+                          href={`/check-work/${session.user.username}`}
+                          onClick={() => setOpen(false)}
+                          className="flex items-center gap-2 px-2 py-2 rounded-lg text-xs text-white/70 hover:text-white hover:bg-white/[0.04] transition-all"
+                        >
+                          <svg className="w-3.5 h-3.5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                          </svg>
+                          Your Activity
+                        </Link>
+                        <a
+                          href="/api/auth/logout"
+                          className="flex items-center gap-2 px-2 py-2 rounded-lg text-xs text-red-400 hover:bg-red-500/10 transition-all mt-1"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                          </svg>
+                          Sign Out
+                        </a>
+                      </div>
                     </div>
                   ) : (
                     <a
