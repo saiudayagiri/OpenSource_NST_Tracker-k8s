@@ -161,6 +161,96 @@ export default async function Home() {
         </div>
       )}
 
+      {/* Newton School Stories */}
+      <div className="relative max-w-3xl mx-auto px-4 mb-14">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div>
+            <div className="text-purple-400 text-xs font-semibold uppercase tracking-wider mb-1">Newton School Stories</div>
+            <h2 className="text-white font-bold text-xl tracking-tight">Built by our Community</h2>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Card 1: Termstory */}
+          <a
+            href="https://github.com/bitflicker64/Termstory"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex flex-col justify-between p-5 rounded-2xl bg-white/[0.02] border border-white/[0.07] hover:bg-white/[0.04] hover:border-purple-500/30 hover:shadow-xl hover:shadow-purple-500/5 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden"
+          >
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl filter drop-shadow-[0_0_8px_rgba(255,255,255,0.25)]">🐧</span>
+                <div>
+                  <h3 className="font-bold text-white text-sm group-hover:text-white transition-colors">Termstory</h3>
+                  <span className="text-[10px] text-white/30 font-mono uppercase tracking-wider">Memory Engine</span>
+                </div>
+              </div>
+              <p className="text-white/60 text-[11px] leading-relaxed mb-4">
+                Turns your terminal history into a searchable, AI-narrated timeline of your development life. Recover commands, correlate Git commits, and visualize your terminal work.
+              </p>
+              <div className="flex flex-wrap gap-1 mb-4">
+                {['Python', 'TUI', 'Shell-History', 'CLI'].map((t) => (
+                  <span key={t} className="text-[9px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/40 font-mono">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="pt-3 border-t border-white/[0.04] flex items-center justify-between text-[10px] text-white/40">
+              <span className="flex items-center gap-1.5">
+                <img
+                  src="https://avatars.githubusercontent.com/u/211528427?v=4"
+                  alt="bitflicker64"
+                  className="w-4 h-4 rounded-full"
+                />
+                Built by <strong className="text-white/60">KAI (@bitflicker64)</strong>
+              </span>
+              <span className="text-purple-400 group-hover:translate-x-0.5 transition-transform">→</span>
+            </div>
+          </a>
+
+          {/* Card 2: Filedrop */}
+          <a
+            href="https://github.com/Dreamstick9/filedrop"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex flex-col justify-between p-5 rounded-2xl bg-white/[0.02] border border-white/[0.07] hover:bg-white/[0.04] hover:border-blue-500/30 hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden"
+          >
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl filter drop-shadow-[0_0_8px_rgba(255,255,255,0.25)]">📦</span>
+                <div>
+                  <h3 className="font-bold text-white text-sm group-hover:text-white transition-colors">filedrop</h3>
+                  <span className="text-[10px] text-white/30 font-mono uppercase tracking-wider">File Sharing</span>
+                </div>
+              </div>
+              <p className="text-white/60 text-[11px] leading-relaxed mb-4">
+                Instantly host encrypted files locally with QR codes for mobile transfer. Features AES-256-GCM browser encryption, ephemeral URLs, and DDoS protection.
+              </p>
+              <div className="flex flex-wrap gap-1 mb-4">
+                {['JavaScript', 'Node.js', 'AES-256', 'Crypto'].map((t) => (
+                  <span key={t} className="text-[9px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/40 font-mono">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="pt-3 border-t border-white/[0.04] flex items-center justify-between text-[10px] text-white/40">
+              <span className="flex items-center gap-1.5">
+                <img
+                  src="https://avatars.githubusercontent.com/u/222502230?v=4"
+                  alt="Dreamstick9"
+                  className="w-4 h-4 rounded-full"
+                />
+                Built by <strong className="text-white/60">Dreamstick (@Dreamstick9)</strong>
+              </span>
+              <span className="text-blue-400 group-hover:translate-x-0.5 transition-transform">→</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
       {/* Quick nav strip */}
       <div className="relative max-w-5xl mx-auto px-4 mb-16">
         <div className="flex flex-wrap justify-center gap-3">

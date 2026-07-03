@@ -246,6 +246,97 @@ export default async function AchieversPage() {
           </div>
         )}
       </div>
+
+      {/* Featured Student Maintainers */}
+      <div className="max-w-6xl mx-auto px-4 pb-24 border-t border-white/[0.06] pt-16">
+        <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+          <div className="inline-block text-[10px] uppercase font-mono tracking-widest text-purple-400 border border-purple-500/20 bg-purple-500/5 px-2.5 py-1 rounded">
+            Student-Led Open Source Projects
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Featured Student Maintainers</h2>
+          <p className="text-white/40 text-sm">Celebrating students who build and maintain their own original open source codebases.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          {/* Card 1: Termstory */}
+          <a
+            href="https://github.com/bitflicker64/Termstory"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex flex-col justify-between p-6 rounded-2xl bg-white/[0.02] border border-white/[0.07] hover:bg-white/[0.04] hover:border-purple-500/30 hover:shadow-xl hover:shadow-purple-500/5 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden"
+          >
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl filter drop-shadow-[0_0_8px_rgba(255,255,255,0.25)]">🐧</span>
+                <div>
+                  <h3 className="font-bold text-white text-base group-hover:text-white transition-colors">Termstory</h3>
+                  <span className="text-[10px] text-white/30 font-mono uppercase tracking-wider">Memory Engine</span>
+                </div>
+              </div>
+              <p className="text-white/60 text-xs leading-relaxed mb-4">
+                Turns your terminal history into a searchable, AI-narrated timeline of your development life. Recover commands, correlate Git commits, and visualize your terminal work.
+              </p>
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {['Python', 'TUI', 'Shell-History', 'CLI'].map((t) => (
+                  <span key={t} className="text-[10px] px-2.5 py-0.5 rounded bg-white/5 border border-white/10 text-white/40 font-mono">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="pt-4 border-t border-white/[0.04] flex items-center justify-between text-xs text-white/40">
+              <span className="flex items-center gap-2">
+                <img
+                  src="https://avatars.githubusercontent.com/u/211528427?v=4"
+                  alt="bitflicker64"
+                  className="w-5 h-5 rounded-full border border-white/10"
+                />
+                Built by <strong className="text-white/60">KAI (@bitflicker64)</strong>
+              </span>
+              <span className="text-purple-400 group-hover:translate-x-0.5 transition-transform">→</span>
+            </div>
+          </a>
+
+          {/* Card 2: Filedrop */}
+          <a
+            href="https://github.com/Dreamstick9/filedrop"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex flex-col justify-between p-6 rounded-2xl bg-white/[0.02] border border-white/[0.07] hover:bg-white/[0.04] hover:border-blue-500/30 hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden"
+          >
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl filter drop-shadow-[0_0_8px_rgba(255,255,255,0.25)]">📦</span>
+                <div>
+                  <h3 className="font-bold text-white text-base group-hover:text-white transition-colors">filedrop</h3>
+                  <span className="text-[10px] text-white/30 font-mono uppercase tracking-wider">File Sharing</span>
+                </div>
+              </div>
+              <p className="text-white/60 text-xs leading-relaxed mb-4">
+                Instantly host encrypted files locally with QR codes for mobile transfer. Features AES-256-GCM browser encryption, ephemeral URLs, and DDoS protection.
+              </p>
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {['JavaScript', 'Node.js', 'AES-256', 'Crypto'].map((t) => (
+                  <span key={t} className="text-[10px] px-2.5 py-0.5 rounded bg-white/5 border border-white/10 text-white/40 font-mono">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="pt-4 border-t border-white/[0.04] flex items-center justify-between text-xs text-white/40">
+              <span className="flex items-center gap-2">
+                <img
+                  src="https://avatars.githubusercontent.com/u/222502230?v=4"
+                  alt="Dreamstick9"
+                  className="w-5 h-5 rounded-full border border-white/10"
+                />
+                Built by <strong className="text-white/60">Dreamstick (@Dreamstick9)</strong>
+              </span>
+              <span className="text-blue-400 group-hover:translate-x-0.5 transition-transform">→</span>
+            </div>
+          </a>
+        </div>
+      </div>
     </main>
   );
 }

@@ -341,6 +341,89 @@ export default function GetStartedPage() {
           </div>
         </section>
 
+        {/* Student Spotlight Advertisements */}
+        <section id="student-spotlight" className="space-y-8 scroll-mt-20">
+          <div className="relative overflow-hidden rounded-3xl border border-purple-500/15 bg-gradient-to-r from-purple-950/20 to-blue-950/20 p-8">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-purple-500/5 blur-3xl rounded-full" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/5 blur-3xl rounded-full" />
+            
+            <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="max-w-md space-y-4 text-left">
+                <div className="inline-block text-[10px] uppercase font-mono tracking-widest text-yellow-400 border border-yellow-500/20 bg-yellow-500/5 px-2.5 py-1 rounded">
+                  Newton School Spotlight
+                </div>
+                <h2 className="text-3xl font-extrabold text-white tracking-tight leading-tight">
+                  You don&apos;t just have to use Open Source.<br/>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
+                    You can build it.
+                  </span>
+                </h2>
+                <p className="text-white/55 text-xs md:text-sm leading-relaxed">
+                  Newton School of Technology students are building and maintaining actual production-grade utilities with thousands of developers globally. Get inspired by what your peers are coding in the real world.
+                </p>
+              </div>
+
+              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                {/* Termstory Ad Card */}
+                <a
+                  href="https://github.com/bitflicker64/Termstory"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex flex-col justify-between p-5 rounded-2xl bg-black/45 border border-white/[0.08] hover:border-purple-500/35 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden"
+                >
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 border border-purple-500/30 text-purple-300 font-mono">AD</span>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-2xl">🐧</span>
+                      <div>
+                        <h3 className="font-bold text-white text-xs group-hover:text-purple-400 transition-colors">Termstory</h3>
+                        <span className="text-[9px] text-white/30 font-mono">by @bitflicker64</span>
+                      </div>
+                    </div>
+                    <p className="text-white/50 text-[10px] leading-relaxed mb-3">
+                      Turns your terminal history into an AI-narrated timeline. Groups commands into sessions and correlates commits.
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between text-[9px] text-purple-400 font-mono uppercase tracking-wider pt-2 border-t border-white/[0.03]">
+                    <span>Memory Engine</span>
+                    <span className="group-hover:translate-x-0.5 transition-transform">Star Project →</span>
+                  </div>
+                </a>
+
+                {/* Filedrop Ad Card */}
+                <a
+                  href="https://github.com/Dreamstick9/filedrop"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex flex-col justify-between p-5 rounded-2xl bg-black/45 border border-white/[0.08] hover:border-blue-500/35 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden"
+                >
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 border border-blue-500/30 text-blue-300 font-mono">AD</span>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-2xl">📦</span>
+                      <div>
+                        <h3 className="font-bold text-white text-xs group-hover:text-blue-400 transition-colors">filedrop</h3>
+                        <span className="text-[9px] text-white/30 font-mono">by @Dreamstick9</span>
+                      </div>
+                    </div>
+                    <p className="text-white/50 text-[10px] leading-relaxed mb-3">
+                      Instantly share files locally with AES-256-GCM browser encryption. QR code generation for mobile download.
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between text-[9px] text-blue-400 font-mono uppercase tracking-wider pt-2 border-t border-white/[0.03]">
+                    <span>File Sharing</span>
+                    <span className="group-hover:translate-x-0.5 transition-transform">Star Project →</span>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Section 3: Why Contribute */}
         <section id="why-opensource" className="space-y-8 scroll-mt-20">
           <div className="text-center max-w-2xl mx-auto space-y-2">
