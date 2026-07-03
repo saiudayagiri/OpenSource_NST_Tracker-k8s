@@ -129,11 +129,13 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
         id="public-refresh-btn"
         title={isLoggedIn ? 'Refresh anytime — you are logged in' : 'Fetch latest data from GitHub'}
         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-          isDisabled
-            ? 'bg-white/[0.02] border-white/[0.06] text-white/20 cursor-not-allowed'
-            : isLoggedIn
-              ? 'bg-purple-500/10 border-purple-500/25 text-purple-400 hover:bg-purple-500/20 hover:border-purple-500/40'
-              : 'bg-white/[0.03] border-white/[0.08] text-white/40 hover:text-white/70 hover:bg-white/[0.06] hover:border-white/[0.12]'
+          isLoading
+            ? 'bg-blue-500/10 border-blue-500/30 text-blue-400 cursor-wait'
+            : (cooldown && !isLoggedIn)
+              ? 'bg-white/[0.02] border-white/[0.06] text-white/20 cursor-not-allowed'
+              : isLoggedIn
+                ? 'bg-purple-500/10 border-purple-500/25 text-purple-400 hover:bg-purple-500/20 hover:border-purple-500/40'
+                : 'bg-white/[0.03] border-white/[0.08] text-white/40 hover:text-white/70 hover:bg-white/[0.06] hover:border-white/[0.12]'
         }`}
       >
         <svg
