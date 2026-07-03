@@ -27,8 +27,9 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
   const [label, setLabel] = useState('');
   const [cooldown, setCooldown] = useState(false);
   const [error, setError] = useState('');
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' | 'warning' } | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' | 'warning'; loginNudge?: boolean } | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   // Sync state if props change
   useEffect(() => {
@@ -39,8 +40,8 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
   useEffect(() => {
     fetch('/api/auth/session')
       .then(r => r.json())
-      .then(data => { if (data.authenticated) setIsLoggedIn(true); })
-      .catch(() => {});
+      .then(data => { if (data.authenticated) setIsLoggedIn(true); setSessionChecked(true); })
+      .catch(() => { setSessionChecked(true); });
   }, []);
 
   // Tick the "X ago" label every 30 seconds
@@ -81,7 +82,7 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
           setCooldown(true);
           const msg = data.message || 'Data was refreshed recently. Try again in a few minutes.';
           setError(msg);
-          setToast({ message: msg, type: 'error' });
+          setToast({ message: msg, type: 'error', loginNudge: true });
           setTimeout(() => { setCooldown(false); setError(''); }, 8000);
           return;
         }
@@ -152,6 +153,20 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
         <span className="text-purple-400/50 text-[10px] font-mono">∞ free</span>
       )}
 
+      {/* Anon login nudge — always visible once session is confirmed not-logged-in */}
+      {sessionChecked && !isLoggedIn && (
+        <a
+          href="/login"
+          className="inline-flex items-center gap-1 text-[10px] text-white/25 hover:text-purple-400/70 transition-colors"
+          title="Log in with GitHub for unlimited refreshes"
+        >
+          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+          </svg>
+          Log in for unlimited
+        </a>
+      )}
+
       {/* Cooldown error (only shows for anonymous users) */}
       {error && !isLoggedIn && (
         <span className="text-yellow-500/60 text-xs">{error}</span>
@@ -185,6 +200,11 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
             </span>
           )}
           <span className="text-white/80 font-medium">{toast.message}</span>
+          {toast.loginNudge && (
+            <a href="/login" className="ml-1 text-purple-400 hover:text-purple-300 underline underline-offset-2 transition-colors whitespace-nowrap">
+              Log in →
+            </a>
+          )}
         </div>
       )}
     </div>
