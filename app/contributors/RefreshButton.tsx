@@ -30,6 +30,7 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' | 'warning'; loginNudge?: boolean } | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [sessionChecked, setSessionChecked] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
 
   // Sync state if props change
   useEffect(() => {
@@ -64,6 +65,7 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
 
   async function handleRefresh() {
     setError('');
+    setIsFetching(true);
     setToast({ message: 'Fetching latest data from GitHub...', type: 'info' });
     let url = '/api/refresh';
     if (username) {
@@ -99,10 +101,12 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
       startTransition(() => { router.refresh(); });
     } catch {
       setToast({ message: 'Failed to fetch updates. Please try again.', type: 'error' });
+    } finally {
+      setIsFetching(false);
     }
   }
 
-  const isLoading = isPending;
+  const isLoading = isPending || isFetching;
   const isDisabled = isLoading || (cooldown && !isLoggedIn);
 
   return (
