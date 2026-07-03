@@ -4,7 +4,9 @@ import {
   getStudentPRs,
   getStudentIssues,
   buildDateQuery,
+  getSummaryFromCache,
 } from '@/lib/github';
+import { getStudentsKV } from '@/lib/kv-students';
 import { getFlaggedPRIdSet } from '@/lib/flagged';
 import {
   readSummaryCache,
@@ -111,19 +113,46 @@ export async function POST(request: Request) {
 
       await writeProfileCache(username, profile, prs, issues);
 
-      // Regenerate the global summary caches locally so the leaderboard is immediately updated
+      // Patch just this student's entry in every summary cache period
+      // This is O(1) — no need to rebuild all 600+ profiles from scratch.
       try {
         const flaggedPRIds = await getFlaggedPRIdSet();
-        const periods = ['all', 'week', 'month'];
-        for (const p of periods) {
-          const dateQuery = buildDateQuery(p);
-          const summaries = await getAllStudentSummaries(dateQuery, flaggedPRIds, false);
-          await writeSummaryCache(summaries, p);
+        const updatedCache = await readProfileCache(username);
+        const students = await getStudentsKV();
+        const student = students.find(
+          (s) => s.github.toLowerCase() === username.toLowerCase()
+        );
+
+        if (updatedCache) {
+          const periods = ['all', 'week', 'month'];
+          for (const p of periods) {
+            const existingCache = await readSummaryCache(p);
+            if (existingCache) {
+              const dateQuery = buildDateQuery(p);
+              const freshSummary = getSummaryFromCache(updatedCache, dateQuery, flaggedPRIds);
+              if (student) {
+                freshSummary.year = student.year;
+                freshSummary.campus = student.campus;
+              }
+              // Replace the existing entry or append if not present
+              const idx = existingCache.summaries.findIndex(
+                (s) => s.profile.login.toLowerCase() === username.toLowerCase()
+              );
+              if (idx !== -1) {
+                existingCache.summaries[idx] = freshSummary;
+              } else {
+                existingCache.summaries.push(freshSummary);
+              }
+              // Re-sort by score descending
+              existingCache.summaries.sort((a, b) => b.scoreMergedPRs - a.scoreMergedPRs);
+              await writeSummaryCache(existingCache.summaries, p);
+            }
+          }
         }
         revalidatePath('/contributors');
         revalidatePath('/');
       } catch (err) {
-        console.error('Failed to update summary caches after individual refresh:', err);
+        console.error('Failed to patch summary caches after individual refresh:', err);
       }
 
       revalidatePath(`/contributors/${username}`);

@@ -276,7 +276,7 @@ export async function getStudentPRs(username: string): Promise<StudentPR[] | nul
   return allPRs;
 }
 
-function getSummaryFromCache(
+export function getSummaryFromCache(
   cached: ProfileCacheEntry,
   dateQuery: string,
   flaggedPRIds: Set<string>
