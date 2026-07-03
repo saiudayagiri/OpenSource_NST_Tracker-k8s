@@ -15,6 +15,17 @@ import {
 import { readProfileCache, writeProfileCache } from '@/lib/profile-cache';
 import { kvGet, kvSet } from '@/lib/kv';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
+
+/** Returns true if the current request has a valid GitHub OAuth token (i.e. a logged-in user). */
+async function isLoggedIn(): Promise<boolean> {
+  try {
+    const cookieStore = await cookies();
+    return !!cookieStore.get('github_oauth_token')?.value;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * GET /api/refresh
@@ -65,9 +76,11 @@ export async function POST(request: Request) {
   // 1. Refresh individual profile
   if (username) {
     const cached = await readProfileCache(username);
-    const COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2 hours manual refresh cooldown
+    const COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2 hours manual refresh cooldown for anonymous users
+    const loggedIn = await isLoggedIn();
 
-    if (cached) {
+    // Only apply cooldown for anonymous (non-authenticated) users
+    if (cached && !loggedIn) {
       const ageMs = Date.now() - new Date(cached.cachedAt).getTime();
       if (ageMs < COOLDOWN_MS) {
         const remainingMins = Math.ceil((COOLDOWN_MS - ageMs) / (60 * 1000));
@@ -143,9 +156,10 @@ export async function POST(request: Request) {
 
   // 2. Refresh summaries list for a specific period
   const cache = await readSummaryCache(period);
+  const summaryLoggedIn = await isLoggedIn();
 
-  // Rate limit: return early if cache is still fresh
-  if (cache && isCacheFresh(cache)) {
+  // Rate limit: return early if cache is still fresh (skip for logged-in users)
+  if (cache && isCacheFresh(cache) && !summaryLoggedIn) {
     const ageMs = Date.now() - new Date(cache.cachedAt).getTime();
     const remainingSecs = Math.ceil((REFRESH_COOLDOWN_MS - ageMs) / 1000);
     return Response.json({

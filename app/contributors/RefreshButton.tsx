@@ -28,11 +28,20 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
   const [cooldown, setCooldown] = useState(false);
   const [error, setError] = useState('');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' | 'warning' } | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Sync state if props change
   useEffect(() => {
     setCachedAt(initialCachedAt);
   }, [initialCachedAt]);
+
+  // Check if user is logged in to unlock unlimited refreshes
+  useEffect(() => {
+    fetch('/api/auth/session')
+      .then(r => r.json())
+      .then(data => { if (data.authenticated) setIsLoggedIn(true); })
+      .catch(() => {});
+  }, []);
 
   // Tick the "X ago" label every 30 seconds
   useEffect(() => {
@@ -67,12 +76,15 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
       if (!res.ok) throw new Error('API request failed');
       const data = await res.json();
       if (data.fromCache) {
-        setCooldown(true);
-        const msg = data.message || 'Data was refreshed recently. Try again in a few minutes.';
-        setError(msg);
-        setToast({ message: msg, type: 'error' });
-        setTimeout(() => { setCooldown(false); setError(''); }, 8000);
-        return;
+        // Logged-in users should never get this — but handle gracefully just in case
+        if (!isLoggedIn) {
+          setCooldown(true);
+          const msg = data.message || 'Data was refreshed recently. Try again in a few minutes.';
+          setError(msg);
+          setToast({ message: msg, type: 'error' });
+          setTimeout(() => { setCooldown(false); setError(''); }, 8000);
+          return;
+        }
       }
       if (data.rateLimited) {
         setToast({ message: data.message || 'GitHub rate limit exceeded. Profile queued for update.', type: 'warning' });
@@ -90,6 +102,7 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
   }
 
   const isLoading = isPending;
+  const isDisabled = isLoading || (cooldown && !isLoggedIn);
 
   return (
     <div className="flex items-center gap-3">
@@ -104,16 +117,18 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
         <span className="text-white/20 text-xs">No cache yet</span>
       )}
 
-      {/* Refresh button */}
+      {/* Refresh button — always enabled for logged-in users */}
       <button
         onClick={handleRefresh}
-        disabled={isLoading || cooldown}
+        disabled={isDisabled}
         id="public-refresh-btn"
-        title="Fetch latest data from GitHub"
+        title={isLoggedIn ? 'Refresh anytime — you are logged in' : 'Fetch latest data from GitHub'}
         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-          cooldown
+          isDisabled
             ? 'bg-white/[0.02] border-white/[0.06] text-white/20 cursor-not-allowed'
-            : 'bg-white/[0.03] border-white/[0.08] text-white/40 hover:text-white/70 hover:bg-white/[0.06] hover:border-white/[0.12]'
+            : isLoggedIn
+              ? 'bg-purple-500/10 border-purple-500/25 text-purple-400 hover:bg-purple-500/20 hover:border-purple-500/40'
+              : 'bg-white/[0.03] border-white/[0.08] text-white/40 hover:text-white/70 hover:bg-white/[0.06] hover:border-white/[0.12]'
         }`}
       >
         <svg
@@ -132,8 +147,13 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
         {isLoading ? 'Refreshing…' : 'Refresh'}
       </button>
 
-      {/* Cooldown error */}
-      {error && (
+      {/* Logged-in unlock indicator */}
+      {isLoggedIn && (
+        <span className="text-purple-400/50 text-[10px] font-mono">∞ free</span>
+      )}
+
+      {/* Cooldown error (only shows for anonymous users) */}
+      {error && !isLoggedIn && (
         <span className="text-yellow-500/60 text-xs">{error}</span>
       )}
 
