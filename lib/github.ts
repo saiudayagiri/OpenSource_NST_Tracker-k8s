@@ -736,7 +736,10 @@ export async function updateStaleProfiles(batchSize = 5): Promise<string[]> {
   const students = await getStudentsKV();
   if (students.length === 0) return [];
 
-  // 1. Read refresh queue from KV
+  /** Minimum age before a profile is considered stale and eligible for background refresh */
+  const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+  // 1. Read refresh queue from KV (manually triggered high-priority refreshes)
   let queue: string[] = [];
   try {
     queue = await kvGet<string[]>('refresh_queue') || [];
@@ -751,16 +754,15 @@ export async function updateStaleProfiles(batchSize = 5): Promise<string[]> {
   // 2. Select targets
   const targetsUsernames: string[] = [];
   
-  // Pick from the queue first
+  // Pick from the queue first (these are high-priority — no staleness check)
   const queueTargets = validQueue.slice(0, batchSize);
   targetsUsernames.push(...queueTargets);
 
-  // If queue didn't fill the batch, fill the rest with stale profiles
+  // If queue didn't fill the batch, fill the rest with genuinely stale profiles (>24hrs old)
   if (targetsUsernames.length < batchSize) {
     const remainingCount = batchSize - targetsUsernames.length;
-    
-    // Filter out students that are already being updated from the queue
     const excludedSet = new Set(targetsUsernames.map(u => u.toLowerCase()));
+    const now = Date.now();
 
     const studentCaches = await Promise.all(
       students
@@ -778,10 +780,20 @@ export async function updateStaleProfiles(batchSize = 5): Promise<string[]> {
         })
     );
 
-    // Sort by cachedAt (oldest or un-cached first)
-    studentCaches.sort((a, b) => a.cachedAt - b.cachedAt);
-    
-    const staleTargets = studentCaches.slice(0, remainingCount).map(c => c.student.github);
+    // Only pick profiles that are genuinely stale (>24hrs old or never cached)
+    const staleProfiles = studentCaches.filter(
+      c => now - c.cachedAt >= STALE_THRESHOLD_MS
+    );
+
+    if (staleProfiles.length === 0) {
+      console.log('[Incremental Refresh] All profiles are fresh (< 24hrs). Skipping batch refresh.');
+      // Still process queue items if any
+      if (targetsUsernames.length === 0) return [];
+    }
+
+    // Sort oldest-first and pick up to remainingCount
+    staleProfiles.sort((a, b) => a.cachedAt - b.cachedAt);
+    const staleTargets = staleProfiles.slice(0, remainingCount).map(c => c.student.github);
     targetsUsernames.push(...staleTargets);
   }
 
@@ -812,3 +824,4 @@ export async function updateStaleProfiles(batchSize = 5): Promise<string[]> {
 
   return updatedUsernames;
 }
+
