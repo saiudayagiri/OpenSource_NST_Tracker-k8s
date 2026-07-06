@@ -76,8 +76,20 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
 
     try {
       const res = await fetch(url, { method: 'POST' });
-      if (!res.ok) throw new Error('API request failed');
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+
+      // Handle specific HTTP error codes with clear messages
+      if (!res.ok) {
+        if (res.status === 404) {
+          const msg = `GitHub profile @${username || 'unknown'} doesn't exist or was renamed.`;
+          setToast({ message: msg, type: 'error' });
+          setError(msg);
+          setTimeout(() => { setError(''); }, 8000);
+          return;
+        }
+        throw new Error(data.error || 'API request failed');
+      }
+
       if (data.fromCache) {
         // Logged-in users should never get this — but handle gracefully just in case
         if (!isLoggedIn) {
