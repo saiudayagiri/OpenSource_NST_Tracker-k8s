@@ -14,6 +14,7 @@ import { RefreshButton } from '../RefreshButton';
 import { readProfileCache, writeProfileCache, isProfileFresh } from '@/lib/profile-cache';
 import { getStudentsKV } from '@/lib/kv-students';
 import { kvGet, kvSet } from '@/lib/kv';
+import { cookies } from 'next/headers';
 
 async function queueBackgroundRefresh(username: string) {
   try {
@@ -335,28 +336,69 @@ export default async function ContributorPage({
   let issues: StudentIssue[] = [];
   let cachedAt: string | null = null;
 
+  // Detect if user is logged in — logged-in users use their own OAuth token
+  // (personal 5,000 req/hr quota) so live fetches are safe for them.
+  let userLoggedIn = false;
+  try {
+    const cookieStore = await cookies();
+    userLoggedIn = !!cookieStore.get('github_oauth_token')?.value;
+  } catch { /* outside request context */ }
+
   const cached = await readProfileCache(username);
   if (cached) {
-    // 1. Always serve cached content instantly to guarantee fast page loads
+    // 1. Always serve cached content instantly
     profile = cached.profile;
     allPRs = cached.prs;
     issues = cached.issues;
     cachedAt = cached.cachedAt;
 
-    // 2. If the cache is stale (older than 2 hours), queue a background refresh
+    // 2. Cache stale (>2hrs) — logged-in users get an immediate live re-fetch;
+    //    anonymous users are queued for the background worker.
     const ageMs = Date.now() - new Date(cached.cachedAt).getTime();
     if (ageMs > 2 * 60 * 60 * 1000) {
-      queueBackgroundRefresh(username);
+      if (userLoggedIn) {
+        // Live refresh using their token — fire-and-forget, don't block render
+        Promise.all([
+          getStudentProfile(username),
+          getStudentPRs(username),
+          getStudentIssues(username),
+        ]).then(([freshProfile, freshPRs, freshIssues]) => {
+          if (freshProfile && freshPRs !== null && freshIssues !== null) {
+            writeProfileCache(username, freshProfile, freshPRs, freshIssues);
+          }
+        }).catch(() => { /* rate limit or network error — silently fall back to cached */ });
+      } else {
+        queueBackgroundRefresh(username);
+      }
     }
   } else {
-    // 3. No cache — queue a background refresh instead of hitting GitHub API synchronously.
-    // Synchronous fetches here cause rate limit exhaustion when many uncached profiles
-    // are visited at once (e.g. after a bulk student import).
-    queueBackgroundRefresh(username);
-    // profile stays null → notFound() below will be skipped because we return a skeleton instead
+    // 3. No cache at all.
+    if (userLoggedIn) {
+      // Logged-in: fetch synchronously with their token so they see real data immediately.
+      try {
+        const [freshProfile, freshPRs, freshIssues] = await Promise.all([
+          getStudentProfile(username),
+          getStudentPRs(username),
+          getStudentIssues(username),
+        ]);
+        if (freshProfile && freshPRs !== null && freshIssues !== null) {
+          profile = freshProfile;
+          allPRs = freshPRs;
+          issues = freshIssues;
+          await writeProfileCache(username, freshProfile, freshPRs, freshIssues);
+          cachedAt = new Date().toISOString();
+        }
+      } catch (err) {
+        console.error(`Logged-in live fetch failed for ${username}:`, err);
+        queueBackgroundRefresh(username);
+      }
+    } else {
+      // Anonymous: queue background refresh, show initializing state.
+      queueBackgroundRefresh(username);
+    }
   }
 
-  // Show a clean "initializing" page for brand new profiles not yet in cache
+  // Show a clean "initializing" page for uncached profiles visited by anonymous users
   if (!profile) {
     return (
       <main className="min-h-screen bg-[#030712] text-white flex items-center justify-center">
