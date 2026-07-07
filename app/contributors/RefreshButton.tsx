@@ -111,8 +111,11 @@ export function RefreshButton({ cachedAt: initialCachedAt, username, period }: P
       setToast({ message: 'Successfully updated leaderboard stats!', type: 'success' });
       // Re-render server components with fresh cache
       startTransition(() => { router.refresh(); });
-    } catch {
-      setToast({ message: 'Failed to fetch updates. Please try again.', type: 'error' });
+    } catch (err: any) {
+      const msg = err.message || 'Failed to fetch updates. Please try again.';
+      setToast({ message: msg, type: 'error' });
+      setError(msg);
+      setTimeout(() => { setError(''); }, 8000);
     } finally {
       setIsFetching(false);
     }

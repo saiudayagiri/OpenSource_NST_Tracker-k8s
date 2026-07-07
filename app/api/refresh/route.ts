@@ -5,6 +5,7 @@ import {
   getStudentIssues,
   buildDateQuery,
   getSummaryFromCache,
+  GitHubRateLimitError,
 } from '@/lib/github';
 import { getStudentsKV } from '@/lib/kv-students';
 import { getFlaggedPRIdSet } from '@/lib/flagged';
@@ -163,23 +164,32 @@ export async function POST(request: Request) {
         cachedAt: new Date().toISOString(),
       });
     } catch (err: any) {
-      console.warn(`[Refresh API] Rate limit or error hit for @${username}. Queuing update. Error:`, err.message);
+      const isRateLimit = err.name === 'GitHubRateLimitError' || err instanceof GitHubRateLimitError;
 
-      try {
-        const queue = await kvGet<string[]>('refresh_queue') || [];
-        if (!queue.some(u => u.toLowerCase() === username.toLowerCase())) {
-          queue.push(username);
-          await kvSet('refresh_queue', queue);
+      if (isRateLimit) {
+        console.warn(`[Refresh API] Rate limit hit for @${username}. Queuing update. Error:`, err.message);
+        try {
+          const queue = await kvGet<string[]>('refresh_queue') || [];
+          if (!queue.some(u => u.toLowerCase() === username.toLowerCase())) {
+            queue.push(username);
+            await kvSet('refresh_queue', queue);
+          }
+        } catch (kvErr) {
+          console.error('Failed to add user to refresh_queue KV:', kvErr);
         }
-      } catch (kvErr) {
-        console.error('Failed to add user to refresh_queue KV:', kvErr);
+
+        return Response.json({
+          ok: false,
+          rateLimited: true,
+          message: 'GitHub rate limit exceeded. We have queued your profile to update automatically in the background shortly.',
+        });
       }
 
-      return Response.json({
-        ok: false,
-        rateLimited: true,
-        message: 'GitHub rate limit exceeded. We have queued your profile to update automatically in the background shortly.',
-      });
+      console.error(`[Refresh API] Error refreshing @${username}:`, err);
+      return Response.json(
+        { ok: false, error: err.message || 'Failed to fetch updates from GitHub' },
+        { status: 500 }
+      );
     }
   }
 

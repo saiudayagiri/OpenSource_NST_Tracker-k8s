@@ -17,7 +17,8 @@ console.log(`Deleted ${deletedCount} profile cache files.`);
 
 // 2. Trigger the seeder
 const secret = 'cron_incremental_refresh_secret_2026';
-const url = 'http://localhost:3000/api/refresh/incremental';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+const url = `${BASE_URL}/api/refresh/incremental`;
 
 async function seed() {
   console.log('Starting full fresh cache seed...');

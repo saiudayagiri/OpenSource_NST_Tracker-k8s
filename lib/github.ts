@@ -171,6 +171,7 @@ export interface StudentSummary {
   issuesCount: number;
   year?: '1st year' | '2nd year' | '3rd year' | '4th year';
   campus?: 'Rishihood' | 'ADYPU' | 'SVYASA';
+  cachedAt?: string;
 }
 
 // getStudents() has been replaced with getStudentsKV() from './kv-students'
@@ -194,13 +195,17 @@ export async function getStudentProfile(username: string, retryWithSystemToken =
       });
       if (res.ok) return res.json();
     }
+    if (res.status === 404) {
+      return null;
+    }
     if (res.status === 403 || res.status === 429) {
       throw new GitHubRateLimitError();
     }
-    return null;
+    throw new Error(`GitHub API returned status ${res.status}: ${res.statusText}`);
   }
   return res.json();
 }
+
 
 export interface StudentIssue {
   id: number;
@@ -328,6 +333,7 @@ export function getSummaryFromCache(
     closedPRs,
     scoreMergedPRs: Math.max(0, mergedPRs - flaggedMerged),
     issuesCount: issues.length,
+    cachedAt: cached.cachedAt,
   };
 }
 
@@ -738,6 +744,7 @@ export async function updateStaleProfiles(batchSize = 5): Promise<string[]> {
 
   /** Minimum age before a profile is considered stale and eligible for background refresh */
   const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000; // 24 hours
+  const now = Date.now();
 
   // 1. Read refresh queue from KV (manually triggered high-priority refreshes)
   let queue: string[] = [];
@@ -747,57 +754,75 @@ export async function updateStaleProfiles(batchSize = 5): Promise<string[]> {
     queue = [];
   }
 
-  // Filter queue to ensure all usernames exist in students list
   const studentUsernamesSet = new Set(students.map(s => s.github.toLowerCase()));
   const validQueue = queue.filter(username => studentUsernamesSet.has(username.toLowerCase()));
 
   // 2. Select targets
   const targetsUsernames: string[] = [];
-  
-  // Pick from the queue first (these are high-priority — no staleness check)
+
+  // High-priority queue items first (no staleness check needed)
   const queueTargets = validQueue.slice(0, batchSize);
   targetsUsernames.push(...queueTargets);
 
-  // If queue didn't fill the batch, fill the rest with genuinely stale profiles (>24hrs old)
+  // 3. Fill remaining slots using cache age data from the main summaries cache (single KV read)
   if (targetsUsernames.length < batchSize) {
     const remainingCount = batchSize - targetsUsernames.length;
     const excludedSet = new Set(targetsUsernames.map(u => u.toLowerCase()));
-    const now = Date.now();
 
-    const studentCaches = await Promise.all(
-      students
-        .filter(s => !excludedSet.has(s.github.toLowerCase()))
-        .map(async (student) => {
-          try {
-            const cached = await readProfileCache(student.github);
-            return {
-              student,
-              cachedAt: cached ? new Date(cached.cachedAt).getTime() : 0,
-            };
-          } catch {
-            return { student, cachedAt: 0 };
+    // Try to load cached summaries to read cache timestamps without querying 1900+ keys
+    const cacheMap = new Map<string, string>(); // username (lower) -> cachedAt ISO string
+    try {
+      const summaryCache = await kvGet<{ summaries: StudentSummary[] }>('summary_cache:all');
+      if (summaryCache && Array.isArray(summaryCache.summaries)) {
+        for (const s of summaryCache.summaries) {
+          if (s.profile?.login && s.cachedAt) {
+            cacheMap.set(s.profile.login.toLowerCase(), s.cachedAt);
           }
-        })
-    );
-
-    // Only pick profiles that are genuinely stale (>24hrs old or never cached)
-    const staleProfiles = studentCaches.filter(
-      c => now - c.cachedAt >= STALE_THRESHOLD_MS
-    );
-
-    if (staleProfiles.length === 0) {
-      console.log('[Incremental Refresh] All profiles are fresh (< 24hrs). Skipping batch refresh.');
-      // Still process queue items if any
-      if (targetsUsernames.length === 0) return [];
+        }
+      }
+    } catch (err) {
+      console.warn('[Incremental Refresh] Could not load summary cache to determine age:', err);
     }
 
-    // Sort oldest-first and pick up to remainingCount
-    staleProfiles.sort((a, b) => a.cachedAt - b.cachedAt);
-    const staleTargets = staleProfiles.slice(0, remainingCount).map(c => c.student.github);
-    targetsUsernames.push(...staleTargets);
+    // Classify students who are not already excluded
+    const neverCached: string[] = [];
+    const staleCached: Array<{ username: string; cachedAtTime: number }> = [];
+
+    for (const student of students) {
+      const lower = student.github.toLowerCase();
+      if (excludedSet.has(lower)) continue;
+
+      const cachedAtStr = cacheMap.get(lower);
+      if (!cachedAtStr) {
+        neverCached.push(student.github);
+      } else {
+        const cachedAtTime = new Date(cachedAtStr).getTime();
+        if (now - cachedAtTime >= STALE_THRESHOLD_MS) {
+          staleCached.push({ username: student.github, cachedAtTime });
+        }
+      }
+    }
+
+    // Prioritize never-cached targets first
+    const neverCachedTargets = neverCached.slice(0, remainingCount);
+    targetsUsernames.push(...neverCachedTargets);
+    neverCachedTargets.forEach(u => excludedSet.add(u.toLowerCase()));
+
+    // Fill the remaining slots with stale profiles (oldest first)
+    if (targetsUsernames.length < batchSize) {
+      const stillRemaining = batchSize - targetsUsernames.length;
+      staleCached.sort((a, b) => a.cachedAtTime - b.cachedAtTime);
+      const staleTargets = staleCached.slice(0, stillRemaining).map(s => s.username);
+      targetsUsernames.push(...staleTargets);
+    }
+
+    if (targetsUsernames.length === 0) {
+      console.log('[Incremental Refresh] All profiles are fresh (< 24hrs). Skipping batch refresh.');
+      return [];
+    }
   }
 
-  // 3. Process targets
+  // 4. Process targets — fetch from GitHub and write profile caches
   const updatedUsernames: string[] = [];
 
   for (const username of targetsUsernames) {
@@ -811,7 +836,7 @@ export async function updateStaleProfiles(batchSize = 5): Promise<string[]> {
     }
   }
 
-  // 4. Update the queue in KV by removing the successfully processed users
+  // 5. Update the queue in KV by removing the successfully processed users
   if (validQueue.length > 0) {
     const processedSet = new Set(updatedUsernames.map(u => u.toLowerCase()));
     const remainingQueue = validQueue.filter(username => !processedSet.has(username.toLowerCase()));
@@ -824,4 +849,3 @@ export async function updateStaleProfiles(batchSize = 5): Promise<string[]> {
 
   return updatedUsernames;
 }
-
