@@ -11,14 +11,14 @@ export const dynamic = 'force-dynamic';
 async function performIncrementalRefresh() {
   // 1. Refresh up to 5 stale profiles (cursor-based round-robin, O(1) KV reads)
   console.log('[Incremental Refresh] Starting stale profile updates...');
-  const updatedUsers = await updateStaleProfiles(5);
-  console.log('[Incremental Refresh] Updated users:', updatedUsers);
+  const { updated, attempted } = await updateStaleProfiles(5);
+  console.log('[Incremental Refresh] Updated users:', updated, 'Attempted users:', attempted);
 
-  if (updatedUsers.length === 0) {
-    return { ok: true, updatedUsers: [], message: 'All profiles are fresh. Nothing to update.' };
+  if (attempted.length === 0) {
+    return { ok: true, updatedUsers: [], attemptedUsers: [], message: 'All profiles are fresh. Nothing to update.' };
   }
 
-  // 2. Patch ONLY the updated students in every summary cache period (O(n) where n=updatedUsers.length)
+  // 2. Patch ONLY the updated students in every summary cache period (O(n) where n=updated.length)
   //    This avoids reading all 1914+ profiles on every cron run.
   console.log('[Incremental Refresh] Patching summary caches for updated users...');
   const flaggedPRIds = await getFlaggedPRIdSet();
@@ -32,7 +32,7 @@ async function performIncrementalRefresh() {
     const dateQuery = buildDateQuery(period);
     let changed = false;
 
-    for (const username of updatedUsers) {
+    for (const username of updated) {
       const updatedCache = await readProfileCache(username);
       if (!updatedCache) continue;
 
@@ -68,8 +68,9 @@ async function performIncrementalRefresh() {
 
   return {
     ok: true,
-    updatedUsers,
-    message: `Successfully refreshed cache for: ${updatedUsers.join(', ')}`,
+    updatedUsers: updated,
+    attemptedUsers: attempted,
+    message: `Successfully refreshed cache for: ${updated.join(', ')}`,
   };
 }
 

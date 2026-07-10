@@ -738,9 +738,9 @@ export async function refreshStudentCache(username: string): Promise<void> {
   await writeProfileCache(username, profile, prs, issues);
 }
 
-export async function updateStaleProfiles(batchSize = 5): Promise<string[]> {
+export async function updateStaleProfiles(batchSize = 5): Promise<{ updated: string[]; attempted: string[] }> {
   const students = await getStudentsKV();
-  if (students.length === 0) return [];
+  if (students.length === 0) return { updated: [], attempted: [] };
 
   /** Minimum age before a profile is considered stale and eligible for background refresh */
   const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -818,7 +818,7 @@ export async function updateStaleProfiles(batchSize = 5): Promise<string[]> {
 
     if (targetsUsernames.length === 0) {
       console.log('[Incremental Refresh] All profiles are fresh (< 24hrs). Skipping batch refresh.');
-      return [];
+      return { updated: [], attempted: [] };
     }
   }
 
@@ -831,8 +831,30 @@ export async function updateStaleProfiles(batchSize = 5): Promise<string[]> {
       updatedUsernames.push(username);
       // Wait 1.5 seconds between students to respect GitHub Search rate limits
       await new Promise((r) => setTimeout(r, 1500));
-    } catch (err) {
+    } catch (err: any) {
       console.error(`Failed to refresh cache for ${username}:`, err);
+      try {
+        const fallbackProfile: GitHubUser = {
+          login: username,
+          avatar_url: 'https://avatars.githubusercontent.com/u/9919?v=4', // Fallback standard avatar
+          html_url: `https://github.com/${username}`,
+          name: username,
+          public_repos: 0,
+          followers: 0,
+          following: 0,
+          company: null,
+          location: null,
+          blog: null,
+          twitter_username: null,
+          bio: err.message || 'Failed to fetch profile metadata',
+          created_at: new Date().toISOString()
+        };
+        // Write fallback entry to KV to update staleness and un-block queue
+        await writeProfileCache(username, fallbackProfile, [], []);
+        updatedUsernames.push(username);
+      } catch (writeErr) {
+        console.error(`Failed to write fallback cache for ${username}:`, writeErr);
+      }
     }
   }
 
@@ -847,5 +869,5 @@ export async function updateStaleProfiles(batchSize = 5): Promise<string[]> {
     }
   }
 
-  return updatedUsernames;
+  return { updated: updatedUsernames, attempted: targetsUsernames };
 }

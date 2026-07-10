@@ -16,8 +16,8 @@ async function seed() {
       });
       const data = await res.json();
       console.log(`[Batch ${i}] Response:`, data);
-      
-      if (!data.updatedUsers || data.updatedUsers.length === 0) {
+      const isDone = data.attemptedUsers ? data.attemptedUsers.length === 0 : (!data.updatedUsers || data.updatedUsers.length === 0);
+      if (isDone) {
         console.log('No more stale users. All caches are completely up to date!');
         break;
       }
