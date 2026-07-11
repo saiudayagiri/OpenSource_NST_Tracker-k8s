@@ -1,0 +1,24 @@
+name: Refresh Leaderboard Cache
+
+on:
+  schedule:
+    - cron: '0 */2 * * *' # Run every 2 hours
+  workflow_dispatch: # Allow manual triggering from the Actions tab
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Refresh Script
+        run: node scripts/seed-all.js
+        env:
+          # Use the production Vercel URL
+          BASE_URL: https://opensource-nst-tracker.vercel.app

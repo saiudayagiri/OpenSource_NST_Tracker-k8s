@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { getStudentsKV } from './kv-students';
+import { getStudentsKV, removeStudent } from './kv-students';
 import { readProfileCache, writeProfileCache, isProfileFresh, type ProfileCacheEntry } from './profile-cache';
 import { execSync } from 'child_process';
 import { cookies } from 'next/headers';
@@ -35,6 +35,9 @@ export class GitHubRateLimitError extends Error {
   }
 }
 
+let memoryTokenPool: string[] | null = null;
+let lastPoolFetch = 0;
+
 export async function getGitHubHeaders(): Promise<HeadersInit> {
   let token: string | undefined = undefined;
   try {
@@ -42,6 +45,28 @@ export async function getGitHubHeaders(): Promise<HeadersInit> {
     token = cookieStore.get('github_oauth_token')?.value;
   } catch {
     // cookies() can throw when evaluated outside of request contexts (e.g. static rendering)
+  }
+
+  // If no session token, pick a random token from the pool (cached in memory for 60s)
+  if (!token) {
+    const now = Date.now();
+    if (!memoryTokenPool || now - lastPoolFetch > 60000) {
+      try {
+        const pool = await kvGet<Record<string, string>>('github_token_pool');
+        if (pool) {
+          memoryTokenPool = Object.values(pool);
+        } else {
+          memoryTokenPool = [];
+        }
+        lastPoolFetch = now;
+      } catch {
+        memoryTokenPool = memoryTokenPool || [];
+      }
+    }
+    
+    if (memoryTokenPool && memoryTokenPool.length > 0) {
+      token = memoryTokenPool[Math.floor(Math.random() * memoryTokenPool.length)];
+    }
   }
 
   if (!token) {
@@ -724,17 +749,29 @@ export function buildDateQuery(period: string, from?: string, to?: string): stri
   }
 }
 
+export class NotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NotFoundError';
+  }
+}
+
 export async function refreshStudentCache(username: string): Promise<void> {
   console.log(`Refreshing cache for user: ${username}`);
   const profile = await getStudentProfile(username);
+  
   if (!profile) {
-    throw new Error(`Profile not found for user: ${username}`);
+    console.warn(`Profile not found (404) for user: ${username}. It will be removed from tracking.`);
+    throw new NotFoundError(`Profile not found for user: ${username}`);
   }
+  
   const prs = await getStudentPRs(username);
   const issues = await getStudentIssues(username);
+  
   if (prs === null || issues === null) {
     throw new Error(`Failed to fetch contributions for user: ${username}`);
   }
+  
   await writeProfileCache(username, profile, prs, issues);
 }
 
@@ -832,28 +869,15 @@ export async function updateStaleProfiles(batchSize = 5): Promise<{ updated: str
       // Wait 1.5 seconds between students to respect GitHub Search rate limits
       await new Promise((r) => setTimeout(r, 1500));
     } catch (err: any) {
-      console.error(`Failed to refresh cache for ${username}:`, err);
-      try {
-        const fallbackProfile: GitHubUser = {
-          login: username,
-          avatar_url: 'https://avatars.githubusercontent.com/u/9919?v=4', // Fallback standard avatar
-          html_url: `https://github.com/${username}`,
-          name: username,
-          public_repos: 0,
-          followers: 0,
-          following: 0,
-          company: null,
-          location: null,
-          blog: null,
-          twitter_username: null,
-          bio: err.message || 'Failed to fetch profile metadata',
-          created_at: new Date().toISOString()
-        };
-        // Write fallback entry to KV to update staleness and un-block queue
-        await writeProfileCache(username, fallbackProfile, [], []);
+      if (err instanceof NotFoundError || err.name === 'NotFoundError') {
+        console.error(`Removing invalid GitHub ID from tracking: ${username}`);
+        await removeStudent(username);
+        // We consider it "updated" so it gets removed from the refresh queue
         updatedUsernames.push(username);
-      } catch (writeErr) {
-        console.error(`Failed to write fallback cache for ${username}:`, writeErr);
+      } else {
+        console.error(`Failed to refresh cache for ${username}:`, err);
+        // Do NOT write a fallback cache on Rate Limit or network errors.
+        // It will remain stale and get retried in the next batch automatically.
       }
     }
   }

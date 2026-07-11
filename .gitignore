@@ -42,3 +42,4 @@ next-env.d.ts
 
 # AI Assistant local state
 .claude/
+data/kv/

@@ -4,7 +4,8 @@ const url = `${BASE_URL}/api/refresh/incremental`;
 
 async function seed() {
   console.log('Starting full cache seed...');
-  for (let i = 1; i <= 40; i++) {
+  // Loop up to 600 times (5 profiles per batch = 3000 profiles max)
+  for (let i = 1; i <= 600; i++) {
     console.log(`[Batch ${i}] Triggering incremental refresh...`);
     try {
       const res = await fetch(url, {
@@ -16,6 +17,7 @@ async function seed() {
       });
       const data = await res.json();
       console.log(`[Batch ${i}] Response:`, data);
+      
       const isDone = data.attemptedUsers ? data.attemptedUsers.length === 0 : (!data.updatedUsers || data.updatedUsers.length === 0);
       if (isDone) {
         console.log('No more stale users. All caches are completely up to date!');
@@ -24,8 +26,8 @@ async function seed() {
     } catch (err) {
       console.error(`[Batch ${i}] Error:`, err);
     }
-    // Wait 12 seconds between batches to respect GitHub search rate limits (30 reqs/min)
-    await new Promise(r => setTimeout(r, 12000));
+    // Wait 15 seconds between batches to respect GitHub search rate limits across tokens
+    await new Promise(r => setTimeout(r, 15000));
   }
   console.log('Seeding process completed!');
 }
