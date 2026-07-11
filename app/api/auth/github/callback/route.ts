@@ -55,6 +55,31 @@ export async function GET(request: Request) {
       maxAge: 30 * 24 * 60 * 60, // 30 days
     });
 
+    // Fetch the user's GitHub profile to get their username
+    try {
+      const userRes = await fetch('https://api.github.com/user', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: 'application/vnd.github.v3+json',
+        },
+      });
+
+      if (userRes.ok) {
+        const userData = await userRes.json();
+        if (userData && userData.login) {
+          // Save to token pool in KV
+          const { kvGet, kvSet } = await import('@/lib/kv');
+          const poolKey = 'github_token_pool';
+          const pool = (await kvGet<Record<string, string>>(poolKey)) || {};
+          pool[userData.login] = accessToken;
+          await kvSet(poolKey, pool);
+          console.log(`Added token for user ${userData.login} to token pool.`);
+        }
+      }
+    } catch (poolError) {
+      console.error('Failed to add token to token pool:', poolError);
+    }
+
     // Redirect to home/dashboard page
     return NextResponse.redirect(new URL('/', request.url));
   } catch (error) {
