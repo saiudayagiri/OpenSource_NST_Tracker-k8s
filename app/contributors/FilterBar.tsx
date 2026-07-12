@@ -32,9 +32,10 @@ export function FilterBar() {
   const [loadingTarget, setLoadingTarget] = useState<string | null>(null);
 
   // Clear loading state when the URL finally changes
+  // Using .toString() prevents unstable object references from clearing it instantly
   React.useEffect(() => {
     setLoadingTarget(null);
-  }, [searchParams]);
+  }, [searchParams.toString()]);
 
   const [prevPeriod, setPrevPeriod] = useState(period);
   if (period !== prevPeriod) {
