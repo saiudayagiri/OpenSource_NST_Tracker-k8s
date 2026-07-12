@@ -15,6 +15,8 @@ import { readProfileCache, writeProfileCache, isProfileFresh } from '@/lib/profi
 import { getStudentsKV } from '@/lib/kv-students';
 import { kvGet, kvSet } from '@/lib/kv';
 import { cookies } from 'next/headers';
+import { getRepoCache } from '@/lib/repo-cache';
+import { getFlaggedPRIdSet } from '@/lib/flagged';
 
 async function queueBackgroundRefresh(username: string) {
   try {
@@ -376,16 +378,31 @@ export default async function ContributorPage({
     if (userLoggedIn) {
       // Logged-in: fetch synchronously with their token so they see real data immediately.
       try {
-        const [freshProfile, freshPRs, freshIssues] = await Promise.all([
+        const [freshProfile, rawPRs, freshIssues] = await Promise.all([
           getStudentProfile(username),
           getStudentPRs(username),
           getStudentIssues(username),
         ]);
-        if (freshProfile && freshPRs !== null && freshIssues !== null) {
+        if (freshProfile && rawPRs !== null && freshIssues !== null) {
           profile = freshProfile;
-          allPRs = freshPRs;
           issues = freshIssues;
-          await writeProfileCache(username, freshProfile, freshPRs, freshIssues);
+          
+          const repoCache = await getRepoCache();
+          const flagged = await getFlaggedPRIdSet();
+          
+          allPRs = rawPRs.filter(pr => {
+            if (!pr.repository_url) return true;
+            const repo = pr.repository_url.replace('https://api.github.com/repos/', '');
+            const key = `${repo}#${pr.number}`;
+            
+            if (flagged.has(key)) return false;
+            const repoEntry = repoCache[repo];
+            if (repoEntry && repoEntry.valid === false) return false;
+            
+            return true;
+          });
+          
+          await writeProfileCache(username, freshProfile, allPRs, freshIssues);
           cachedAt = new Date().toISOString();
         }
       } catch (err) {
@@ -430,8 +447,23 @@ export default async function ContributorPage({
     );
   }
 
+  const repoCache = await getRepoCache();
+  const flagged = await getFlaggedPRIdSet();
 
-  const filteredPRs = filterByPeriod(allPRs, period, from, to);
+  // Strip out spam PRs so they don't even appear on the profile page
+  const validPRs = allPRs.filter(pr => {
+    if (!pr.repository_url) return true;
+    const repo = pr.repository_url.replace('https://api.github.com/repos/', '');
+    const key = `${repo}#${pr.number}`;
+    
+    if (flagged.has(key)) return false;
+    const repoEntry = repoCache[repo];
+    if (repoEntry && repoEntry.valid === false) return false;
+    
+    return true;
+  });
+
+  const filteredPRs = filterByPeriod(validPRs, period, from, to);
   const filteredIssues = filterByPeriod(issues, period, from, to);
 
   const counts = {
@@ -445,8 +477,8 @@ export default async function ContributorPage({
             : tab === 'open'   ? filteredPRs.filter(pr => pr.state === 'open')
             : filteredPRs;
 
-  const lifetimeMergedCount = allPRs.filter(pr => pr.pull_request?.merged_at).length;
-  const badges = getBadges(allPRs, lifetimeMergedCount);
+  const lifetimeMergedCount = validPRs.filter(pr => pr.pull_request?.merged_at).length;
+  const badges = getBadges(validPRs, lifetimeMergedCount);
 
   return (
     <main className="min-h-screen bg-[#030712]">
