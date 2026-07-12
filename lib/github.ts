@@ -550,7 +550,7 @@ export async function getAllStudentSummaries(
     }
 
     const batch = usernames.slice(i, i + batchSize);
-    const authorQuery = batch.map((u) => `author:${u}`).join(' ');
+    const authorQuery = `(${batch.map((u) => `author:${u}`).join(' OR ')})`;
     const prQuery = `is:pr ${authorQuery}${dateQuery ? ' ' + dateQuery : ''}`;
     const issueQuery = `is:issue ${authorQuery}${dateQuery ? ' ' + dateQuery : ''}`;
 
