@@ -22,8 +22,9 @@ export async function writeSummaryCache(summaries: StudentSummary[], period = 'a
     cachedAt: new Date().toISOString(),
     summaries,
   };
-  // Store summary caches for up to 1 day, though they are dynamically updated or invalidated
-  await kvSet(getCacheKey(period), cache, 86400);
+  // Store summary caches permanently. They are ONLY updated incrementally
+  // by background jobs, preventing the leaderboard from ever dropping to zero.
+  await kvSet(getCacheKey(period), cache);
 }
 
 /** Returns true if the cache is younger than the cooldown window */
