@@ -535,7 +535,9 @@ export async function getAllStudentSummaries(
   // ── Phase 2: Batch-query GitHub for remaining (or all) students ────
   const studentsToFetch = forceLive ? students : uncachedStudents;
   const usernames = studentsToFetch.map((s) => s.github);
-  const batchSize = 15;
+  // GitHub Search API has a strict limit of 5 OR operators per query. 
+  // We can query a maximum of 5 authors per batch.
+  const batchSize = 5;
   const allPRs: StudentPR[] = [];
   const allIssues: StudentIssue[] = [];
   let rateLimitHit = false;
