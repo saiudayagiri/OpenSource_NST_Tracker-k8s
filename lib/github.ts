@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { getStudentsKV, removeStudent } from './kv-students';
+import { getRepoCache, saveRepoCache, type RepoCacheMap } from './repo-cache';
 import { readProfileCache, writeProfileCache, isProfileFresh, type ProfileCacheEntry } from './profile-cache';
 import { execSync } from 'child_process';
 import { cookies } from 'next/headers';
@@ -231,6 +232,58 @@ export async function getStudentProfile(username: string, retryWithSystemToken =
   return res.json();
 }
 
+/** Fetches missing repository metadata from GitHub and updates the repo cache */
+export async function validateNewRepos(
+  prs: StudentPR[],
+  repoCacheMap: import('./repo-cache').RepoCacheMap
+): Promise<{ updated: boolean, map: import('./repo-cache').RepoCacheMap }> {
+  let updated = false;
+  
+  // Extract unique repo full names (e.g. "owner/repo")
+  const uniqueRepos = new Set<string>();
+  for (const pr of prs) {
+    if (!pr.repository_url) continue;
+    const repoFullName = pr.repository_url.replace('https://api.github.com/repos/', '');
+    if (!repoCacheMap[repoFullName]) {
+      uniqueRepos.add(repoFullName);
+    }
+  }
+
+  if (uniqueRepos.size === 0) return { updated, map: repoCacheMap };
+
+  const headers = await getGitHubHeaders();
+  
+  for (const repoFullName of uniqueRepos) {
+    try {
+      const res = await fetch(`https://api.github.com/repos/${repoFullName}`, { headers });
+      if (res.ok) {
+        const data = await res.json();
+        const stars = data.stargazers_count || 0;
+        const forks = data.forks_count || 0;
+        repoCacheMap[repoFullName] = {
+          stars,
+          forks,
+          valid: stars >= 5 // MUST have 5 stars to be considered valid
+        };
+        updated = true;
+      } else if (res.status === 404) {
+        // Deleted or private repo
+        repoCacheMap[repoFullName] = { stars: 0, forks: 0, valid: false };
+        updated = true;
+      } else if (res.status === 403 || res.status === 429) {
+        // Rate limit hit while fetching repo details. Stop checking for now.
+        console.warn(`Rate limit hit checking repo: ${repoFullName}`);
+        break;
+      }
+    } catch (err) {
+      console.error(`Failed to check repo ${repoFullName}:`, err);
+    }
+  }
+
+  return { updated, map: repoCacheMap };
+}
+
+
 
 export interface StudentIssue {
   id: number;
@@ -309,7 +362,8 @@ export async function getStudentPRs(username: string): Promise<StudentPR[] | nul
 export function getSummaryFromCache(
   cached: ProfileCacheEntry,
   dateQuery: string,
-  flaggedPRIds: Set<string>
+  flaggedPRIds: Set<string>,
+  repoCacheMap: import('./repo-cache').RepoCacheMap = {}
 ): StudentSummary {
   let prs = cached.prs || [];
   let issues = cached.issues || [];
@@ -344,11 +398,25 @@ export function getSummaryFromCache(
   const openPRs = prs.filter((pr) => pr.state === 'open').length;
   const closedPRs = prs.filter((pr) => pr.state === 'closed' && !pr.pull_request?.merged_at).length;
 
-  const flaggedMerged = mergedPRsList.filter((pr) => {
+  let penalizeCount = 0;
+  for (const pr of mergedPRsList) {
+    if (!pr.repository_url) continue;
     const repo = pr.repository_url.replace('https://api.github.com/repos/', '');
     const key = `${repo}#${pr.number}`;
-    return flaggedPRIds.has(key);
-  }).length;
+    
+    // Check if manually flagged
+    if (flaggedPRIds.has(key)) {
+      penalizeCount++;
+      continue; // Don't penalize twice
+    }
+
+    // Check if repository is invalid (spam / 0-stars)
+    const repoEntry = repoCacheMap[repo];
+    // If it's explicitly marked as invalid (valid === false), penalize it
+    if (repoEntry && repoEntry.valid === false) {
+      penalizeCount++;
+    }
+  }
 
   return {
     profile: cached.profile,
@@ -356,7 +424,7 @@ export function getSummaryFromCache(
     mergedPRs,
     openPRs,
     closedPRs,
-    scoreMergedPRs: Math.max(0, mergedPRs - flaggedMerged),
+    scoreMergedPRs: Math.max(0, mergedPRs - penalizeCount),
     issuesCount: issues.length,
     cachedAt: cached.cachedAt,
   };
@@ -368,16 +436,24 @@ export async function getStudentSummary(
   flaggedPRIds: Set<string> = new Set()
 ): Promise<StudentSummary | null> {
   let cached: ProfileCacheEntry | null = null;
+  let repoCache: import('./repo-cache').RepoCacheMap = {};
+  
   try {
     cached = await readProfileCache(student.github);
   } catch (err) {
     console.error(`Failed to read profile cache for ${student.github}:`, err);
   }
 
+  try {
+    repoCache = await getRepoCache();
+  } catch (err) {
+    console.error(`Failed to read repo cache for ${student.github}:`, err);
+  }
+
   // If we have profile cache, use it immediately to avoid hitting the rate limit
   if (cached) {
     try {
-      const summary = getSummaryFromCache(cached, dateQuery, flaggedPRIds);
+      const summary = getSummaryFromCache(cached, dateQuery, flaggedPRIds, repoCache);
       summary.year = student.year;
       summary.campus = student.campus;
       return summary;
@@ -399,7 +475,7 @@ export async function getStudentSummary(
     if (!profile) {
       if (cached) {
         console.warn(`Profile fetch failed but fallback cache exists for ${student.github}`);
-        const summary = getSummaryFromCache(cached, dateQuery, flaggedPRIds);
+        const summary = getSummaryFromCache(cached, dateQuery, flaggedPRIds, repoCache);
         summary.year = student.year;
         summary.campus = student.campus;
         return summary;
@@ -425,8 +501,14 @@ export async function getStudentSummary(
     const flaggedMergedInSample = mergedItems.filter((pr) => {
       const repo = pr.repository_url.replace('https://api.github.com/repos/', '');
       const key = `${repo}#${pr.number}`;
-      return flaggedPRIds.has(key);
+      
+      if (flaggedPRIds.has(key)) return true;
+      const repoEntry = repoCache[repo];
+      if (repoEntry && repoEntry.valid === false) return true;
+      
+      return false;
     }).length;
+    
     const flaggedMerged = Math.round(flaggedMergedInSample * scale);
 
     if (!dateQuery && profile && data !== null && issueData !== null) {
@@ -457,7 +539,7 @@ export async function getStudentSummary(
     if (cached) {
       console.info(`Falling back to cached profile data for ${student.github}`);
       try {
-        const summary = getSummaryFromCache(cached, dateQuery, flaggedPRIds);
+        const summary = getSummaryFromCache(cached, dateQuery, flaggedPRIds, repoCache);
         summary.year = student.year;
         summary.campus = student.campus;
         return summary;
@@ -477,6 +559,7 @@ export async function getAllStudentSummaries(
   const students = await getStudentsKV();
   if (students.length === 0) return [];
 
+  const repoCache = await getRepoCache();
   const summaries: StudentSummary[] = [];
   const uncachedStudents: Student[] = [];
 
@@ -495,7 +578,7 @@ export async function getAllStudentSummaries(
 
     for (const { student, cached } of cachedResults) {
       if (cached) {
-        const summary = getSummaryFromCache(cached, dateQuery, flaggedPRIds);
+        const summary = getSummaryFromCache(cached, dateQuery, flaggedPRIds, repoCache);
         summary.year = student.year;
         summary.campus = student.campus;
         summaries.push(summary);
@@ -651,7 +734,7 @@ export async function getAllStudentSummaries(
 
     if (!isSuccess && cached) {
       // Fallback to stale cache if batch query failed
-      const summary = getSummaryFromCache(cached, dateQuery, flaggedPRIds);
+      const summary = getSummaryFromCache(cached, dateQuery, flaggedPRIds, repoCache);
       summary.year = student.year;
       summary.campus = student.campus;
       summaries.push(summary);
@@ -705,11 +788,22 @@ export async function getAllStudentSummaries(
     const openPRs = prs.filter((pr) => pr.state === 'open').length;
     const closedPRs = prs.filter((pr) => pr.state === 'closed' && !pr.pull_request?.merged_at).length;
 
-    const flaggedMerged = mergedPRsList.filter((pr) => {
+    let penalizeCount = 0;
+    for (const pr of mergedPRsList) {
+      if (!pr.repository_url) continue;
       const repo = pr.repository_url.replace('https://api.github.com/repos/', '');
       const key = `${repo}#${pr.number}`;
-      return flaggedPRIds.has(key);
-    }).length;
+      
+      if (flaggedPRIds.has(key)) {
+        penalizeCount++;
+        continue;
+      }
+      
+      const repoEntry = repoCache[repo];
+      if (repoEntry && repoEntry.valid === false) {
+        penalizeCount++;
+      }
+    }
 
     summaries.push({
       profile,
@@ -717,7 +811,7 @@ export async function getAllStudentSummaries(
       mergedPRs,
       openPRs,
       closedPRs,
-      scoreMergedPRs: Math.max(0, mergedPRs - flaggedMerged),
+      scoreMergedPRs: Math.max(0, mergedPRs - penalizeCount),
       issuesCount: issues.length,
       year: student.year,
       campus: student.campus,
@@ -774,6 +868,13 @@ export async function refreshStudentCache(username: string): Promise<void> {
     throw new Error(`Failed to fetch contributions for user: ${username}`);
   }
   
+  // Validate any new repos found in PRs
+  const currentRepoCache = await getRepoCache();
+  const { updated, map } = await validateNewRepos(prs, currentRepoCache);
+  if (updated) {
+    await saveRepoCache(map);
+  }
+
   await writeProfileCache(username, profile, prs, issues);
 }
 
