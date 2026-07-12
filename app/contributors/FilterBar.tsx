@@ -29,8 +29,12 @@ export function FilterBar() {
   const [search, setSearch] = useState(searchQuery);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [isPending, startTransition] = useTransition();
-  const [pendingTarget, setPendingTarget] = useState<string | null>(null);
+  const [loadingTarget, setLoadingTarget] = useState<string | null>(null);
+
+  // Clear loading state when the URL finally changes
+  React.useEffect(() => {
+    setLoadingTarget(null);
+  }, [searchParams]);
 
   const [prevPeriod, setPrevPeriod] = useState(period);
   if (period !== prevPeriod) {
@@ -64,18 +68,19 @@ export function FilterBar() {
     return p.toString();
   }
 
-  function pushWithTransition(url: string, targetValue?: string) {
-    if (targetValue) setPendingTarget(targetValue);
-    startTransition(() => {
-      router.push(url, { scroll: false });
-    });
+  function pushWithRefresh(url: string, targetValue?: string) {
+    if (targetValue) setLoadingTarget(targetValue);
+    router.push(url, { scroll: false });
+    setTimeout(() => {
+      router.refresh();
+    }, 20);
   }
 
   function navigate(value: string) {
     if (value === 'custom') { setShowCustom(true); return; }
     setShowCustom(false);
     const qs = buildParams({ period: value, from: '', to: '' });
-    pushWithTransition(qs ? `/contributors?${qs}` : '/contributors', value);
+    pushWithRefresh(qs ? `/contributors?${qs}` : '/contributors', value);
   }
 
   function applyCustom() {
@@ -85,7 +90,7 @@ export function FilterBar() {
     if (search) p.set('search', search);
     if (yearParam) p.set('year', yearParam);
     if (campusParam) p.set('campus', campusParam);
-    pushWithTransition(`/contributors?${p.toString()}`, 'custom-apply');
+    pushWithRefresh(`/contributors?${p.toString()}`, 'custom-apply');
     setShowCustom(false);
   }
 
@@ -94,21 +99,22 @@ export function FilterBar() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       const qs = buildParams({ search: value });
-      pushWithTransition(qs ? `/contributors?${qs}` : '/contributors');
+      pushWithRefresh(qs ? `/contributors?${qs}` : '/contributors', 'search');
     }, 350);
   }
 
   function handleYearChange(value: string) {
     const qs = buildParams({ year: value });
-    pushWithTransition(qs ? `/contributors?${qs}` : '/contributors');
+    pushWithRefresh(qs ? `/contributors?${qs}` : '/contributors', 'year');
   }
 
   function handleCampusChange(value: string) {
     const qs = buildParams({ campus: value });
-    pushWithTransition(qs ? `/contributors?${qs}` : '/contributors');
+    pushWithRefresh(qs ? `/contributors?${qs}` : '/contributors', 'campus');
   }
 
   const isCustomActive = period === 'custom';
+  const isPending = loadingTarget !== null;
 
   const hasActiveFilters = period !== 'all' || search || yearParam || campusParam;
 
@@ -188,7 +194,7 @@ export function FilterBar() {
         <div className="flex flex-wrap items-center gap-2">
           {PRESETS.map(({ label, value }) => {
             const active = period === value;
-            const isLoading = isPending && pendingTarget === value;
+            const isLoading = isPending && loadingTarget === value;
             return (
               <button
                 key={value}
@@ -221,10 +227,10 @@ export function FilterBar() {
               isCustomActive || showCustom
                 ? 'bg-purple-500/20 border-purple-500/40 text-purple-300'
                 : 'bg-white/[0.03] border-white/[0.08] text-white/40 hover:text-white/70 hover:border-white/20'
-            } ${isPending && pendingTarget !== 'custom' ? 'opacity-50 cursor-not-allowed' : ''}`}
+            } ${isPending && loadingTarget !== 'custom' ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            <span className={isPending && pendingTarget === 'custom' ? 'opacity-0' : 'opacity-100 transition-opacity'}>Custom</span>
-            {isPending && pendingTarget === 'custom' && (
+            <span className={isPending && loadingTarget === 'custom' ? 'opacity-0' : 'opacity-100 transition-opacity'}>Custom</span>
+            {isPending && loadingTarget === 'custom' && (
               <span className="absolute inset-0 flex items-center justify-center">
                 <svg className="w-4 h-4 animate-spin text-purple-400" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -260,8 +266,8 @@ export function FilterBar() {
             disabled={!from || isPending}
             className="relative px-4 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-full transition-colors"
           >
-            <span className={isPending && pendingTarget === 'custom-apply' ? 'opacity-0' : 'opacity-100 transition-opacity'}>Apply</span>
-            {isPending && pendingTarget === 'custom-apply' && (
+            <span className={isPending && loadingTarget === 'custom-apply' ? 'opacity-0' : 'opacity-100 transition-opacity'}>Apply</span>
+            {isPending && loadingTarget === 'custom-apply' && (
               <span className="absolute inset-0 flex items-center justify-center">
                 <svg className="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
