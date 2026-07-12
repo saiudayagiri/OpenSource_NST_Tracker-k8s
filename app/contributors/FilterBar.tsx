@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useRef } from 'react';
+import { useState, useRef, useTransition } from 'react';
 
 const PRESETS = [
   { label: 'All',      value: 'all'     },
@@ -28,6 +28,9 @@ export function FilterBar() {
   const [to, setTo]     = useState(searchParams.get('to')   ?? '');
   const [search, setSearch] = useState(searchQuery);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [isPending, startTransition] = useTransition();
+  const [pendingTarget, setPendingTarget] = useState<string | null>(null);
 
   const [prevPeriod, setPrevPeriod] = useState(period);
   if (period !== prevPeriod) {
@@ -61,18 +64,18 @@ export function FilterBar() {
     return p.toString();
   }
 
-  function pushAndRefresh(url: string) {
-    router.push(url, { scroll: false });
-    setTimeout(() => {
-      router.refresh();
-    }, 20);
+  function pushWithTransition(url: string, targetValue?: string) {
+    if (targetValue) setPendingTarget(targetValue);
+    startTransition(() => {
+      router.push(url, { scroll: false });
+    });
   }
 
   function navigate(value: string) {
     if (value === 'custom') { setShowCustom(true); return; }
     setShowCustom(false);
     const qs = buildParams({ period: value, from: '', to: '' });
-    pushAndRefresh(qs ? `/contributors?${qs}` : '/contributors');
+    pushWithTransition(qs ? `/contributors?${qs}` : '/contributors', value);
   }
 
   function applyCustom() {
@@ -82,7 +85,7 @@ export function FilterBar() {
     if (search) p.set('search', search);
     if (yearParam) p.set('year', yearParam);
     if (campusParam) p.set('campus', campusParam);
-    pushAndRefresh(`/contributors?${p.toString()}`);
+    pushWithTransition(`/contributors?${p.toString()}`, 'custom-apply');
     setShowCustom(false);
   }
 
@@ -91,18 +94,18 @@ export function FilterBar() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       const qs = buildParams({ search: value });
-      pushAndRefresh(qs ? `/contributors?${qs}` : '/contributors');
+      pushWithTransition(qs ? `/contributors?${qs}` : '/contributors');
     }, 350);
   }
 
   function handleYearChange(value: string) {
     const qs = buildParams({ year: value });
-    pushAndRefresh(qs ? `/contributors?${qs}` : '/contributors');
+    pushWithTransition(qs ? `/contributors?${qs}` : '/contributors');
   }
 
   function handleCampusChange(value: string) {
     const qs = buildParams({ campus: value });
-    pushAndRefresh(qs ? `/contributors?${qs}` : '/contributors');
+    pushWithTransition(qs ? `/contributors?${qs}` : '/contributors');
   }
 
   const isCustomActive = period === 'custom';
@@ -185,17 +188,27 @@ export function FilterBar() {
         <div className="flex flex-wrap items-center gap-2">
           {PRESETS.map(({ label, value }) => {
             const active = period === value;
+            const isLoading = isPending && pendingTarget === value;
             return (
               <button
                 key={value}
                 onClick={() => navigate(value)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                disabled={isPending}
+                className={`relative px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
                   active
                     ? 'bg-purple-500/20 border-purple-500/40 text-purple-300'
                     : 'bg-white/[0.03] border-white/[0.08] text-white/40 hover:text-white/70 hover:border-white/20'
-                }`}
+                } ${isPending && !isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {label}
+                <span className={isLoading ? 'opacity-0' : 'opacity-100 transition-opacity'}>{label}</span>
+                {isLoading && (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <svg className="w-4 h-4 animate-spin text-purple-400" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </span>
+                )}
               </button>
             );
           })}
@@ -203,13 +216,22 @@ export function FilterBar() {
           {/* Custom pill */}
           <button
             onClick={() => navigate('custom')}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
+            disabled={isPending}
+            className={`relative px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
               isCustomActive || showCustom
                 ? 'bg-purple-500/20 border-purple-500/40 text-purple-300'
                 : 'bg-white/[0.03] border-white/[0.08] text-white/40 hover:text-white/70 hover:border-white/20'
-            }`}
+            } ${isPending && pendingTarget !== 'custom' ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            Custom
+            <span className={isPending && pendingTarget === 'custom' ? 'opacity-0' : 'opacity-100 transition-opacity'}>Custom</span>
+            {isPending && pendingTarget === 'custom' && (
+              <span className="absolute inset-0 flex items-center justify-center">
+                <svg className="w-4 h-4 animate-spin text-purple-400" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -221,7 +243,8 @@ export function FilterBar() {
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="bg-white/[0.05] border border-white/[0.12] text-white/70 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-purple-500/50 [color-scheme:dark]"
+            disabled={isPending}
+            className="bg-white/[0.05] border border-white/[0.12] text-white/70 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-purple-500/50 [color-scheme:dark] disabled:opacity-50"
           />
           <span className="text-white/30 text-sm">→</span>
           <input
@@ -229,18 +252,28 @@ export function FilterBar() {
             value={to}
             onChange={(e) => setTo(e.target.value)}
             min={from}
-            className="bg-white/[0.05] border border-white/[0.12] text-white/70 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-purple-500/50 [color-scheme:dark]"
+            disabled={isPending}
+            className="bg-white/[0.05] border border-white/[0.12] text-white/70 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-purple-500/50 [color-scheme:dark] disabled:opacity-50"
           />
           <button
             onClick={applyCustom}
-            disabled={!from}
-            className="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-full transition-colors"
+            disabled={!from || isPending}
+            className="relative px-4 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-full transition-colors"
           >
-            Apply
+            <span className={isPending && pendingTarget === 'custom-apply' ? 'opacity-0' : 'opacity-100 transition-opacity'}>Apply</span>
+            {isPending && pendingTarget === 'custom-apply' && (
+              <span className="absolute inset-0 flex items-center justify-center">
+                <svg className="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </span>
+            )}
           </button>
           <button
             onClick={() => setShowCustom(false)}
-            className="text-white/30 hover:text-white/60 text-sm transition-colors"
+            disabled={isPending}
+            className="text-white/30 hover:text-white/60 text-sm transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
