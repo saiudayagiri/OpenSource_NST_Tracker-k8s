@@ -1,6 +1,6 @@
 {
   "value": {
-    "cachedAt": "2026-07-12T11:47:32.521Z",
+    "cachedAt": "2026-07-12T12:38:55.232Z",
     "summaries": [
       {
         "profile": {
@@ -42,7 +42,7 @@
         "mergedPRs": 218,
         "openPRs": 21,
         "closedPRs": 8,
-        "scoreMergedPRs": 218,
+        "scoreMergedPRs": 213,
         "issuesCount": 269,
         "cachedAt": "2026-06-25T16:44:46.813Z",
         "year": "3rd year",
@@ -94,98 +94,6 @@
       },
       {
         "profile": {
-          "login": "Ipshita29",
-          "id": 184509749,
-          "node_id": "U_kgDOCv9lNQ",
-          "avatar_url": "https://avatars.githubusercontent.com/u/184509749?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/Ipshita29",
-          "html_url": "https://github.com/Ipshita29",
-          "followers_url": "https://api.github.com/users/Ipshita29/followers",
-          "following_url": "https://api.github.com/users/Ipshita29/following{/other_user}",
-          "gists_url": "https://api.github.com/users/Ipshita29/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/Ipshita29/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/Ipshita29/subscriptions",
-          "organizations_url": "https://api.github.com/users/Ipshita29/orgs",
-          "repos_url": "https://api.github.com/users/Ipshita29/repos",
-          "events_url": "https://api.github.com/users/Ipshita29/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/Ipshita29/received_events",
-          "type": "User",
-          "user_view_type": "public",
-          "site_admin": false,
-          "name": "Ipshita Patel",
-          "company": "Newton School Of Technology",
-          "blog": "",
-          "location": "India",
-          "email": null,
-          "hireable": null,
-          "bio": "✨ Turning coffee into code.",
-          "twitter_username": null,
-          "public_repos": 83,
-          "public_gists": 0,
-          "followers": 6,
-          "following": 6,
-          "created_at": "2024-10-10T11:37:46Z",
-          "updated_at": "2026-02-15T09:43:36Z"
-        },
-        "totalPRs": 23,
-        "mergedPRs": 23,
-        "openPRs": 0,
-        "closedPRs": 0,
-        "scoreMergedPRs": 23,
-        "issuesCount": 0,
-        "cachedAt": "2026-06-25T17:16:07.231Z",
-        "year": "3rd year",
-        "campus": "ADYPU"
-      },
-      {
-        "profile": {
-          "login": "RishiByte",
-          "id": 227175134,
-          "node_id": "U_kgDODYpq3g",
-          "avatar_url": "https://avatars.githubusercontent.com/u/227175134?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/RishiByte",
-          "html_url": "https://github.com/RishiByte",
-          "followers_url": "https://api.github.com/users/RishiByte/followers",
-          "following_url": "https://api.github.com/users/RishiByte/following{/other_user}",
-          "gists_url": "https://api.github.com/users/RishiByte/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/RishiByte/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/RishiByte/subscriptions",
-          "organizations_url": "https://api.github.com/users/RishiByte/orgs",
-          "repos_url": "https://api.github.com/users/RishiByte/repos",
-          "events_url": "https://api.github.com/users/RishiByte/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/RishiByte/received_events",
-          "type": "User",
-          "user_view_type": "public",
-          "site_admin": false,
-          "name": "Rishi Bhardwaj",
-          "company": null,
-          "blog": "https://rishibhardwaj.netlify.app/",
-          "location": null,
-          "email": "rishibhardwaj1210@gmail.com",
-          "hireable": true,
-          "bio": "🚀 BTech CSE (AI & ML) | Open Source Contributor | 🖥️ Web Dev | 🔍 Competitive Programmer |",
-          "twitter_username": null,
-          "public_repos": 47,
-          "public_gists": 0,
-          "followers": 26,
-          "following": 27,
-          "created_at": "2025-08-18T12:26:27Z",
-          "updated_at": "2026-06-23T14:22:49Z"
-        },
-        "totalPRs": 69,
-        "mergedPRs": 14,
-        "openPRs": 22,
-        "closedPRs": 33,
-        "scoreMergedPRs": 14,
-        "issuesCount": 156,
-        "cachedAt": "2026-06-25T17:16:08.713Z",
-        "year": "2nd year",
-        "campus": "ADYPU"
-      },
-      {
-        "profile": {
           "login": "kanikasharma-18",
           "id": 228021908,
           "node_id": "U_kgDODZdWlA",
@@ -232,93 +140,47 @@
       },
       {
         "profile": {
-          "login": "AmanRajSharma001",
-          "id": 228016444,
-          "node_id": "U_kgDODZdBPA",
-          "avatar_url": "https://avatars.githubusercontent.com/u/228016444?v=4",
+          "login": "RishiByte",
+          "id": 227175134,
+          "node_id": "U_kgDODYpq3g",
+          "avatar_url": "https://avatars.githubusercontent.com/u/227175134?v=4",
           "gravatar_id": "",
-          "url": "https://api.github.com/users/AmanRajSharma001",
-          "html_url": "https://github.com/AmanRajSharma001",
-          "followers_url": "https://api.github.com/users/AmanRajSharma001/followers",
-          "following_url": "https://api.github.com/users/AmanRajSharma001/following{/other_user}",
-          "gists_url": "https://api.github.com/users/AmanRajSharma001/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/AmanRajSharma001/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/AmanRajSharma001/subscriptions",
-          "organizations_url": "https://api.github.com/users/AmanRajSharma001/orgs",
-          "repos_url": "https://api.github.com/users/AmanRajSharma001/repos",
-          "events_url": "https://api.github.com/users/AmanRajSharma001/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/AmanRajSharma001/received_events",
+          "url": "https://api.github.com/users/RishiByte",
+          "html_url": "https://github.com/RishiByte",
+          "followers_url": "https://api.github.com/users/RishiByte/followers",
+          "following_url": "https://api.github.com/users/RishiByte/following{/other_user}",
+          "gists_url": "https://api.github.com/users/RishiByte/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/RishiByte/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/RishiByte/subscriptions",
+          "organizations_url": "https://api.github.com/users/RishiByte/orgs",
+          "repos_url": "https://api.github.com/users/RishiByte/repos",
+          "events_url": "https://api.github.com/users/RishiByte/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/RishiByte/received_events",
           "type": "User",
           "user_view_type": "public",
           "site_admin": false,
-          "name": null,
+          "name": "Rishi Bhardwaj",
           "company": null,
-          "blog": "",
+          "blog": "https://rishibhardwaj.netlify.app/",
           "location": null,
-          "email": null,
-          "hireable": null,
-          "bio": null,
+          "email": "rishibhardwaj1210@gmail.com",
+          "hireable": true,
+          "bio": "🚀 BTech CSE (AI & ML) | Open Source Contributor | 🖥️ Web Dev | 🔍 Competitive Programmer |",
           "twitter_username": null,
-          "public_repos": 27,
+          "public_repos": 47,
           "public_gists": 0,
-          "followers": 6,
-          "following": 9,
-          "created_at": "2025-08-22T12:52:21Z",
-          "updated_at": "2026-06-08T17:05:12Z"
+          "followers": 26,
+          "following": 27,
+          "created_at": "2025-08-18T12:26:27Z",
+          "updated_at": "2026-06-23T14:22:49Z"
         },
-        "totalPRs": 11,
-        "mergedPRs": 11,
-        "openPRs": 0,
-        "closedPRs": 0,
-        "scoreMergedPRs": 11,
-        "issuesCount": 0,
-        "cachedAt": "2026-06-25T17:16:08.632Z",
-        "year": "2nd year",
-        "campus": "ADYPU"
-      },
-      {
-        "profile": {
-          "login": "Pranav00076",
-          "id": 222479696,
-          "node_id": "U_kgDODULFUA",
-          "avatar_url": "https://avatars.githubusercontent.com/u/222479696?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/Pranav00076",
-          "html_url": "https://github.com/Pranav00076",
-          "followers_url": "https://api.github.com/users/Pranav00076/followers",
-          "following_url": "https://api.github.com/users/Pranav00076/following{/other_user}",
-          "gists_url": "https://api.github.com/users/Pranav00076/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/Pranav00076/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/Pranav00076/subscriptions",
-          "organizations_url": "https://api.github.com/users/Pranav00076/orgs",
-          "repos_url": "https://api.github.com/users/Pranav00076/repos",
-          "events_url": "https://api.github.com/users/Pranav00076/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/Pranav00076/received_events",
-          "type": "User",
-          "user_view_type": "public",
-          "site_admin": false,
-          "name": "Pranav Thawait",
-          "company": "Newton School of Technology",
-          "blog": "",
-          "location": null,
-          "email": "pranavthawait@gmail.com",
-          "hireable": null,
-          "bio": null,
-          "twitter_username": null,
-          "public_repos": 46,
-          "public_gists": 0,
-          "followers": 9,
-          "following": 7,
-          "created_at": "2025-07-23T17:32:13Z",
-          "updated_at": "2026-06-10T19:06:16Z"
-        },
-        "totalPRs": 10,
-        "mergedPRs": 9,
-        "openPRs": 0,
-        "closedPRs": 1,
+        "totalPRs": 69,
+        "mergedPRs": 14,
+        "openPRs": 22,
+        "closedPRs": 33,
         "scoreMergedPRs": 9,
-        "issuesCount": 15,
-        "cachedAt": "2026-06-25T17:16:09.087Z",
+        "issuesCount": 156,
+        "cachedAt": "2026-06-25T17:16:08.713Z",
         "year": "2nd year",
         "campus": "ADYPU"
       },
@@ -368,52 +230,6 @@
       },
       {
         "profile": {
-          "login": "Wombatfreak6",
-          "id": 163987103,
-          "node_id": "U_kgDOCcY-nw",
-          "avatar_url": "https://avatars.githubusercontent.com/u/163987103?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/Wombatfreak6",
-          "html_url": "https://github.com/Wombatfreak6",
-          "followers_url": "https://api.github.com/users/Wombatfreak6/followers",
-          "following_url": "https://api.github.com/users/Wombatfreak6/following{/other_user}",
-          "gists_url": "https://api.github.com/users/Wombatfreak6/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/Wombatfreak6/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/Wombatfreak6/subscriptions",
-          "organizations_url": "https://api.github.com/users/Wombatfreak6/orgs",
-          "repos_url": "https://api.github.com/users/Wombatfreak6/repos",
-          "events_url": "https://api.github.com/users/Wombatfreak6/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/Wombatfreak6/received_events",
-          "type": "User",
-          "user_view_type": "public",
-          "site_admin": false,
-          "name": "wombfrk.exe",
-          "company": null,
-          "blog": "",
-          "location": null,
-          "email": null,
-          "hireable": null,
-          "bio": null,
-          "twitter_username": null,
-          "public_repos": 45,
-          "public_gists": 0,
-          "followers": 3,
-          "following": 8,
-          "created_at": "2024-03-19T07:48:40Z",
-          "updated_at": "2026-06-21T02:51:04Z"
-        },
-        "totalPRs": 14,
-        "mergedPRs": 7,
-        "openPRs": 6,
-        "closedPRs": 1,
-        "scoreMergedPRs": 7,
-        "issuesCount": 5,
-        "cachedAt": "2026-06-25T17:16:09.268Z",
-        "year": "2nd year",
-        "campus": "ADYPU"
-      },
-      {
-        "profile": {
           "login": "unnati-jaiswal24",
           "id": 219737454,
           "node_id": "U_kgDODRjtbg",
@@ -455,52 +271,6 @@
         "scoreMergedPRs": 5,
         "issuesCount": 5,
         "cachedAt": "2026-06-25T17:16:02.739Z"
-      },
-      {
-        "profile": {
-          "login": "thedittya471",
-          "id": 221872241,
-          "node_id": "U_kgDODTmAcQ",
-          "avatar_url": "https://avatars.githubusercontent.com/u/221872241?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/thedittya471",
-          "html_url": "https://github.com/thedittya471",
-          "followers_url": "https://api.github.com/users/thedittya471/followers",
-          "following_url": "https://api.github.com/users/thedittya471/following{/other_user}",
-          "gists_url": "https://api.github.com/users/thedittya471/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/thedittya471/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/thedittya471/subscriptions",
-          "organizations_url": "https://api.github.com/users/thedittya471/orgs",
-          "repos_url": "https://api.github.com/users/thedittya471/repos",
-          "events_url": "https://api.github.com/users/thedittya471/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/thedittya471/received_events",
-          "type": "User",
-          "user_view_type": "public",
-          "site_admin": false,
-          "name": "Dittya Maity",
-          "company": null,
-          "blog": "",
-          "location": null,
-          "email": null,
-          "hireable": null,
-          "bio": "Code. Learn. Build. Repeat.",
-          "twitter_username": null,
-          "public_repos": 31,
-          "public_gists": 0,
-          "followers": 7,
-          "following": 2,
-          "created_at": "2025-07-20T16:42:36Z",
-          "updated_at": "2026-06-19T19:54:15Z"
-        },
-        "totalPRs": 4,
-        "mergedPRs": 4,
-        "openPRs": 0,
-        "closedPRs": 0,
-        "scoreMergedPRs": 4,
-        "issuesCount": 0,
-        "cachedAt": "2026-06-30T17:31:31.360Z",
-        "year": "2nd year",
-        "campus": "Rishihood"
       },
       {
         "profile": {
@@ -594,144 +364,6 @@
       },
       {
         "profile": {
-          "login": "kartikktripathi",
-          "id": 212094402,
-          "node_id": "U_kgDODKRNwg",
-          "avatar_url": "https://avatars.githubusercontent.com/u/212094402?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/kartikktripathi",
-          "html_url": "https://github.com/kartikktripathi",
-          "followers_url": "https://api.github.com/users/kartikktripathi/followers",
-          "following_url": "https://api.github.com/users/kartikktripathi/following{/other_user}",
-          "gists_url": "https://api.github.com/users/kartikktripathi/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/kartikktripathi/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/kartikktripathi/subscriptions",
-          "organizations_url": "https://api.github.com/users/kartikktripathi/orgs",
-          "repos_url": "https://api.github.com/users/kartikktripathi/repos",
-          "events_url": "https://api.github.com/users/kartikktripathi/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/kartikktripathi/received_events",
-          "type": "User",
-          "user_view_type": "public",
-          "site_admin": false,
-          "name": "Kartik Tripathi",
-          "company": "@nst-sdc",
-          "blog": "",
-          "location": "India",
-          "email": "kartiktripathi103@gmail.com",
-          "hireable": null,
-          "bio": "I code, and I like Formula One.",
-          "twitter_username": "wizardwarlocks",
-          "public_repos": 17,
-          "public_gists": 0,
-          "followers": 21,
-          "following": 14,
-          "created_at": "2025-05-17T07:33:28Z",
-          "updated_at": "2026-06-17T07:21:48Z"
-        },
-        "totalPRs": 4,
-        "mergedPRs": 3,
-        "openPRs": 0,
-        "closedPRs": 1,
-        "scoreMergedPRs": 3,
-        "issuesCount": 0,
-        "cachedAt": "2026-06-25T16:45:06.543Z",
-        "year": "2nd year",
-        "campus": "ADYPU"
-      },
-      {
-        "profile": {
-          "login": "shibadityadeb",
-          "id": 173795163,
-          "node_id": "U_kgDOClvnWw",
-          "avatar_url": "https://avatars.githubusercontent.com/u/173795163?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/shibadityadeb",
-          "html_url": "https://github.com/shibadityadeb",
-          "followers_url": "https://api.github.com/users/shibadityadeb/followers",
-          "following_url": "https://api.github.com/users/shibadityadeb/following{/other_user}",
-          "gists_url": "https://api.github.com/users/shibadityadeb/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/shibadityadeb/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/shibadityadeb/subscriptions",
-          "organizations_url": "https://api.github.com/users/shibadityadeb/orgs",
-          "repos_url": "https://api.github.com/users/shibadityadeb/repos",
-          "events_url": "https://api.github.com/users/shibadityadeb/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/shibadityadeb/received_events",
-          "type": "User",
-          "user_view_type": "public",
-          "site_admin": false,
-          "name": "Shibaditya Deb",
-          "company": "Propacity",
-          "blog": "",
-          "location": "Pune",
-          "email": "shibadityadeb.official@gmail.com",
-          "hireable": true,
-          "bio": "Bridging Code & Intelligence | Exploring Backend Systems, GenAI & AI Architectures 🚀 | Passionate About Building Scalable Web & AI Solutions\r\n\r\n\r\n",
-          "twitter_username": "ShibadityaDeb",
-          "public_repos": 66,
-          "public_gists": 0,
-          "followers": 12,
-          "following": 11,
-          "created_at": "2024-06-25T11:03:43Z",
-          "updated_at": "2026-06-23T05:45:55Z"
-        },
-        "totalPRs": 3,
-        "mergedPRs": 3,
-        "openPRs": 0,
-        "closedPRs": 0,
-        "scoreMergedPRs": 3,
-        "issuesCount": 0,
-        "cachedAt": "2026-06-25T17:15:38.900Z",
-        "year": "3rd year",
-        "campus": "ADYPU"
-      },
-      {
-        "profile": {
-          "login": "Onkar-nst",
-          "id": 184501836,
-          "node_id": "U_kgDOCv9GTA",
-          "avatar_url": "https://avatars.githubusercontent.com/u/184501836?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/Onkar-nst",
-          "html_url": "https://github.com/Onkar-nst",
-          "followers_url": "https://api.github.com/users/Onkar-nst/followers",
-          "following_url": "https://api.github.com/users/Onkar-nst/following{/other_user}",
-          "gists_url": "https://api.github.com/users/Onkar-nst/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/Onkar-nst/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/Onkar-nst/subscriptions",
-          "organizations_url": "https://api.github.com/users/Onkar-nst/orgs",
-          "repos_url": "https://api.github.com/users/Onkar-nst/repos",
-          "events_url": "https://api.github.com/users/Onkar-nst/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/Onkar-nst/received_events",
-          "type": "User",
-          "user_view_type": "public",
-          "site_admin": false,
-          "name": "Onkar Dange",
-          "company": null,
-          "blog": "",
-          "location": null,
-          "email": "onkardange15@gmail.com",
-          "hireable": null,
-          "bio": null,
-          "twitter_username": null,
-          "public_repos": 40,
-          "public_gists": 0,
-          "followers": 4,
-          "following": 14,
-          "created_at": "2024-10-10T10:15:01Z",
-          "updated_at": "2026-06-22T13:21:56Z"
-        },
-        "totalPRs": 3,
-        "mergedPRs": 3,
-        "openPRs": 0,
-        "closedPRs": 0,
-        "scoreMergedPRs": 3,
-        "issuesCount": 0,
-        "cachedAt": "2026-06-25T17:15:39.031Z",
-        "year": "3rd year",
-        "campus": "ADYPU"
-      },
-      {
-        "profile": {
           "login": "Gaurav-meena95",
           "id": 184585271,
           "node_id": "U_kgDOCwCMNw",
@@ -773,50 +405,6 @@
         "scoreMergedPRs": 2,
         "issuesCount": 0,
         "cachedAt": "2026-06-25T17:16:02.436Z"
-      },
-      {
-        "profile": {
-          "login": "Kavya-Jain-coder",
-          "id": 172236025,
-          "node_id": "U_kgDOCkQc-Q",
-          "avatar_url": "https://avatars.githubusercontent.com/u/172236025?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/Kavya-Jain-coder",
-          "html_url": "https://github.com/Kavya-Jain-coder",
-          "followers_url": "https://api.github.com/users/Kavya-Jain-coder/followers",
-          "following_url": "https://api.github.com/users/Kavya-Jain-coder/following{/other_user}",
-          "gists_url": "https://api.github.com/users/Kavya-Jain-coder/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/Kavya-Jain-coder/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/Kavya-Jain-coder/subscriptions",
-          "organizations_url": "https://api.github.com/users/Kavya-Jain-coder/orgs",
-          "repos_url": "https://api.github.com/users/Kavya-Jain-coder/repos",
-          "events_url": "https://api.github.com/users/Kavya-Jain-coder/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/Kavya-Jain-coder/received_events",
-          "type": "User",
-          "user_view_type": "public",
-          "site_admin": false,
-          "name": "Kavya-jain",
-          "company": null,
-          "blog": "",
-          "location": null,
-          "email": null,
-          "hireable": null,
-          "bio": null,
-          "twitter_username": null,
-          "public_repos": 44,
-          "public_gists": 0,
-          "followers": 0,
-          "following": 1,
-          "created_at": "2024-06-10T04:03:11Z",
-          "updated_at": "2026-06-23T21:31:12Z"
-        },
-        "totalPRs": 7,
-        "mergedPRs": 2,
-        "openPRs": 1,
-        "closedPRs": 4,
-        "scoreMergedPRs": 2,
-        "issuesCount": 0,
-        "cachedAt": "2026-06-25T16:42:26.688Z"
       },
       {
         "profile": {
@@ -864,50 +452,6 @@
       },
       {
         "profile": {
-          "login": "gigibyte2024",
-          "id": 184646682,
-          "node_id": "U_kgDOCwF8Gg",
-          "avatar_url": "https://avatars.githubusercontent.com/u/184646682?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/gigibyte2024",
-          "html_url": "https://github.com/gigibyte2024",
-          "followers_url": "https://api.github.com/users/gigibyte2024/followers",
-          "following_url": "https://api.github.com/users/gigibyte2024/following{/other_user}",
-          "gists_url": "https://api.github.com/users/gigibyte2024/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/gigibyte2024/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/gigibyte2024/subscriptions",
-          "organizations_url": "https://api.github.com/users/gigibyte2024/orgs",
-          "repos_url": "https://api.github.com/users/gigibyte2024/repos",
-          "events_url": "https://api.github.com/users/gigibyte2024/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/gigibyte2024/received_events",
-          "type": "User",
-          "user_view_type": "public",
-          "site_admin": false,
-          "name": "Gargi Srivastava",
-          "company": null,
-          "blog": "",
-          "location": null,
-          "email": "gargi.srivastava2024@nst.rishihood.edu.in",
-          "hireable": null,
-          "bio": null,
-          "twitter_username": null,
-          "public_repos": 24,
-          "public_gists": 0,
-          "followers": 0,
-          "following": 1,
-          "created_at": "2024-10-11T12:06:30Z",
-          "updated_at": "2026-06-21T03:29:28Z"
-        },
-        "totalPRs": 3,
-        "mergedPRs": 2,
-        "openPRs": 0,
-        "closedPRs": 1,
-        "scoreMergedPRs": 2,
-        "issuesCount": 0,
-        "cachedAt": "2026-06-25T17:16:02.944Z"
-      },
-      {
-        "profile": {
           "login": "mishtiagrawal02-cloud",
           "id": 227105374,
           "node_id": "U_kgDODYlaXg",
@@ -949,52 +493,6 @@
         "scoreMergedPRs": 2,
         "issuesCount": 2,
         "cachedAt": "2026-06-25T16:44:49.374Z"
-      },
-      {
-        "profile": {
-          "login": "Vansh0204",
-          "id": 183680538,
-          "node_id": "U_kgDOCvK-Gg",
-          "avatar_url": "https://avatars.githubusercontent.com/u/183680538?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/Vansh0204",
-          "html_url": "https://github.com/Vansh0204",
-          "followers_url": "https://api.github.com/users/Vansh0204/followers",
-          "following_url": "https://api.github.com/users/Vansh0204/following{/other_user}",
-          "gists_url": "https://api.github.com/users/Vansh0204/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/Vansh0204/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/Vansh0204/subscriptions",
-          "organizations_url": "https://api.github.com/users/Vansh0204/orgs",
-          "repos_url": "https://api.github.com/users/Vansh0204/repos",
-          "events_url": "https://api.github.com/users/Vansh0204/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/Vansh0204/received_events",
-          "type": "User",
-          "user_view_type": "public",
-          "site_admin": false,
-          "name": "Vansh Agarwal",
-          "company": null,
-          "blog": "",
-          "location": null,
-          "email": null,
-          "hireable": null,
-          "bio": null,
-          "twitter_username": null,
-          "public_repos": 91,
-          "public_gists": 0,
-          "followers": 6,
-          "following": 9,
-          "created_at": "2024-10-03T04:10:09Z",
-          "updated_at": "2026-06-22T17:02:55Z"
-        },
-        "totalPRs": 2,
-        "mergedPRs": 2,
-        "openPRs": 0,
-        "closedPRs": 0,
-        "scoreMergedPRs": 2,
-        "issuesCount": 0,
-        "cachedAt": "2026-06-25T17:16:08.505Z",
-        "year": "3rd year",
-        "campus": "ADYPU"
       },
       {
         "profile": {
@@ -1044,52 +542,6 @@
       },
       {
         "profile": {
-          "login": "tyChirag",
-          "id": 227328445,
-          "node_id": "U_kgDODYzBvQ",
-          "avatar_url": "https://avatars.githubusercontent.com/u/227328445?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/tyChirag",
-          "html_url": "https://github.com/tyChirag",
-          "followers_url": "https://api.github.com/users/tyChirag/followers",
-          "following_url": "https://api.github.com/users/tyChirag/following{/other_user}",
-          "gists_url": "https://api.github.com/users/tyChirag/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/tyChirag/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/tyChirag/subscriptions",
-          "organizations_url": "https://api.github.com/users/tyChirag/orgs",
-          "repos_url": "https://api.github.com/users/tyChirag/repos",
-          "events_url": "https://api.github.com/users/tyChirag/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/tyChirag/received_events",
-          "type": "User",
-          "user_view_type": "public",
-          "site_admin": false,
-          "name": "chirag tyagi",
-          "company": null,
-          "blog": "",
-          "location": null,
-          "email": "chiragtyagi253@gmail.com",
-          "hireable": null,
-          "bio": "I am a student in newton school of technology ",
-          "twitter_username": null,
-          "public_repos": 11,
-          "public_gists": 0,
-          "followers": 0,
-          "following": 0,
-          "created_at": "2025-08-19T06:20:24Z",
-          "updated_at": "2025-08-24T18:25:29Z"
-        },
-        "totalPRs": 2,
-        "mergedPRs": 2,
-        "openPRs": 0,
-        "closedPRs": 0,
-        "scoreMergedPRs": 2,
-        "issuesCount": 0,
-        "cachedAt": "2026-06-30T17:26:03.730Z",
-        "year": "2nd year",
-        "campus": "Rishihood"
-      },
-      {
-        "profile": {
           "login": "Dreamstick9",
           "id": 222502230,
           "node_id": "U_kgDODUMdVg",
@@ -1131,50 +583,6 @@
         "scoreMergedPRs": 1,
         "issuesCount": 6,
         "cachedAt": "2026-06-25T16:17:09.491Z"
-      },
-      {
-        "profile": {
-          "login": "AnimeshPriyanshu",
-          "id": 230154080,
-          "node_id": "U_kgDODbffYA",
-          "avatar_url": "https://avatars.githubusercontent.com/u/230154080?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/AnimeshPriyanshu",
-          "html_url": "https://github.com/AnimeshPriyanshu",
-          "followers_url": "https://api.github.com/users/AnimeshPriyanshu/followers",
-          "following_url": "https://api.github.com/users/AnimeshPriyanshu/following{/other_user}",
-          "gists_url": "https://api.github.com/users/AnimeshPriyanshu/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/AnimeshPriyanshu/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/AnimeshPriyanshu/subscriptions",
-          "organizations_url": "https://api.github.com/users/AnimeshPriyanshu/orgs",
-          "repos_url": "https://api.github.com/users/AnimeshPriyanshu/repos",
-          "events_url": "https://api.github.com/users/AnimeshPriyanshu/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/AnimeshPriyanshu/received_events",
-          "type": "User",
-          "user_view_type": "public",
-          "site_admin": false,
-          "name": null,
-          "company": null,
-          "blog": "",
-          "location": null,
-          "email": null,
-          "hireable": null,
-          "bio": null,
-          "twitter_username": null,
-          "public_repos": 16,
-          "public_gists": 0,
-          "followers": 0,
-          "following": 1,
-          "created_at": "2025-09-03T12:02:25Z",
-          "updated_at": "2026-06-21T11:52:55Z"
-        },
-        "totalPRs": 3,
-        "mergedPRs": 1,
-        "openPRs": 2,
-        "closedPRs": 0,
-        "scoreMergedPRs": 1,
-        "issuesCount": 0,
-        "cachedAt": "2026-06-25T17:15:42.505Z"
       },
       {
         "profile": {
@@ -1263,96 +671,6 @@
         "scoreMergedPRs": 1,
         "issuesCount": 0,
         "cachedAt": "2026-06-25T17:16:02.414Z"
-      },
-      {
-        "profile": {
-          "login": "pankajbaid567",
-          "id": 191518868,
-          "node_id": "U_kgDOC2pYlA",
-          "avatar_url": "https://avatars.githubusercontent.com/u/191518868?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/pankajbaid567",
-          "html_url": "https://github.com/pankajbaid567",
-          "followers_url": "https://api.github.com/users/pankajbaid567/followers",
-          "following_url": "https://api.github.com/users/pankajbaid567/following{/other_user}",
-          "gists_url": "https://api.github.com/users/pankajbaid567/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/pankajbaid567/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/pankajbaid567/subscriptions",
-          "organizations_url": "https://api.github.com/users/pankajbaid567/orgs",
-          "repos_url": "https://api.github.com/users/pankajbaid567/repos",
-          "events_url": "https://api.github.com/users/pankajbaid567/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/pankajbaid567/received_events",
-          "type": "User",
-          "user_view_type": "public",
-          "site_admin": false,
-          "name": "Pankaj Baid",
-          "company": null,
-          "blog": "",
-          "location": null,
-          "email": "pankaj.baid2024@nst.rishihood.edu.in",
-          "hireable": null,
-          "bio": "AI + Backend Engineer | LLMs • RAG • Agentic AI • FastAPI • Node.js\r\n",
-          "twitter_username": "PankajBaid567",
-          "public_repos": 74,
-          "public_gists": 0,
-          "followers": 1,
-          "following": 10,
-          "created_at": "2024-12-12T19:12:48Z",
-          "updated_at": "2026-06-24T18:48:52Z"
-        },
-        "totalPRs": 2,
-        "mergedPRs": 1,
-        "openPRs": 1,
-        "closedPRs": 0,
-        "scoreMergedPRs": 1,
-        "issuesCount": 0,
-        "cachedAt": "2026-06-25T17:16:02.533Z"
-      },
-      {
-        "profile": {
-          "login": "vanshikasoni22",
-          "id": 228305935,
-          "node_id": "U_kgDODZusDw",
-          "avatar_url": "https://avatars.githubusercontent.com/u/228305935?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/vanshikasoni22",
-          "html_url": "https://github.com/vanshikasoni22",
-          "followers_url": "https://api.github.com/users/vanshikasoni22/followers",
-          "following_url": "https://api.github.com/users/vanshikasoni22/following{/other_user}",
-          "gists_url": "https://api.github.com/users/vanshikasoni22/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/vanshikasoni22/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/vanshikasoni22/subscriptions",
-          "organizations_url": "https://api.github.com/users/vanshikasoni22/orgs",
-          "repos_url": "https://api.github.com/users/vanshikasoni22/repos",
-          "events_url": "https://api.github.com/users/vanshikasoni22/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/vanshikasoni22/received_events",
-          "type": "User",
-          "user_view_type": "public",
-          "site_admin": false,
-          "name": null,
-          "company": null,
-          "blog": "",
-          "location": null,
-          "email": null,
-          "hireable": null,
-          "bio": null,
-          "twitter_username": null,
-          "public_repos": 42,
-          "public_gists": 0,
-          "followers": 7,
-          "following": 5,
-          "created_at": "2025-08-24T08:16:16Z",
-          "updated_at": "2026-05-20T18:19:49Z"
-        },
-        "totalPRs": 1,
-        "mergedPRs": 1,
-        "openPRs": 0,
-        "closedPRs": 0,
-        "scoreMergedPRs": 1,
-        "issuesCount": 0,
-        "cachedAt": "2026-06-25T16:43:16.761Z",
-        "year": "2nd year",
-        "campus": "ADYPU"
       },
       {
         "profile": {
@@ -1446,98 +764,6 @@
       },
       {
         "profile": {
-          "login": "MOHITKOURAV01",
-          "id": 190134633,
-          "node_id": "U_kgDOC1U5aQ",
-          "avatar_url": "https://avatars.githubusercontent.com/u/190134633?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/MOHITKOURAV01",
-          "html_url": "https://github.com/MOHITKOURAV01",
-          "followers_url": "https://api.github.com/users/MOHITKOURAV01/followers",
-          "following_url": "https://api.github.com/users/MOHITKOURAV01/following{/other_user}",
-          "gists_url": "https://api.github.com/users/MOHITKOURAV01/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/MOHITKOURAV01/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/MOHITKOURAV01/subscriptions",
-          "organizations_url": "https://api.github.com/users/MOHITKOURAV01/orgs",
-          "repos_url": "https://api.github.com/users/MOHITKOURAV01/repos",
-          "events_url": "https://api.github.com/users/MOHITKOURAV01/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/MOHITKOURAV01/received_events",
-          "type": "User",
-          "user_view_type": "public",
-          "site_admin": false,
-          "name": "Mohit Kourav",
-          "company": null,
-          "blog": "",
-          "location": null,
-          "email": null,
-          "hireable": null,
-          "bio": null,
-          "twitter_username": null,
-          "public_repos": 68,
-          "public_gists": 0,
-          "followers": 16,
-          "following": 11,
-          "created_at": "2024-11-29T20:28:54Z",
-          "updated_at": "2026-06-22T19:44:43Z"
-        },
-        "totalPRs": 1,
-        "mergedPRs": 1,
-        "openPRs": 0,
-        "closedPRs": 0,
-        "scoreMergedPRs": 1,
-        "issuesCount": 0,
-        "cachedAt": "2026-06-25T16:58:32.444Z",
-        "year": "3rd year",
-        "campus": "ADYPU"
-      },
-      {
-        "profile": {
-          "login": "SharanyoBanerjee",
-          "id": 70018622,
-          "node_id": "MDQ6VXNlcjcwMDE4NjIy",
-          "avatar_url": "https://avatars.githubusercontent.com/u/70018622?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/SharanyoBanerjee",
-          "html_url": "https://github.com/SharanyoBanerjee",
-          "followers_url": "https://api.github.com/users/SharanyoBanerjee/followers",
-          "following_url": "https://api.github.com/users/SharanyoBanerjee/following{/other_user}",
-          "gists_url": "https://api.github.com/users/SharanyoBanerjee/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/SharanyoBanerjee/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/SharanyoBanerjee/subscriptions",
-          "organizations_url": "https://api.github.com/users/SharanyoBanerjee/orgs",
-          "repos_url": "https://api.github.com/users/SharanyoBanerjee/repos",
-          "events_url": "https://api.github.com/users/SharanyoBanerjee/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/SharanyoBanerjee/received_events",
-          "type": "User",
-          "user_view_type": "public",
-          "site_admin": false,
-          "name": "Sharanyo Banerjee",
-          "company": null,
-          "blog": "",
-          "location": "Kalyani",
-          "email": null,
-          "hireable": null,
-          "bio": "I am 19 year old coder. ",
-          "twitter_username": null,
-          "public_repos": 174,
-          "public_gists": 0,
-          "followers": 3,
-          "following": 1,
-          "created_at": "2020-08-21T12:09:34Z",
-          "updated_at": "2026-06-09T21:12:24Z"
-        },
-        "totalPRs": 1,
-        "mergedPRs": 1,
-        "openPRs": 0,
-        "closedPRs": 0,
-        "scoreMergedPRs": 1,
-        "issuesCount": 6,
-        "cachedAt": "2026-06-25T17:16:08.668Z",
-        "year": "2nd year",
-        "campus": "ADYPU"
-      },
-      {
-        "profile": {
           "login": "iconicvenom",
           "id": 223063504,
           "node_id": "U_kgDODUut0A",
@@ -1584,49 +810,49 @@
       },
       {
         "profile": {
-          "login": "akshay26-ui",
-          "id": 143264475,
-          "node_id": "U_kgDOCIoK2w",
-          "avatar_url": "https://avatars.githubusercontent.com/u/143264475?v=4",
+          "login": "Wombatfreak6",
+          "id": 163987103,
+          "node_id": "U_kgDOCcY-nw",
+          "avatar_url": "https://avatars.githubusercontent.com/u/163987103?v=4",
           "gravatar_id": "",
-          "url": "https://api.github.com/users/akshay26-ui",
-          "html_url": "https://github.com/akshay26-ui",
-          "followers_url": "https://api.github.com/users/akshay26-ui/followers",
-          "following_url": "https://api.github.com/users/akshay26-ui/following{/other_user}",
-          "gists_url": "https://api.github.com/users/akshay26-ui/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/akshay26-ui/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/akshay26-ui/subscriptions",
-          "organizations_url": "https://api.github.com/users/akshay26-ui/orgs",
-          "repos_url": "https://api.github.com/users/akshay26-ui/repos",
-          "events_url": "https://api.github.com/users/akshay26-ui/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/akshay26-ui/received_events",
+          "url": "https://api.github.com/users/Wombatfreak6",
+          "html_url": "https://github.com/Wombatfreak6",
+          "followers_url": "https://api.github.com/users/Wombatfreak6/followers",
+          "following_url": "https://api.github.com/users/Wombatfreak6/following{/other_user}",
+          "gists_url": "https://api.github.com/users/Wombatfreak6/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/Wombatfreak6/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/Wombatfreak6/subscriptions",
+          "organizations_url": "https://api.github.com/users/Wombatfreak6/orgs",
+          "repos_url": "https://api.github.com/users/Wombatfreak6/repos",
+          "events_url": "https://api.github.com/users/Wombatfreak6/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/Wombatfreak6/received_events",
           "type": "User",
           "user_view_type": "public",
           "site_admin": false,
-          "name": "AKSHAY KUMAR SINGH",
+          "name": "wombfrk.exe",
           "company": null,
           "blog": "",
-          "location": "Sonipat, Haryana",
-          "email": "akshayandakshay13@gmail.com",
+          "location": null,
+          "email": null,
           "hireable": null,
-          "bio": "New to the field but jumping in with curiosity with a strong WiFi connection, motivation, a tincture of creativity moreover love for interesting conversations a",
+          "bio": null,
           "twitter_username": null,
-          "public_repos": 7,
+          "public_repos": 45,
           "public_gists": 0,
-          "followers": 2,
-          "following": 0,
-          "created_at": "2023-08-26T11:27:10Z",
-          "updated_at": "2026-06-06T09:23:29Z"
+          "followers": 3,
+          "following": 8,
+          "created_at": "2024-03-19T07:48:40Z",
+          "updated_at": "2026-06-21T02:51:04Z"
         },
-        "totalPRs": 1,
-        "mergedPRs": 1,
-        "openPRs": 0,
-        "closedPRs": 0,
+        "totalPRs": 14,
+        "mergedPRs": 7,
+        "openPRs": 6,
+        "closedPRs": 1,
         "scoreMergedPRs": 1,
-        "issuesCount": 0,
-        "cachedAt": "2026-06-30T17:27:42.368Z",
+        "issuesCount": 5,
+        "cachedAt": "2026-06-25T17:16:09.268Z",
         "year": "2nd year",
-        "campus": "Rishihood"
+        "campus": "ADYPU"
       },
       {
         "profile": {
@@ -2067,6 +1293,50 @@
         "scoreMergedPRs": 0,
         "issuesCount": 0,
         "cachedAt": "2026-06-25T17:15:42.504Z"
+      },
+      {
+        "profile": {
+          "login": "AnimeshPriyanshu",
+          "id": 230154080,
+          "node_id": "U_kgDODbffYA",
+          "avatar_url": "https://avatars.githubusercontent.com/u/230154080?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/AnimeshPriyanshu",
+          "html_url": "https://github.com/AnimeshPriyanshu",
+          "followers_url": "https://api.github.com/users/AnimeshPriyanshu/followers",
+          "following_url": "https://api.github.com/users/AnimeshPriyanshu/following{/other_user}",
+          "gists_url": "https://api.github.com/users/AnimeshPriyanshu/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/AnimeshPriyanshu/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/AnimeshPriyanshu/subscriptions",
+          "organizations_url": "https://api.github.com/users/AnimeshPriyanshu/orgs",
+          "repos_url": "https://api.github.com/users/AnimeshPriyanshu/repos",
+          "events_url": "https://api.github.com/users/AnimeshPriyanshu/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/AnimeshPriyanshu/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": null,
+          "company": null,
+          "blog": "",
+          "location": null,
+          "email": null,
+          "hireable": null,
+          "bio": null,
+          "twitter_username": null,
+          "public_repos": 16,
+          "public_gists": 0,
+          "followers": 0,
+          "following": 1,
+          "created_at": "2025-09-03T12:02:25Z",
+          "updated_at": "2026-06-21T11:52:55Z"
+        },
+        "totalPRs": 3,
+        "mergedPRs": 1,
+        "openPRs": 2,
+        "closedPRs": 0,
+        "scoreMergedPRs": 0,
+        "issuesCount": 0,
+        "cachedAt": "2026-06-25T17:15:42.505Z"
       },
       {
         "profile": {
@@ -3724,6 +2994,50 @@
       },
       {
         "profile": {
+          "login": "Kavya-Jain-coder",
+          "id": 172236025,
+          "node_id": "U_kgDOCkQc-Q",
+          "avatar_url": "https://avatars.githubusercontent.com/u/172236025?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/Kavya-Jain-coder",
+          "html_url": "https://github.com/Kavya-Jain-coder",
+          "followers_url": "https://api.github.com/users/Kavya-Jain-coder/followers",
+          "following_url": "https://api.github.com/users/Kavya-Jain-coder/following{/other_user}",
+          "gists_url": "https://api.github.com/users/Kavya-Jain-coder/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/Kavya-Jain-coder/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/Kavya-Jain-coder/subscriptions",
+          "organizations_url": "https://api.github.com/users/Kavya-Jain-coder/orgs",
+          "repos_url": "https://api.github.com/users/Kavya-Jain-coder/repos",
+          "events_url": "https://api.github.com/users/Kavya-Jain-coder/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/Kavya-Jain-coder/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": "Kavya-jain",
+          "company": null,
+          "blog": "",
+          "location": null,
+          "email": null,
+          "hireable": null,
+          "bio": null,
+          "twitter_username": null,
+          "public_repos": 44,
+          "public_gists": 0,
+          "followers": 0,
+          "following": 1,
+          "created_at": "2024-06-10T04:03:11Z",
+          "updated_at": "2026-06-23T21:31:12Z"
+        },
+        "totalPRs": 7,
+        "mergedPRs": 2,
+        "openPRs": 1,
+        "closedPRs": 4,
+        "scoreMergedPRs": 0,
+        "issuesCount": 0,
+        "cachedAt": "2026-06-25T16:42:26.688Z"
+      },
+      {
+        "profile": {
           "login": "keshavgoel2101",
           "id": 188092836,
           "node_id": "U_kgDOCzYRpA",
@@ -4485,6 +3799,50 @@
         "scoreMergedPRs": 0,
         "issuesCount": 0,
         "cachedAt": "2026-06-25T17:16:02.525Z"
+      },
+      {
+        "profile": {
+          "login": "pankajbaid567",
+          "id": 191518868,
+          "node_id": "U_kgDOC2pYlA",
+          "avatar_url": "https://avatars.githubusercontent.com/u/191518868?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/pankajbaid567",
+          "html_url": "https://github.com/pankajbaid567",
+          "followers_url": "https://api.github.com/users/pankajbaid567/followers",
+          "following_url": "https://api.github.com/users/pankajbaid567/following{/other_user}",
+          "gists_url": "https://api.github.com/users/pankajbaid567/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/pankajbaid567/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/pankajbaid567/subscriptions",
+          "organizations_url": "https://api.github.com/users/pankajbaid567/orgs",
+          "repos_url": "https://api.github.com/users/pankajbaid567/repos",
+          "events_url": "https://api.github.com/users/pankajbaid567/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/pankajbaid567/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": "Pankaj Baid",
+          "company": null,
+          "blog": "",
+          "location": null,
+          "email": "pankaj.baid2024@nst.rishihood.edu.in",
+          "hireable": null,
+          "bio": "AI + Backend Engineer | LLMs • RAG • Agentic AI • FastAPI • Node.js\r\n",
+          "twitter_username": "PankajBaid567",
+          "public_repos": 74,
+          "public_gists": 0,
+          "followers": 1,
+          "following": 10,
+          "created_at": "2024-12-12T19:12:48Z",
+          "updated_at": "2026-06-24T18:48:52Z"
+        },
+        "totalPRs": 2,
+        "mergedPRs": 1,
+        "openPRs": 1,
+        "closedPRs": 0,
+        "scoreMergedPRs": 0,
+        "issuesCount": 0,
+        "cachedAt": "2026-06-25T17:16:02.533Z"
       },
       {
         "profile": {
@@ -5946,6 +5304,52 @@
       },
       {
         "profile": {
+          "login": "vanshikasoni22",
+          "id": 228305935,
+          "node_id": "U_kgDODZusDw",
+          "avatar_url": "https://avatars.githubusercontent.com/u/228305935?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/vanshikasoni22",
+          "html_url": "https://github.com/vanshikasoni22",
+          "followers_url": "https://api.github.com/users/vanshikasoni22/followers",
+          "following_url": "https://api.github.com/users/vanshikasoni22/following{/other_user}",
+          "gists_url": "https://api.github.com/users/vanshikasoni22/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/vanshikasoni22/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/vanshikasoni22/subscriptions",
+          "organizations_url": "https://api.github.com/users/vanshikasoni22/orgs",
+          "repos_url": "https://api.github.com/users/vanshikasoni22/repos",
+          "events_url": "https://api.github.com/users/vanshikasoni22/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/vanshikasoni22/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": null,
+          "company": null,
+          "blog": "",
+          "location": null,
+          "email": null,
+          "hireable": null,
+          "bio": null,
+          "twitter_username": null,
+          "public_repos": 42,
+          "public_gists": 0,
+          "followers": 7,
+          "following": 5,
+          "created_at": "2025-08-24T08:16:16Z",
+          "updated_at": "2026-05-20T18:19:49Z"
+        },
+        "totalPRs": 1,
+        "mergedPRs": 1,
+        "openPRs": 0,
+        "closedPRs": 0,
+        "scoreMergedPRs": 0,
+        "issuesCount": 0,
+        "cachedAt": "2026-06-25T16:43:16.761Z",
+        "year": "2nd year",
+        "campus": "ADYPU"
+      },
+      {
+        "profile": {
           "login": "vedpawar2254",
           "id": 85354558,
           "node_id": "MDQ6VXNlcjg1MzU0NTU4",
@@ -6919,6 +6323,50 @@
         "cachedAt": "2026-06-25T17:16:02.788Z",
         "year": "2nd year",
         "campus": "ADYPU"
+      },
+      {
+        "profile": {
+          "login": "gigibyte2024",
+          "id": 184646682,
+          "node_id": "U_kgDOCwF8Gg",
+          "avatar_url": "https://avatars.githubusercontent.com/u/184646682?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/gigibyte2024",
+          "html_url": "https://github.com/gigibyte2024",
+          "followers_url": "https://api.github.com/users/gigibyte2024/followers",
+          "following_url": "https://api.github.com/users/gigibyte2024/following{/other_user}",
+          "gists_url": "https://api.github.com/users/gigibyte2024/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/gigibyte2024/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/gigibyte2024/subscriptions",
+          "organizations_url": "https://api.github.com/users/gigibyte2024/orgs",
+          "repos_url": "https://api.github.com/users/gigibyte2024/repos",
+          "events_url": "https://api.github.com/users/gigibyte2024/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/gigibyte2024/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": "Gargi Srivastava",
+          "company": null,
+          "blog": "",
+          "location": null,
+          "email": "gargi.srivastava2024@nst.rishihood.edu.in",
+          "hireable": null,
+          "bio": null,
+          "twitter_username": null,
+          "public_repos": 24,
+          "public_gists": 0,
+          "followers": 0,
+          "following": 1,
+          "created_at": "2024-10-11T12:06:30Z",
+          "updated_at": "2026-06-21T03:29:28Z"
+        },
+        "totalPRs": 3,
+        "mergedPRs": 2,
+        "openPRs": 0,
+        "closedPRs": 1,
+        "scoreMergedPRs": 0,
+        "issuesCount": 0,
+        "cachedAt": "2026-06-25T17:16:02.944Z"
       },
       {
         "profile": {
@@ -8530,6 +7978,52 @@
       },
       {
         "profile": {
+          "login": "kartikktripathi",
+          "id": 212094402,
+          "node_id": "U_kgDODKRNwg",
+          "avatar_url": "https://avatars.githubusercontent.com/u/212094402?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kartikktripathi",
+          "html_url": "https://github.com/kartikktripathi",
+          "followers_url": "https://api.github.com/users/kartikktripathi/followers",
+          "following_url": "https://api.github.com/users/kartikktripathi/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kartikktripathi/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kartikktripathi/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kartikktripathi/subscriptions",
+          "organizations_url": "https://api.github.com/users/kartikktripathi/orgs",
+          "repos_url": "https://api.github.com/users/kartikktripathi/repos",
+          "events_url": "https://api.github.com/users/kartikktripathi/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kartikktripathi/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": "Kartik Tripathi",
+          "company": "@nst-sdc",
+          "blog": "",
+          "location": "India",
+          "email": "kartiktripathi103@gmail.com",
+          "hireable": null,
+          "bio": "I code, and I like Formula One.",
+          "twitter_username": "wizardwarlocks",
+          "public_repos": 17,
+          "public_gists": 0,
+          "followers": 21,
+          "following": 14,
+          "created_at": "2025-05-17T07:33:28Z",
+          "updated_at": "2026-06-17T07:21:48Z"
+        },
+        "totalPRs": 4,
+        "mergedPRs": 3,
+        "openPRs": 0,
+        "closedPRs": 1,
+        "scoreMergedPRs": 0,
+        "issuesCount": 0,
+        "cachedAt": "2026-06-25T16:45:06.543Z",
+        "year": "2nd year",
+        "campus": "ADYPU"
+      },
+      {
+        "profile": {
           "login": "Injora",
           "id": 217072297,
           "node_id": "U_kgDODPBCqQ",
@@ -9634,6 +9128,52 @@
       },
       {
         "profile": {
+          "login": "shibadityadeb",
+          "id": 173795163,
+          "node_id": "U_kgDOClvnWw",
+          "avatar_url": "https://avatars.githubusercontent.com/u/173795163?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/shibadityadeb",
+          "html_url": "https://github.com/shibadityadeb",
+          "followers_url": "https://api.github.com/users/shibadityadeb/followers",
+          "following_url": "https://api.github.com/users/shibadityadeb/following{/other_user}",
+          "gists_url": "https://api.github.com/users/shibadityadeb/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/shibadityadeb/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/shibadityadeb/subscriptions",
+          "organizations_url": "https://api.github.com/users/shibadityadeb/orgs",
+          "repos_url": "https://api.github.com/users/shibadityadeb/repos",
+          "events_url": "https://api.github.com/users/shibadityadeb/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/shibadityadeb/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": "Shibaditya Deb",
+          "company": "Propacity",
+          "blog": "",
+          "location": "Pune",
+          "email": "shibadityadeb.official@gmail.com",
+          "hireable": true,
+          "bio": "Bridging Code & Intelligence | Exploring Backend Systems, GenAI & AI Architectures 🚀 | Passionate About Building Scalable Web & AI Solutions\r\n\r\n\r\n",
+          "twitter_username": "ShibadityaDeb",
+          "public_repos": 66,
+          "public_gists": 0,
+          "followers": 12,
+          "following": 11,
+          "created_at": "2024-06-25T11:03:43Z",
+          "updated_at": "2026-06-23T05:45:55Z"
+        },
+        "totalPRs": 3,
+        "mergedPRs": 3,
+        "openPRs": 0,
+        "closedPRs": 0,
+        "scoreMergedPRs": 0,
+        "issuesCount": 0,
+        "cachedAt": "2026-06-25T17:15:38.900Z",
+        "year": "3rd year",
+        "campus": "ADYPU"
+      },
+      {
+        "profile": {
           "login": "amitihere",
           "id": 184906924,
           "node_id": "U_kgDOCwV0rA",
@@ -10687,6 +10227,52 @@
         "scoreMergedPRs": 0,
         "issuesCount": 0,
         "cachedAt": "2026-06-25T17:15:39.030Z",
+        "year": "3rd year",
+        "campus": "ADYPU"
+      },
+      {
+        "profile": {
+          "login": "Onkar-nst",
+          "id": 184501836,
+          "node_id": "U_kgDOCv9GTA",
+          "avatar_url": "https://avatars.githubusercontent.com/u/184501836?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/Onkar-nst",
+          "html_url": "https://github.com/Onkar-nst",
+          "followers_url": "https://api.github.com/users/Onkar-nst/followers",
+          "following_url": "https://api.github.com/users/Onkar-nst/following{/other_user}",
+          "gists_url": "https://api.github.com/users/Onkar-nst/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/Onkar-nst/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/Onkar-nst/subscriptions",
+          "organizations_url": "https://api.github.com/users/Onkar-nst/orgs",
+          "repos_url": "https://api.github.com/users/Onkar-nst/repos",
+          "events_url": "https://api.github.com/users/Onkar-nst/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/Onkar-nst/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": "Onkar Dange",
+          "company": null,
+          "blog": "",
+          "location": null,
+          "email": "onkardange15@gmail.com",
+          "hireable": null,
+          "bio": null,
+          "twitter_username": null,
+          "public_repos": 40,
+          "public_gists": 0,
+          "followers": 4,
+          "following": 14,
+          "created_at": "2024-10-10T10:15:01Z",
+          "updated_at": "2026-06-22T13:21:56Z"
+        },
+        "totalPRs": 3,
+        "mergedPRs": 3,
+        "openPRs": 0,
+        "closedPRs": 0,
+        "scoreMergedPRs": 0,
+        "issuesCount": 0,
+        "cachedAt": "2026-06-25T17:15:39.031Z",
         "year": "3rd year",
         "campus": "ADYPU"
       },
@@ -12251,6 +11837,52 @@
         "scoreMergedPRs": 0,
         "issuesCount": 0,
         "cachedAt": "2026-06-25T17:16:07.217Z",
+        "year": "3rd year",
+        "campus": "ADYPU"
+      },
+      {
+        "profile": {
+          "login": "Ipshita29",
+          "id": 184509749,
+          "node_id": "U_kgDOCv9lNQ",
+          "avatar_url": "https://avatars.githubusercontent.com/u/184509749?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/Ipshita29",
+          "html_url": "https://github.com/Ipshita29",
+          "followers_url": "https://api.github.com/users/Ipshita29/followers",
+          "following_url": "https://api.github.com/users/Ipshita29/following{/other_user}",
+          "gists_url": "https://api.github.com/users/Ipshita29/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/Ipshita29/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/Ipshita29/subscriptions",
+          "organizations_url": "https://api.github.com/users/Ipshita29/orgs",
+          "repos_url": "https://api.github.com/users/Ipshita29/repos",
+          "events_url": "https://api.github.com/users/Ipshita29/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/Ipshita29/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": "Ipshita Patel",
+          "company": "Newton School Of Technology",
+          "blog": "",
+          "location": "India",
+          "email": null,
+          "hireable": null,
+          "bio": "✨ Turning coffee into code.",
+          "twitter_username": null,
+          "public_repos": 83,
+          "public_gists": 0,
+          "followers": 6,
+          "following": 6,
+          "created_at": "2024-10-10T11:37:46Z",
+          "updated_at": "2026-02-15T09:43:36Z"
+        },
+        "totalPRs": 23,
+        "mergedPRs": 23,
+        "openPRs": 0,
+        "closedPRs": 0,
+        "scoreMergedPRs": 0,
+        "issuesCount": 0,
+        "cachedAt": "2026-06-25T17:16:07.231Z",
         "year": "3rd year",
         "campus": "ADYPU"
       },
@@ -17118,6 +16750,52 @@
       },
       {
         "profile": {
+          "login": "MOHITKOURAV01",
+          "id": 190134633,
+          "node_id": "U_kgDOC1U5aQ",
+          "avatar_url": "https://avatars.githubusercontent.com/u/190134633?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/MOHITKOURAV01",
+          "html_url": "https://github.com/MOHITKOURAV01",
+          "followers_url": "https://api.github.com/users/MOHITKOURAV01/followers",
+          "following_url": "https://api.github.com/users/MOHITKOURAV01/following{/other_user}",
+          "gists_url": "https://api.github.com/users/MOHITKOURAV01/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/MOHITKOURAV01/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/MOHITKOURAV01/subscriptions",
+          "organizations_url": "https://api.github.com/users/MOHITKOURAV01/orgs",
+          "repos_url": "https://api.github.com/users/MOHITKOURAV01/repos",
+          "events_url": "https://api.github.com/users/MOHITKOURAV01/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/MOHITKOURAV01/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": "Mohit Kourav",
+          "company": null,
+          "blog": "",
+          "location": null,
+          "email": null,
+          "hireable": null,
+          "bio": null,
+          "twitter_username": null,
+          "public_repos": 68,
+          "public_gists": 0,
+          "followers": 16,
+          "following": 11,
+          "created_at": "2024-11-29T20:28:54Z",
+          "updated_at": "2026-06-22T19:44:43Z"
+        },
+        "totalPRs": 1,
+        "mergedPRs": 1,
+        "openPRs": 0,
+        "closedPRs": 0,
+        "scoreMergedPRs": 0,
+        "issuesCount": 0,
+        "cachedAt": "2026-06-25T16:58:32.444Z",
+        "year": "3rd year",
+        "campus": "ADYPU"
+      },
+      {
+        "profile": {
           "login": "VIPAX-JIT",
           "id": 180660818,
           "node_id": "U_kgDOCsSqUg",
@@ -21264,6 +20942,52 @@
       },
       {
         "profile": {
+          "login": "Vansh0204",
+          "id": 183680538,
+          "node_id": "U_kgDOCvK-Gg",
+          "avatar_url": "https://avatars.githubusercontent.com/u/183680538?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/Vansh0204",
+          "html_url": "https://github.com/Vansh0204",
+          "followers_url": "https://api.github.com/users/Vansh0204/followers",
+          "following_url": "https://api.github.com/users/Vansh0204/following{/other_user}",
+          "gists_url": "https://api.github.com/users/Vansh0204/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/Vansh0204/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/Vansh0204/subscriptions",
+          "organizations_url": "https://api.github.com/users/Vansh0204/orgs",
+          "repos_url": "https://api.github.com/users/Vansh0204/repos",
+          "events_url": "https://api.github.com/users/Vansh0204/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/Vansh0204/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": "Vansh Agarwal",
+          "company": null,
+          "blog": "",
+          "location": null,
+          "email": null,
+          "hireable": null,
+          "bio": null,
+          "twitter_username": null,
+          "public_repos": 91,
+          "public_gists": 0,
+          "followers": 6,
+          "following": 9,
+          "created_at": "2024-10-03T04:10:09Z",
+          "updated_at": "2026-06-22T17:02:55Z"
+        },
+        "totalPRs": 2,
+        "mergedPRs": 2,
+        "openPRs": 0,
+        "closedPRs": 0,
+        "scoreMergedPRs": 0,
+        "issuesCount": 0,
+        "cachedAt": "2026-06-25T17:16:08.505Z",
+        "year": "3rd year",
+        "campus": "ADYPU"
+      },
+      {
+        "profile": {
           "login": "ankitkumar572005",
           "avatar_url": "https://github.com/ankitkumar572005.png",
           "html_url": "https://github.com/ankitkumar572005",
@@ -22512,6 +22236,52 @@
       },
       {
         "profile": {
+          "login": "AmanRajSharma001",
+          "id": 228016444,
+          "node_id": "U_kgDODZdBPA",
+          "avatar_url": "https://avatars.githubusercontent.com/u/228016444?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/AmanRajSharma001",
+          "html_url": "https://github.com/AmanRajSharma001",
+          "followers_url": "https://api.github.com/users/AmanRajSharma001/followers",
+          "following_url": "https://api.github.com/users/AmanRajSharma001/following{/other_user}",
+          "gists_url": "https://api.github.com/users/AmanRajSharma001/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/AmanRajSharma001/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/AmanRajSharma001/subscriptions",
+          "organizations_url": "https://api.github.com/users/AmanRajSharma001/orgs",
+          "repos_url": "https://api.github.com/users/AmanRajSharma001/repos",
+          "events_url": "https://api.github.com/users/AmanRajSharma001/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/AmanRajSharma001/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": null,
+          "company": null,
+          "blog": "",
+          "location": null,
+          "email": null,
+          "hireable": null,
+          "bio": null,
+          "twitter_username": null,
+          "public_repos": 27,
+          "public_gists": 0,
+          "followers": 6,
+          "following": 9,
+          "created_at": "2025-08-22T12:52:21Z",
+          "updated_at": "2026-06-08T17:05:12Z"
+        },
+        "totalPRs": 11,
+        "mergedPRs": 11,
+        "openPRs": 0,
+        "closedPRs": 0,
+        "scoreMergedPRs": 0,
+        "issuesCount": 0,
+        "cachedAt": "2026-06-25T17:16:08.632Z",
+        "year": "2nd year",
+        "campus": "ADYPU"
+      },
+      {
+        "profile": {
           "login": "saransh752",
           "id": 225804408,
           "node_id": "U_kgDODXWAeA",
@@ -23459,6 +23229,52 @@
         "scoreMergedPRs": 0,
         "issuesCount": 0,
         "cachedAt": "2026-06-25T17:16:08.662Z",
+        "year": "2nd year",
+        "campus": "ADYPU"
+      },
+      {
+        "profile": {
+          "login": "SharanyoBanerjee",
+          "id": 70018622,
+          "node_id": "MDQ6VXNlcjcwMDE4NjIy",
+          "avatar_url": "https://avatars.githubusercontent.com/u/70018622?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/SharanyoBanerjee",
+          "html_url": "https://github.com/SharanyoBanerjee",
+          "followers_url": "https://api.github.com/users/SharanyoBanerjee/followers",
+          "following_url": "https://api.github.com/users/SharanyoBanerjee/following{/other_user}",
+          "gists_url": "https://api.github.com/users/SharanyoBanerjee/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/SharanyoBanerjee/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/SharanyoBanerjee/subscriptions",
+          "organizations_url": "https://api.github.com/users/SharanyoBanerjee/orgs",
+          "repos_url": "https://api.github.com/users/SharanyoBanerjee/repos",
+          "events_url": "https://api.github.com/users/SharanyoBanerjee/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/SharanyoBanerjee/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": "Sharanyo Banerjee",
+          "company": null,
+          "blog": "",
+          "location": "Kalyani",
+          "email": null,
+          "hireable": null,
+          "bio": "I am 19 year old coder. ",
+          "twitter_username": null,
+          "public_repos": 174,
+          "public_gists": 0,
+          "followers": 3,
+          "following": 1,
+          "created_at": "2020-08-21T12:09:34Z",
+          "updated_at": "2026-06-09T21:12:24Z"
+        },
+        "totalPRs": 1,
+        "mergedPRs": 1,
+        "openPRs": 0,
+        "closedPRs": 0,
+        "scoreMergedPRs": 0,
+        "issuesCount": 6,
+        "cachedAt": "2026-06-25T17:16:08.668Z",
         "year": "2nd year",
         "campus": "ADYPU"
       },
@@ -29423,6 +29239,52 @@
         "scoreMergedPRs": 0,
         "issuesCount": 0,
         "cachedAt": "2026-06-25T17:16:09.083Z",
+        "year": "2nd year",
+        "campus": "ADYPU"
+      },
+      {
+        "profile": {
+          "login": "Pranav00076",
+          "id": 222479696,
+          "node_id": "U_kgDODULFUA",
+          "avatar_url": "https://avatars.githubusercontent.com/u/222479696?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/Pranav00076",
+          "html_url": "https://github.com/Pranav00076",
+          "followers_url": "https://api.github.com/users/Pranav00076/followers",
+          "following_url": "https://api.github.com/users/Pranav00076/following{/other_user}",
+          "gists_url": "https://api.github.com/users/Pranav00076/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/Pranav00076/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/Pranav00076/subscriptions",
+          "organizations_url": "https://api.github.com/users/Pranav00076/orgs",
+          "repos_url": "https://api.github.com/users/Pranav00076/repos",
+          "events_url": "https://api.github.com/users/Pranav00076/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/Pranav00076/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": "Pranav Thawait",
+          "company": "Newton School of Technology",
+          "blog": "",
+          "location": null,
+          "email": "pranavthawait@gmail.com",
+          "hireable": null,
+          "bio": null,
+          "twitter_username": null,
+          "public_repos": 46,
+          "public_gists": 0,
+          "followers": 9,
+          "following": 7,
+          "created_at": "2025-07-23T17:32:13Z",
+          "updated_at": "2026-06-10T19:06:16Z"
+        },
+        "totalPRs": 10,
+        "mergedPRs": 9,
+        "openPRs": 0,
+        "closedPRs": 1,
+        "scoreMergedPRs": 0,
+        "issuesCount": 15,
+        "cachedAt": "2026-06-25T17:16:09.087Z",
         "year": "2nd year",
         "campus": "ADYPU"
       },
@@ -37284,7 +37146,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37309,7 +37171,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37334,7 +37196,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37359,7 +37221,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37384,7 +37246,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37409,7 +37271,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37434,7 +37296,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37459,7 +37321,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37484,7 +37346,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37509,7 +37371,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37534,7 +37396,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37559,7 +37421,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37584,7 +37446,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37609,7 +37471,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37634,7 +37496,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37659,7 +37521,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37684,7 +37546,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37709,7 +37571,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37734,7 +37596,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37759,7 +37621,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37784,7 +37646,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37809,7 +37671,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37834,7 +37696,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37859,7 +37721,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37884,7 +37746,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37909,7 +37771,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37934,7 +37796,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37959,7 +37821,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -37984,7 +37846,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38009,7 +37871,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38034,7 +37896,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38059,7 +37921,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38084,7 +37946,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38109,7 +37971,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38134,7 +37996,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38159,7 +38021,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38184,7 +38046,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38209,7 +38071,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38234,7 +38096,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38259,7 +38121,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38284,7 +38146,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38309,7 +38171,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38334,7 +38196,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38359,7 +38221,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38384,7 +38246,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38409,7 +38271,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38434,7 +38296,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38459,7 +38321,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38484,7 +38346,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38509,7 +38371,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38534,7 +38396,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38559,7 +38421,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38584,7 +38446,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38609,7 +38471,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38634,7 +38496,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38659,7 +38521,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38684,7 +38546,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38709,7 +38571,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38734,7 +38596,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38759,7 +38621,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38784,7 +38646,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38809,7 +38671,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38834,7 +38696,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38859,7 +38721,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38884,7 +38746,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38909,7 +38771,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38934,7 +38796,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38959,7 +38821,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -38984,7 +38846,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39009,7 +38871,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39034,7 +38896,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39059,7 +38921,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39084,7 +38946,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39109,7 +38971,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39134,7 +38996,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39159,7 +39021,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39184,7 +39046,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39209,7 +39071,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39234,7 +39096,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39259,7 +39121,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39284,7 +39146,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39309,7 +39171,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39334,7 +39196,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39359,7 +39221,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39384,7 +39246,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39409,7 +39271,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39434,7 +39296,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39459,7 +39321,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39484,7 +39346,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39509,7 +39371,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39534,7 +39396,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39559,7 +39421,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39584,7 +39446,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39609,7 +39471,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39634,7 +39496,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39659,7 +39521,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39684,7 +39546,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39709,7 +39571,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39734,7 +39596,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39759,7 +39621,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39784,7 +39646,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39809,7 +39671,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39834,7 +39696,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39859,7 +39721,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39884,7 +39746,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39909,7 +39771,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39934,7 +39796,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39959,7 +39821,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -39984,7 +39846,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -40009,7 +39871,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -40034,7 +39896,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -40059,7 +39921,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -40084,7 +39946,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -40109,7 +39971,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -40134,7 +39996,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -40159,7 +40021,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -40184,7 +40046,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -40209,7 +40071,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -40234,7 +40096,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -40259,7 +40121,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -40468,7 +40330,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.520Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -40861,7 +40723,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -41208,7 +41070,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -41693,7 +41555,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -42362,7 +42224,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -42433,7 +42295,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -42625,6 +42487,52 @@
         "scoreMergedPRs": 0,
         "issuesCount": 0,
         "cachedAt": "2026-06-30T17:19:26.829Z",
+        "year": "2nd year",
+        "campus": "Rishihood"
+      },
+      {
+        "profile": {
+          "login": "thedittya471",
+          "id": 221872241,
+          "node_id": "U_kgDODTmAcQ",
+          "avatar_url": "https://avatars.githubusercontent.com/u/221872241?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/thedittya471",
+          "html_url": "https://github.com/thedittya471",
+          "followers_url": "https://api.github.com/users/thedittya471/followers",
+          "following_url": "https://api.github.com/users/thedittya471/following{/other_user}",
+          "gists_url": "https://api.github.com/users/thedittya471/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/thedittya471/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/thedittya471/subscriptions",
+          "organizations_url": "https://api.github.com/users/thedittya471/orgs",
+          "repos_url": "https://api.github.com/users/thedittya471/repos",
+          "events_url": "https://api.github.com/users/thedittya471/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/thedittya471/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": "Dittya Maity",
+          "company": null,
+          "blog": "",
+          "location": null,
+          "email": null,
+          "hireable": null,
+          "bio": "Code. Learn. Build. Repeat.",
+          "twitter_username": null,
+          "public_repos": 31,
+          "public_gists": 0,
+          "followers": 7,
+          "following": 2,
+          "created_at": "2025-07-20T16:42:36Z",
+          "updated_at": "2026-06-19T19:54:15Z"
+        },
+        "totalPRs": 4,
+        "mergedPRs": 4,
+        "openPRs": 0,
+        "closedPRs": 0,
+        "scoreMergedPRs": 0,
+        "issuesCount": 0,
+        "cachedAt": "2026-06-30T17:31:31.360Z",
         "year": "2nd year",
         "campus": "Rishihood"
       },
@@ -43056,7 +42964,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -43173,7 +43081,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -43336,7 +43244,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -44373,7 +44281,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -44381,6 +44289,52 @@
         "closedPRs": 0,
         "scoreMergedPRs": 0,
         "issuesCount": 0,
+        "year": "2nd year",
+        "campus": "Rishihood"
+      },
+      {
+        "profile": {
+          "login": "akshay26-ui",
+          "id": 143264475,
+          "node_id": "U_kgDOCIoK2w",
+          "avatar_url": "https://avatars.githubusercontent.com/u/143264475?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/akshay26-ui",
+          "html_url": "https://github.com/akshay26-ui",
+          "followers_url": "https://api.github.com/users/akshay26-ui/followers",
+          "following_url": "https://api.github.com/users/akshay26-ui/following{/other_user}",
+          "gists_url": "https://api.github.com/users/akshay26-ui/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/akshay26-ui/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/akshay26-ui/subscriptions",
+          "organizations_url": "https://api.github.com/users/akshay26-ui/orgs",
+          "repos_url": "https://api.github.com/users/akshay26-ui/repos",
+          "events_url": "https://api.github.com/users/akshay26-ui/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/akshay26-ui/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": "AKSHAY KUMAR SINGH",
+          "company": null,
+          "blog": "",
+          "location": "Sonipat, Haryana",
+          "email": "akshayandakshay13@gmail.com",
+          "hireable": null,
+          "bio": "New to the field but jumping in with curiosity with a strong WiFi connection, motivation, a tincture of creativity moreover love for interesting conversations a",
+          "twitter_username": null,
+          "public_repos": 7,
+          "public_gists": 0,
+          "followers": 2,
+          "following": 0,
+          "created_at": "2023-08-26T11:27:10Z",
+          "updated_at": "2026-06-06T09:23:29Z"
+        },
+        "totalPRs": 1,
+        "mergedPRs": 1,
+        "openPRs": 0,
+        "closedPRs": 0,
+        "scoreMergedPRs": 0,
+        "issuesCount": 0,
+        "cachedAt": "2026-06-30T17:27:42.368Z",
         "year": "2nd year",
         "campus": "Rishihood"
       },
@@ -44398,7 +44352,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -44469,7 +44423,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -44540,7 +44494,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -44749,7 +44703,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -45050,7 +45004,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -45489,7 +45443,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -45514,7 +45468,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -45757,6 +45711,52 @@
       },
       {
         "profile": {
+          "login": "tyChirag",
+          "id": 227328445,
+          "node_id": "U_kgDODYzBvQ",
+          "avatar_url": "https://avatars.githubusercontent.com/u/227328445?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/tyChirag",
+          "html_url": "https://github.com/tyChirag",
+          "followers_url": "https://api.github.com/users/tyChirag/followers",
+          "following_url": "https://api.github.com/users/tyChirag/following{/other_user}",
+          "gists_url": "https://api.github.com/users/tyChirag/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/tyChirag/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/tyChirag/subscriptions",
+          "organizations_url": "https://api.github.com/users/tyChirag/orgs",
+          "repos_url": "https://api.github.com/users/tyChirag/repos",
+          "events_url": "https://api.github.com/users/tyChirag/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/tyChirag/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": "chirag tyagi",
+          "company": null,
+          "blog": "",
+          "location": null,
+          "email": "chiragtyagi253@gmail.com",
+          "hireable": null,
+          "bio": "I am a student in newton school of technology ",
+          "twitter_username": null,
+          "public_repos": 11,
+          "public_gists": 0,
+          "followers": 0,
+          "following": 0,
+          "created_at": "2025-08-19T06:20:24Z",
+          "updated_at": "2025-08-24T18:25:29Z"
+        },
+        "totalPRs": 2,
+        "mergedPRs": 2,
+        "openPRs": 0,
+        "closedPRs": 0,
+        "scoreMergedPRs": 0,
+        "issuesCount": 0,
+        "cachedAt": "2026-06-30T17:26:03.730Z",
+        "year": "2nd year",
+        "campus": "Rishihood"
+      },
+      {
+        "profile": {
           "login": "anshxs",
           "name": "anshxs",
           "avatar_url": "https://avatars.githubusercontent.com/anshxs?s=100",
@@ -45769,7 +45769,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -45840,7 +45840,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -46417,7 +46417,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -46856,7 +46856,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -47065,7 +47065,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -47182,7 +47182,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -47575,7 +47575,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -47600,7 +47600,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -47717,7 +47717,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -47972,7 +47972,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -48227,7 +48227,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -48436,7 +48436,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,
@@ -48461,7 +48461,7 @@
           "location": null,
           "blog": null,
           "twitter_username": null,
-          "created_at": "2026-07-12T11:47:32.521Z"
+          "created_at": "2026-07-12T12:38:55.232Z"
         },
         "totalPRs": 0,
         "mergedPRs": 0,

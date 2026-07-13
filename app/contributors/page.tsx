@@ -2,7 +2,6 @@ import { getAllStudentSummaries, buildDateQuery, StudentSummary } from '@/lib/gi
 import { getStudentsKV } from '@/lib/kv-students';
 import { getFlaggedPRIdSet } from '@/lib/flagged';
 import { readSummaryCache, writeSummaryCache } from '@/lib/summary-cache';
-import { RefreshButton } from './RefreshButton';
 import { FilterBar } from './FilterBar';
 import { ContributorGrid } from './ContributorGrid';
 import Link from 'next/link';
@@ -162,12 +161,6 @@ export default async function ContributorsPage({
             </div>
           </div>
 
-          {/* Last updated + public refresh */}
-          {isPredefinedPeriod && (
-            <div className="mt-4 flex justify-center">
-              <RefreshButton cachedAt={cachedAt} period={period} />
-            </div>
-          )}
         </div>
       </div>
 
