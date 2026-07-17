@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useRef, useTransition } from 'react';
+import { useState, useRef, useTransition, useEffect } from 'react';
 
 const PRESETS = [
   { label: 'All',      value: 'all'     },
@@ -33,7 +33,7 @@ export function FilterBar() {
 
   // Clear loading state when the URL finally changes
   // Using .toString() prevents unstable object references from clearing it instantly
-  React.useEffect(() => {
+  useEffect(() => {
     setLoadingTarget(null);
   }, [searchParams.toString()]);
 
