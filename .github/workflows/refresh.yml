@@ -1,8 +1,12 @@
 name: Refresh Leaderboard Cache
 
+# Manual-only: refresh-cache.yml already runs the incremental refresh every 15
+# minutes and shares the same GitHub token. Running this full reseed loop on
+# a schedule too caused both workflows to burst requests against the same
+# 30 req/min GitHub Search rate limit at once, so student refreshes would
+# intermittently fail with "GitHub rate limit exceeded". Trigger manually
+# from the Actions tab when a full reseed is actually needed.
 on:
-  schedule:
-    - cron: '0 */2 * * *' # Run every 2 hours
   workflow_dispatch: # Allow manual triggering from the Actions tab
 
 jobs:
