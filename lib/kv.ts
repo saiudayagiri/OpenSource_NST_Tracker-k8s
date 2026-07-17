@@ -78,6 +78,11 @@ async function executeKVCommand(command: string[]): Promise<{ ok: boolean; resul
     const data = await res.json();
     return { ok: true, result: data.result };
   } catch (err) {
+    // Next.js signals static-render bailout via a thrown error with this digest —
+    // let it propagate so the route is correctly marked dynamic, don't log it as a KV failure.
+    if (err && typeof err === 'object' && 'digest' in err && err.digest === 'DYNAMIC_SERVER_USAGE') {
+      throw err;
+    }
     console.error(`KV command threw [${command[0]} ${command[1]}]:`, err);
     return { ok: false, result: null };
   }
