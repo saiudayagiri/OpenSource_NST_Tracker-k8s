@@ -561,7 +561,6 @@ export async function getAllStudentSummaries(
 
   const repoCache = await getRepoCache();
   const summaries: StudentSummary[] = [];
-  const uncachedStudents: Student[] = [];
 
   // ── Phase 1: Resolve from individual profile caches (zero API calls) ──
   if (!forceLive) {
@@ -615,114 +614,56 @@ export async function getAllStudentSummaries(
     return summaries.sort((a, b) => b.scoreMergedPRs - a.scoreMergedPRs);
   }
 
-  // ── Phase 2: Batch-query GitHub for remaining (or all) students ────
-  const studentsToFetch = forceLive ? students : uncachedStudents;
-  const usernames = studentsToFetch.map((s) => s.github);
-  // GitHub Search API has a strict limit of 5 OR operators per query. 
-  // We can query a maximum of 5 authors per batch.
-  const batchSize = 5;
-  const allPRs: StudentPR[] = [];
-  const allIssues: StudentIssue[] = [];
-  let rateLimitHit = false;
+  // ── Phase 2: Fetch remaining (or all) students individually ────────
+  // GitHub's Search API rejects multi-author OR queries outright (422
+  // Validation Failed) even for the simplest two-term case — verified
+  // empirically against well-known accounts, contradicting the documented
+  // "up to 5 operators" limit. Batching multiple authors into one query via
+  // OR is not usable, so each student gets its own single-author search.
+  const studentsToFetch = students;
   const successfulFetches = new Map<string, boolean>();
+  const studentPRMap = new Map<string, StudentPR[]>();
+  const studentIssueMap = new Map<string, StudentIssue[]>();
 
-  for (let i = 0; i < usernames.length; i += batchSize) {
-    // Cool down after a rate-limit detection (search limit resets every 60s)
-    if (rateLimitHit) {
-      console.log(`Rate limit cooldown: waiting 65s before batch at index ${i}...`);
-      await new Promise((r) => setTimeout(r, 65_000));
-      rateLimitHit = false;
-    }
+  for (let i = 0; i < studentsToFetch.length; i++) {
+    const username = studentsToFetch[i].github;
+    const lowerName = username.toLowerCase();
+    const prQuery = `is:pr author:${username} -user:${username}${dateQuery ? ' ' + dateQuery : ''}`;
+    const issueQuery = `is:issue author:${username} -user:${username}${dateQuery ? ' ' + dateQuery : ''}`;
 
-    const batch = usernames.slice(i, i + batchSize);
-    const authorQuery = `(${batch.map((u) => `author:${u}`).join(' OR ')})`;
-    const prQuery = `is:pr ${authorQuery}${dateQuery ? ' ' + dateQuery : ''}`;
-    const issueQuery = `is:issue ${authorQuery}${dateQuery ? ' ' + dateQuery : ''}`;
-
-    const results = await Promise.allSettled([
-      githubSearchAll<StudentPR>(prQuery),
-      githubSearchAll<StudentIssue>(issueQuery),
-    ]);
-
-    let batchSuccess = false;
-    let batchRateLimited = false;
-
-    const prFulfilled = results[0].status === 'fulfilled' && results[0].value !== null;
-    const issueFulfilled = results[1].status === 'fulfilled' && results[1].value !== null;
-
-    if (prFulfilled && issueFulfilled) {
-      allPRs.push(...(results[0] as PromiseFulfilledResult<any>).value.items);
-      allIssues.push(...(results[1] as PromiseFulfilledResult<any>).value.items);
-      batchSuccess = true;
-    } else {
-      if (results[0].status === 'rejected' && results[0].reason instanceof GitHubRateLimitError) batchRateLimited = true;
-      else if (results[0].status === 'fulfilled' && results[0].value === null) {
-        console.warn(`PR batch ${i} returned null`);
-      } else if (results[0].status === 'rejected') {
-        console.error(`PR batch ${i} error:`, results[0].reason);
-      }
-
-      if (results[1].status === 'rejected' && results[1].reason instanceof GitHubRateLimitError) batchRateLimited = true;
-      else if (results[1].status === 'fulfilled' && results[1].value === null) {
-        console.warn(`Issue batch ${i} returned null`);
-      } else if (results[1].status === 'rejected') {
-        console.error(`Issue batch ${i} error:`, results[1].reason);
-      }
-    }
-
-    // On rate limit: wait for reset and retry the batch once
-    if (batchRateLimited) {
-      console.log(`Rate limit on batch ${i}, waiting 65s and retrying...`);
-      await new Promise((r) => setTimeout(r, 65_000));
-
-      const retry = await Promise.allSettled([
+    const fetchOnce = () =>
+      Promise.allSettled([
         githubSearchAll<StudentPR>(prQuery),
         githubSearchAll<StudentIssue>(issueQuery),
       ]);
 
-      const retryPrFulfilled = retry[0].status === 'fulfilled' && retry[0].value !== null;
-      const retryIssueFulfilled = retry[1].status === 'fulfilled' && retry[1].value !== null;
+    let results = await fetchOnce();
+    let prFulfilled = results[0].status === 'fulfilled' && results[0].value !== null;
+    let issueFulfilled = results[1].status === 'fulfilled' && results[1].value !== null;
+    const wasRateLimited =
+      (results[0].status === 'rejected' && results[0].reason instanceof GitHubRateLimitError) ||
+      (results[1].status === 'rejected' && results[1].reason instanceof GitHubRateLimitError);
 
-      if (retryPrFulfilled && retryIssueFulfilled) {
-        allPRs.push(...(retry[0] as PromiseFulfilledResult<any>).value.items);
-        allIssues.push(...(retry[1] as PromiseFulfilledResult<any>).value.items);
-        batchSuccess = true;
-      } else {
-        if (retry[0].status === 'rejected' && retry[0].reason instanceof GitHubRateLimitError) {
-          rateLimitHit = true; // Triggers cooldown before next batch
-        }
-      }
+    if ((!prFulfilled || !issueFulfilled) && wasRateLimited) {
+      console.log(`Rate limit fetching ${username}, waiting 65s and retrying...`);
+      await new Promise((r) => setTimeout(r, 65_000));
+      results = await fetchOnce();
+      prFulfilled = results[0].status === 'fulfilled' && results[0].value !== null;
+      issueFulfilled = results[1].status === 'fulfilled' && results[1].value !== null;
     }
 
-    // Record success state for this batch of usernames
-    for (const u of batch) {
-      successfulFetches.set(u.toLowerCase(), batchSuccess);
+    const success = prFulfilled && issueFulfilled;
+    successfulFetches.set(lowerName, success);
+    if (success) {
+      studentPRMap.set(lowerName, (results[0] as PromiseFulfilledResult<any>).value.items);
+      studentIssueMap.set(lowerName, (results[1] as PromiseFulfilledResult<any>).value.items);
+    } else {
+      if (results[0].status === 'rejected') console.error(`PR fetch failed for ${username}:`, results[0].reason);
+      if (results[1].status === 'rejected') console.error(`Issue fetch failed for ${username}:`, results[1].reason);
     }
 
-    if (i + batchSize < usernames.length && !rateLimitHit) {
+    if (i < studentsToFetch.length - 1) {
       await new Promise((r) => setTimeout(r, GITHUB_TOKEN ? 1500 : 6500));
-    }
-  }
-
-  // ── Group contributions by student username (lowercase key) ────────
-  const studentPRMap = new Map<string, StudentPR[]>();
-  const studentIssueMap = new Map<string, StudentIssue[]>();
-
-  for (const pr of allPRs) {
-    const login = pr.user.login.toLowerCase();
-    const repoOwner = pr.repository_url.split('/repos/')[1]?.split('/')[0];
-    if (repoOwner && repoOwner.toLowerCase() !== login) {
-      if (!studentPRMap.has(login)) studentPRMap.set(login, []);
-      studentPRMap.get(login)!.push(pr);
-    }
-  }
-
-  for (const issue of allIssues) {
-    const login = issue.user.login.toLowerCase();
-    const repoOwner = issue.repository_url.split('/repos/')[1]?.split('/')[0];
-    if (repoOwner && repoOwner.toLowerCase() !== login) {
-      if (!studentIssueMap.has(login)) studentIssueMap.set(login, []);
-      studentIssueMap.get(login)!.push(issue);
     }
   }
 
@@ -733,7 +674,7 @@ export async function getAllStudentSummaries(
     const cached = await readProfileCache(student.github);
 
     if (!isSuccess && cached) {
-      // Fallback to stale cache if batch query failed
+      // Fallback to stale cache if this student's fetch failed
       const summary = getSummaryFromCache(cached, dateQuery, flaggedPRIds, repoCache);
       summary.year = student.year;
       summary.campus = student.campus;
