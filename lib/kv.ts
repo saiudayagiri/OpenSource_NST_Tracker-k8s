@@ -55,10 +55,10 @@ function writeDiskKV<T>(key: string, value: T, ttlSeconds?: number): void {
   }
 }
 
-async function executeKVCommand(command: string[]): Promise<any> {
+async function executeKVCommand(command: string[]): Promise<{ ok: boolean; result: any }> {
   const url = process.env.KV_REST_API_URL;
   const token = process.env.KV_REST_API_TOKEN;
-  if (!url || !token) return null;
+  if (!url || !token) return { ok: false, result: null };
 
   try {
     const res = await fetch(url, {
@@ -70,11 +70,16 @@ async function executeKVCommand(command: string[]): Promise<any> {
       body: JSON.stringify(command),
       cache: 'no-store',
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      console.error(`KV command failed [${command[0]} ${command[1]}]: ${res.status} ${body.slice(0, 300)}`);
+      return { ok: false, result: null };
+    }
     const data = await res.json();
-    return data.result;
-  } catch {
-    return null;
+    return { ok: true, result: data.result };
+  } catch (err) {
+    console.error(`KV command threw [${command[0]} ${command[1]}]:`, err);
+    return { ok: false, result: null };
   }
 }
 
@@ -83,7 +88,7 @@ export async function kvGet<T>(key: string): Promise<T | null> {
   const token = process.env.KV_REST_API_TOKEN;
 
   if (url && token) {
-    const result = await executeKVCommand(['GET', key]);
+    const { result } = await executeKVCommand(['GET', key]);
     // If Redis has data, use it
     if (result !== null && result !== undefined) {
       try {
@@ -99,8 +104,8 @@ export async function kvGet<T>(key: string): Promise<T | null> {
   return readDiskKV<T>(key);
 }
 
-
-export async function kvSet<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
+/** Returns true if the value was actually persisted to Redis (or disk fallback). */
+export async function kvSet<T>(key: string, value: T, ttlSeconds?: number): Promise<boolean> {
   const url = process.env.KV_REST_API_URL;
   const token = process.env.KV_REST_API_TOKEN;
   const serialized = JSON.stringify(value);
@@ -109,9 +114,10 @@ export async function kvSet<T>(key: string, value: T, ttlSeconds?: number): Prom
     const command = ttlSeconds
       ? ['SET', key, serialized, 'EX', String(ttlSeconds)]
       : ['SET', key, serialized];
-    await executeKVCommand(command);
-    return;
+    const { ok } = await executeKVCommand(command);
+    return ok;
   }
 
   writeDiskKV(key, value, ttlSeconds);
+  return true;
 }
