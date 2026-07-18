@@ -427,7 +427,7 @@ export default async function ContributorPage({
 
       {/* Contribution trend chart */}
       <div className="max-w-4xl mx-auto px-4 mb-6">
-        <ContributionChart prs={allPRs} />
+        <ContributionChart prs={validPRs} />
       </div>
 
       {/* Content */}
