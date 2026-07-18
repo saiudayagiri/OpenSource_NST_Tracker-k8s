@@ -16,6 +16,7 @@ import {
   REFRESH_COOLDOWN_MS,
 } from '@/lib/summary-cache';
 import { readProfileCache, writeProfileCache } from '@/lib/profile-cache';
+import { getRepoCache } from '@/lib/repo-cache';
 import { kvGet, kvSet } from '@/lib/kv';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
@@ -118,6 +119,7 @@ export async function POST(request: Request) {
       // This is O(1) — no need to rebuild all 600+ profiles from scratch.
       try {
         const flaggedPRIds = await getFlaggedPRIdSet();
+        const repoCache = await getRepoCache();
         const updatedCache = await readProfileCache(username);
         const students = await getStudentsKV();
         const student = students.find(
@@ -130,7 +132,7 @@ export async function POST(request: Request) {
             const existingCache = await readSummaryCache(p);
             if (existingCache) {
               const dateQuery = buildDateQuery(p);
-              const freshSummary = getSummaryFromCache(updatedCache, dateQuery, flaggedPRIds);
+              const freshSummary = getSummaryFromCache(updatedCache, dateQuery, flaggedPRIds, repoCache);
               if (student) {
                 freshSummary.year = student.year;
                 freshSummary.campus = student.campus;

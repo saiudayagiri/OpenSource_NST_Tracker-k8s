@@ -385,6 +385,19 @@ export function getSummaryFromCache(
   let prs = cached.prs || [];
   let issues = cached.issues || [];
 
+  // Strip out junk entirely — manually flagged PRs, or PRs merged into repos that
+  // failed star validation — so it never counts toward anything displayed,
+  // not just the ranking score.
+  prs = prs.filter((pr) => {
+    if (!pr.repository_url) return true;
+    const repo = pr.repository_url.replace('https://api.github.com/repos/', '');
+    const key = `${repo}#${pr.number}`;
+    if (flaggedPRIds.has(key)) return false;
+    const repoEntry = repoCacheMap[repo];
+    if (repoEntry && repoEntry.valid === false) return false;
+    return true;
+  });
+
   if (dateQuery) {
     const gtMatch = dateQuery.match(/created:>([0-9-]{10})/);
     const rangeMatch = dateQuery.match(/created:([0-9-]{10})\.\.([0-9-]{10})/);
@@ -410,30 +423,9 @@ export function getSummaryFromCache(
   }
 
   const totalPRs = prs.length;
-  const mergedPRsList = prs.filter((pr) => pr.pull_request?.merged_at);
-  const mergedPRs = mergedPRsList.length;
+  const mergedPRs = prs.filter((pr) => pr.pull_request?.merged_at).length;
   const openPRs = prs.filter((pr) => pr.state === 'open').length;
   const closedPRs = prs.filter((pr) => pr.state === 'closed' && !pr.pull_request?.merged_at).length;
-
-  let penalizeCount = 0;
-  for (const pr of mergedPRsList) {
-    if (!pr.repository_url) continue;
-    const repo = pr.repository_url.replace('https://api.github.com/repos/', '');
-    const key = `${repo}#${pr.number}`;
-    
-    // Check if manually flagged
-    if (flaggedPRIds.has(key)) {
-      penalizeCount++;
-      continue; // Don't penalize twice
-    }
-
-    // Check if repository is invalid (spam / 0-stars)
-    const repoEntry = repoCacheMap[repo];
-    // If it's explicitly marked as invalid (valid === false), penalize it
-    if (repoEntry && repoEntry.valid === false) {
-      penalizeCount++;
-    }
-  }
 
   return {
     profile: cached.profile,
@@ -441,7 +433,9 @@ export function getSummaryFromCache(
     mergedPRs,
     openPRs,
     closedPRs,
-    scoreMergedPRs: Math.max(0, mergedPRs - penalizeCount),
+    // Junk is already stripped out of `prs` above, so this is just mergedPRs —
+    // kept as a separate field since callers sort/rank on it specifically.
+    scoreMergedPRs: mergedPRs,
     issuesCount: issues.length,
     cachedAt: cached.cachedAt,
   };
@@ -637,28 +631,23 @@ export async function getAllStudentSummaries(
       );
     }
 
-    const totalPRs = prs.length;
-    const mergedPRsList = prs.filter((pr) => pr.pull_request?.merged_at);
-    const mergedPRs = mergedPRsList.length;
-    const openPRs = prs.filter((pr) => pr.state === 'open').length;
-    const closedPRs = prs.filter((pr) => pr.state === 'closed' && !pr.pull_request?.merged_at).length;
-
-    let penalizeCount = 0;
-    for (const pr of mergedPRsList) {
-      if (!pr.repository_url) continue;
+    // Strip out junk (manually flagged, or repos that failed star validation)
+    // before computing any displayed stat — the cache write above keeps the
+    // full raw history, but nothing junk should count toward what's shown.
+    const validPRs = prs.filter((pr) => {
+      if (!pr.repository_url) return true;
       const repo = pr.repository_url.replace('https://api.github.com/repos/', '');
       const key = `${repo}#${pr.number}`;
-      
-      if (flaggedPRIds.has(key)) {
-        penalizeCount++;
-        continue;
-      }
-      
+      if (flaggedPRIds.has(key)) return false;
       const repoEntry = repoCache[repo];
-      if (repoEntry && repoEntry.valid === false) {
-        penalizeCount++;
-      }
-    }
+      if (repoEntry && repoEntry.valid === false) return false;
+      return true;
+    });
+
+    const totalPRs = validPRs.length;
+    const mergedPRs = validPRs.filter((pr) => pr.pull_request?.merged_at).length;
+    const openPRs = validPRs.filter((pr) => pr.state === 'open').length;
+    const closedPRs = validPRs.filter((pr) => pr.state === 'closed' && !pr.pull_request?.merged_at).length;
 
     summaries.push({
       profile,
@@ -666,7 +655,7 @@ export async function getAllStudentSummaries(
       mergedPRs,
       openPRs,
       closedPRs,
-      scoreMergedPRs: Math.max(0, mergedPRs - penalizeCount),
+      scoreMergedPRs: mergedPRs,
       issuesCount: issues.length,
       year: student.year,
       campus: student.campus,

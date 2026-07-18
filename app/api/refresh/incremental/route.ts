@@ -3,6 +3,7 @@ import { updateStaleProfiles, buildDateQuery, getSummaryFromCache } from '@/lib/
 import { getFlaggedPRIdSet } from '@/lib/flagged';
 import { writeSummaryCache, readSummaryCache } from '@/lib/summary-cache';
 import { readProfileCache } from '@/lib/profile-cache';
+import { getRepoCache } from '@/lib/repo-cache';
 import { getStudentsKV } from '@/lib/kv-students';
 import { revalidatePath } from 'next/cache';
 
@@ -22,6 +23,7 @@ async function performIncrementalRefresh() {
   //    This avoids reading all 1914+ profiles on every cron run.
   console.log('[Incremental Refresh] Patching summary caches for updated users...');
   const flaggedPRIds = await getFlaggedPRIdSet();
+  const repoCache = await getRepoCache();
   const students = await getStudentsKV();
   const periods = ['all', 'week', 'month'];
 
@@ -37,7 +39,7 @@ async function performIncrementalRefresh() {
       if (!updatedCache) continue;
 
       const student = students.find(s => s.github.toLowerCase() === username.toLowerCase());
-      const freshSummary = getSummaryFromCache(updatedCache, dateQuery, flaggedPRIds);
+      const freshSummary = getSummaryFromCache(updatedCache, dateQuery, flaggedPRIds, repoCache);
       if (student) {
         freshSummary.year = student.year;
         freshSummary.campus = student.campus;
