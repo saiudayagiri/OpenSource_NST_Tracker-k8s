@@ -579,7 +579,7 @@ export default async function CheckWorkUserPage({
         <div className="relative max-w-4xl mx-auto">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             <div className="relative flex-shrink-0">
-              <Image src={profile.avatar_url} alt={profile.login} width={112} height={112}
+              <Image src={profile.avatar_url} alt={profile.login} width={112} height={112} unoptimized
                 className="w-28 h-28 rounded-full ring-4 ring-purple-500/25 shadow-2xl shadow-purple-900/30 object-cover" />
             </div>
 

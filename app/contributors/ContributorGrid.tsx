@@ -49,6 +49,7 @@ function ContributorCard({
             alt={summary.profile.login}
             width={52}
             height={52}
+            unoptimized
             className="w-[52px] h-[52px] rounded-full ring-2 ring-white/10 group-hover:ring-purple-500/40 transition-all object-cover"
           />
         </div>

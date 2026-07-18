@@ -66,6 +66,7 @@ function AchieverCard({
             alt={displayName}
             width={56}
             height={56}
+            unoptimized
             className="w-14 h-14 rounded-full ring-2 ring-white/10 group-hover:ring-yellow-500/30 transition-all object-cover flex-shrink-0"
           />
         ) : (
@@ -106,12 +107,13 @@ function AchieverCard({
           return (
             <span
               key={i}
-              className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border ${meta.bg} ${meta.color} ${meta.border}`}
+              className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border max-w-full ${meta.bg} ${meta.color} ${meta.border}`}
+              title={prog.org}
             >
-              <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} />
-              {prog.name}
-              {prog.year && <span className="opacity-60">{prog.year}</span>}
-              {prog.org && <span className="opacity-50">· {prog.org}</span>}
+              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${meta.dot}`} />
+              <span className="flex-shrink-0">{prog.name}</span>
+              {prog.year && <span className="opacity-60 flex-shrink-0">{prog.year}</span>}
+              {prog.org && <span className="opacity-50 truncate">· {prog.org}</span>}
             </span>
           );
         })}

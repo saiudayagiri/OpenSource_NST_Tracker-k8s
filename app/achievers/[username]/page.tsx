@@ -83,6 +83,7 @@ export default async function AchieverPage({ params }: { params: Promise<{ usern
               alt={profile.login}
               width={112}
               height={112}
+              unoptimized
               className="w-28 h-28 rounded-full ring-4 ring-yellow-500/20 shadow-2xl object-cover flex-shrink-0"
             />
             <div className="flex-1 text-center sm:text-left">
