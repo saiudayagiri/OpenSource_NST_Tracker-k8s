@@ -1,8 +1,8 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { getStudentsKV, removeStudent } from './kv-students';
-import { getRepoCache, saveRepoCache, type RepoCacheMap } from './repo-cache';
-import { readProfileCache, writeProfileCache, isProfileFresh, type ProfileCacheEntry } from './profile-cache';
+import { getRepoCache, saveRepoCache } from './repo-cache';
+import { readProfileCache, writeProfileCache, type ProfileCacheEntry } from './profile-cache';
 import { execSync } from 'child_process';
 import { cookies } from 'next/headers';
 import { kvGet, kvSet } from './kv';
@@ -428,127 +428,6 @@ export function getSummaryFromCache(
     issuesCount: issues.length,
     cachedAt: cached.cachedAt,
   };
-}
-
-export async function getStudentSummary(
-  student: Student,
-  dateQuery = '',
-  flaggedPRIds: Set<string> = new Set()
-): Promise<StudentSummary | null> {
-  let cached: ProfileCacheEntry | null = null;
-  let repoCache: import('./repo-cache').RepoCacheMap = {};
-  
-  try {
-    cached = await readProfileCache(student.github);
-  } catch (err) {
-    console.error(`Failed to read profile cache for ${student.github}:`, err);
-  }
-
-  try {
-    repoCache = await getRepoCache();
-  } catch (err) {
-    console.error(`Failed to read repo cache for ${student.github}:`, err);
-  }
-
-  // If we have profile cache, use it immediately to avoid hitting the rate limit
-  if (cached) {
-    try {
-      const summary = getSummaryFromCache(cached, dateQuery, flaggedPRIds, repoCache);
-      summary.year = student.year;
-      summary.campus = student.campus;
-      return summary;
-    } catch (err) {
-      console.error(`Error generating summary from cache for ${student.github}:`, err);
-    }
-  }
-
-  try {
-    const [profile, data, issueData] = await Promise.all([
-      getStudentProfile(student.github),
-      searchPRs(student.github, dateQuery, 1, 100),
-      githubSearch<StudentIssue>(
-        `is:issue author:${student.github} -user:${student.github}${dateQuery ? ' ' + dateQuery : ''}`,
-        1,
-        100
-      )
-    ]);
-    if (!profile) {
-      if (cached) {
-        console.warn(`Profile fetch failed but fallback cache exists for ${student.github}`);
-        const summary = getSummaryFromCache(cached, dateQuery, flaggedPRIds, repoCache);
-        summary.year = student.year;
-        summary.campus = student.campus;
-        return summary;
-      }
-      return null;
-    }
-
-    const items = data ? data.items : [];
-    const total = data ? data.total_count : 0;
-
-    const mergedItems = items.filter((pr) => pr.pull_request?.merged_at);
-    const openInSample = items.filter((pr) => pr.state === 'open').length;
-    const closedInSample = items.filter(
-      (pr) => !pr.pull_request?.merged_at && pr.state === 'closed'
-    ).length;
-
-    const sampleSize = items.length || 1;
-    const scale = total / sampleSize;
-
-    const mergedInSample = mergedItems.length;
-    const mergedPRs = Math.round(mergedInSample * scale);
-
-    const flaggedMergedInSample = mergedItems.filter((pr) => {
-      const repo = pr.repository_url.replace('https://api.github.com/repos/', '');
-      const key = `${repo}#${pr.number}`;
-      
-      if (flaggedPRIds.has(key)) return true;
-      const repoEntry = repoCache[repo];
-      if (repoEntry && repoEntry.valid === false) return true;
-      
-      return false;
-    }).length;
-    
-    const flaggedMerged = Math.round(flaggedMergedInSample * scale);
-
-    if (!dateQuery && profile && data !== null && issueData !== null) {
-      try {
-        const prsList = data.items;
-        const issuesList = issueData.items;
-        writeProfileCache(student.github, profile, prsList, issuesList).catch((err) =>
-          console.error(`Failed to write profile cache in summary:`, err)
-        );
-      } catch (cacheErr) {
-        console.error(`Failed to trigger cache write for ${student.github}:`, cacheErr);
-      }
-    }
-
-    return {
-      profile,
-      totalPRs: total,
-      mergedPRs,
-      openPRs: Math.round(openInSample * scale),
-      closedPRs: Math.round(closedInSample * scale),
-      scoreMergedPRs: Math.max(0, mergedPRs - flaggedMerged),
-      issuesCount: issueData ? issueData.total_count : 0,
-      year: student.year,
-      campus: student.campus,
-    };
-  } catch (error) {
-    console.warn(`Error or rate limit hit during live summary fetch for ${student.github}:`, error);
-    if (cached) {
-      console.info(`Falling back to cached profile data for ${student.github}`);
-      try {
-        const summary = getSummaryFromCache(cached, dateQuery, flaggedPRIds, repoCache);
-        summary.year = student.year;
-        summary.campus = student.campus;
-        return summary;
-      } catch (err) {
-        console.error(`Error generating summary from stale cache for ${student.github}:`, err);
-      }
-    }
-    return null;
-  }
 }
 
 export async function getAllStudentSummaries(

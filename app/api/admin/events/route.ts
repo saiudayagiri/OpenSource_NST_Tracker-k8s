@@ -1,23 +1,17 @@
-import { cookies } from 'next/headers';
+import { checkAdminAuth } from '@/lib/admin-auth';
 import { getEventsKV, addEvent, updateEvent, deleteEvent } from '@/lib/kv-events';
 import { revalidatePath } from 'next/cache';
 
-const COOKIE_NAME = 'admin_session';
-async function isAuthenticated(): Promise<boolean> {
-  const cookieStore = await cookies();
-  return cookieStore.get(COOKIE_NAME)?.value === 'authenticated';
-}
-
 /** GET /api/admin/events — list all events */
 export async function GET() {
-  if (!(await isAuthenticated())) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await checkAdminAuth())) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   const events = await getEventsKV();
   return Response.json(events);
 }
 
 /** POST /api/admin/events — create a new event */
 export async function POST(request: Request) {
-  if (!(await isAuthenticated())) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await checkAdminAuth())) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await request.json().catch(() => ({}));
   const { title, date, type, description, link } = body as {
     title?: string; date?: string; type?: string; description?: string; link?: string;
@@ -42,7 +36,7 @@ export async function POST(request: Request) {
 
 /** PATCH /api/admin/events — update an existing event { id, ...updates } */
 export async function PATCH(request: Request) {
-  if (!(await isAuthenticated())) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await checkAdminAuth())) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await request.json().catch(() => ({}));
   const { id, ...updates } = body as { id?: string; [k: string]: unknown };
   if (!id) return Response.json({ error: 'Missing id' }, { status: 400 });
@@ -54,7 +48,7 @@ export async function PATCH(request: Request) {
 
 /** DELETE /api/admin/events?id=<eventId> — delete an event */
 export async function DELETE(request: Request) {
-  if (!(await isAuthenticated())) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await checkAdminAuth())) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
   if (!id) return Response.json({ error: 'Missing ?id= param' }, { status: 400 });

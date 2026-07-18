@@ -1,23 +1,17 @@
-import { cookies } from 'next/headers';
+import { checkAdminAuth } from '@/lib/admin-auth';
 import { getAchieversKV, addAchiever, updateAchiever, deleteAchiever } from '@/lib/kv-achievers';
 import { revalidatePath } from 'next/cache';
 
-const COOKIE_NAME = 'admin_session';
-async function isAuthenticated(): Promise<boolean> {
-  const cookieStore = await cookies();
-  return cookieStore.get(COOKIE_NAME)?.value === 'authenticated';
-}
-
 /** GET /api/admin/achievers — list all achievers */
 export async function GET() {
-  if (!(await isAuthenticated())) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await checkAdminAuth())) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   const achievers = await getAchieversKV();
   return Response.json(achievers);
 }
 
 /** POST /api/admin/achievers — add a new achiever */
 export async function POST(request: Request) {
-  if (!(await isAuthenticated())) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await checkAdminAuth())) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await request.json().catch(() => ({}));
   const { github, name, headline, bookingUrl, programs } = body as {
     github?: string; name?: string; headline?: string; bookingUrl?: string;
@@ -40,7 +34,7 @@ export async function POST(request: Request) {
 
 /** PATCH /api/admin/achievers — update an achiever { github, ...updates } */
 export async function PATCH(request: Request) {
-  if (!(await isAuthenticated())) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await checkAdminAuth())) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await request.json().catch(() => ({}));
   const { github, ...updates } = body as { github?: string; [k: string]: unknown };
   if (!github) return Response.json({ error: 'Missing github' }, { status: 400 });
@@ -53,7 +47,7 @@ export async function PATCH(request: Request) {
 
 /** DELETE /api/admin/achievers?github=username — remove an achiever */
 export async function DELETE(request: Request) {
-  if (!(await isAuthenticated())) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await checkAdminAuth())) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   const { searchParams } = new URL(request.url);
   const github = searchParams.get('github');
   if (!github) return Response.json({ error: 'Missing ?github= param' }, { status: 400 });

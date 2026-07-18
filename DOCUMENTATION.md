@@ -1,6 +1,6 @@
 # Opensource Tracker NST — Project Documentation
 
-> **Last updated:** June 2026 | **Version:** v1 | **Framework:** Next.js 16 (App Router)
+> **Last updated:** July 2026 | **Version:** v2 | **Framework:** Next.js 16 (App Router)
 
 A comprehensive technical reference for current and future contributors. Covers architecture, design decisions, data flow, every page and component, and operational notes.
 
@@ -18,29 +18,31 @@ A comprehensive technical reference for current and future contributors. Covers 
 8. [Components](#8-components)
 9. [API Routes](#9-api-routes)
 10. [Admin System](#10-admin-system)
-11. [Deployment & Infrastructure](#11-deployment--infrastructure)
-12. [Environment Variables](#12-environment-variables)
-13. [Design System](#13-design-system)
-14. [Known Behaviours & Gotchas](#14-known-behaviours--gotchas)
-15. [Contributor Guide](#15-contributor-guide)
+11. [Auth: Admin, Student, and Guest](#11-auth-admin-student-and-guest)
+12. [Deployment & Infrastructure](#12-deployment--infrastructure)
+13. [Environment Variables](#13-environment-variables)
+14. [Design System](#14-design-system)
+15. [Known Behaviours & Gotchas](#15-known-behaviours--gotchas)
+16. [Contributor Guide](#16-contributor-guide)
 
 ---
 
 ## 1. Project Overview
 
-**Opensource Tracker NST** is a leaderboard and visibility platform for tracking open source contributions made by students of NST. It fetches pull requests and issues from the GitHub Search API, ranks students by the number of clean merged PRs, and surfaces this data in a polished public dashboard.
+**Opensource Tracker NST** is a leaderboard and visibility platform for tracking open source contributions made by students of NST across three campuses (Rishihood, ADYPU, SVYASA). It fetches pull requests and issues from the GitHub Search API, ranks students by the number of clean merged PRs, and surfaces this data in a public dashboard.
 
 ### Goals
 
 - **Transparency** — every student's contributions are visible and linkable.
 - **Motivation** — real-time rankings and achievement badges encourage consistent contributions.
-- **Integrity** — an admin system allows flagging fake or low-quality PRs so they are excluded from rankings.
+- **Integrity** — an admin system flags fake/low-quality PRs, and an automatic repo-validation layer penalizes PRs merged into 0-star/spam repositories, so both are excluded from rankings.
 - **Education** — a "Common Issues" page teaches open source Git workflows to beginners.
+- **Growth** — a public join-request flow lets students self-register; admins approve from a queue.
 
 ### What It Is NOT
 
-- It does not write to GitHub (no webhooks, no OAuth on behalf of users).
-- It does not authenticate students — all data is public GitHub API data.
+- It does not write to GitHub on a student's behalf (OAuth login only raises the logged-in user's own rate limit and contributes their token to a shared pool — see Section 11).
+- It does not gate the leaderboard, profiles, or any public page behind login — everything is public by design.
 - It is not a repository management tool.
 
 ---
@@ -49,31 +51,35 @@ A comprehensive technical reference for current and future contributors. Covers 
 
 | Layer | Choice | Reason |
 |---|---|---|
-| Framework | **Next.js 16** (App Router) | Server Components for fast TTFB; server-side caching; built-in ISR |
+| Framework | **Next.js 16** (App Router, Turbopack) | Server Components for fast TTFB; built-in ISR |
 | Language | **TypeScript** | Type safety for GitHub API shapes and data transforms |
-| Styling | **TailwindCSS v4** | Utility-first rapid UI; v4 uses `@tailwindcss/postcss` instead of `content` config |
-| Fonts | **Geist + Geist Mono** (via `next/font/google`) | Clean, modern, developer-centric aesthetic |
+| Styling | **TailwindCSS v4** | Utility-first rapid UI; v4 uses `@tailwindcss/postcss` |
+| Fonts | **Geist + Geist Mono** (`next/font/google`) | Clean, modern, developer-centric aesthetic |
 | Caching | **Vercel KV (Upstash Redis)** + local disk fallback | Serverless-compatible persistent cache; avoids GitHub rate limits |
-| Deployment | **Vercel** | Zero-config Next.js hosting; native KV; Cron Jobs |
-| Data files | **JSON files** in `/data/` | Simple, git-trackable, no database for static content |
-| Images | **Next.js `<Image>`** with `avatars.githubusercontent.com` allowed | Automatic optimization of GitHub avatar images |
+| Deployment | **Vercel** (manual + git-triggered deploys) | Zero-config Next.js hosting |
+| Scheduling | **GitHub Actions** (primary) + one legacy Vercel cron | See Section 12 |
+| Data files | **JSON files** in `/data/` — **seed data only**, see Section 4 | Simple, git-trackable initial state |
+| Images | Next.js `<Image>` with `avatars.githubusercontent.com` allowed | Automatic optimization of GitHub avatar images |
 
 ### Core Design Principles
 
 **1. Cache-First, API-Second**
-Every page that touches the GitHub API reads from cache first. Only on cache miss (or manual refresh) does it call the API. This prevents rate-limit failures and keeps pages fast.
+Every page that touches GitHub data reads from KV cache first. Only a background refresh job (or an explicit manual refresh) calls the GitHub API. This is the single most important constraint on the whole system: GitHub's Search API allows **30 requests/minute with a token, 10/minute without** — everything about the caching and refresh design exists to stay under that ceiling across ~1,900 tracked students.
 
 **2. Server Components by Default**
-Almost everything is a React Server Component (RSC). Client Components (`'use client'`) are used only when browser APIs are needed (clipboard, router, local state). This keeps JavaScript bundles tiny.
+Almost everything is a React Server Component. Client Components (`'use client'`) are used only when browser APIs are needed (clipboard, router, local state).
 
 **3. Zero-Dependency KV Client**
-`lib/kv.ts` talks to Vercel KV (Upstash Redis) via raw HTTP REST — no npm SDK. This avoids bundle bloat and works in any Edge/Node environment.
+`lib/kv.ts` talks to Upstash Redis via raw HTTP REST — no npm SDK.
 
 **4. Transparent Local Dev Fallback**
-When `KV_REST_API_URL` and `KV_REST_API_TOKEN` are absent, the KV layer falls back to reading/writing JSON files in `data/kv/`. Developers can work locally with no Redis setup required.
+When `KV_REST_API_URL`/`KV_REST_API_TOKEN` are absent, the KV layer falls back to reading/writing JSON files in `data/kv/`. No Redis setup required for local dev.
 
-**5. Dark Mode Only**
-The site uses a fixed dark color scheme (`bg-[#0d0d14]`). There is no light mode — this is intentional. The dark background makes neon purple/blue glow effects and glassmorphic cards look premium.
+**5. KV Is the Source of Truth — Not the Committed JSON Files**
+This is a common point of confusion (see Section 4): `data/students.json`, `data/events.json`, `data/achievers.json`, and `data/flagged_prs.json` are **one-time seed files**, read only if the corresponding KV key doesn't exist yet. Once KV is populated (it is, in production), editing these JSON files and redeploying has **no effect** on the live site. All mutations go through the admin dashboard or the public join-request flow, which write directly to KV.
+
+**6. Dark Mode Only**
+Fixed dark color scheme (`bg-[#0d0d14]`), intentional — no light mode.
 
 ---
 
@@ -82,159 +88,164 @@ The site uses a fixed dark color scheme (`bg-[#0d0d14]`). There is no light mode
 ```
 OpenSource_NST_Tracker/
 │
-├── app/                          # Next.js App Router pages & components
-│   ├── layout.tsx                # Root layout: mounts <Nav />, fonts, metadata
-│   ├── page.tsx                  # Home page (/)
-│   ├── globals.css               # Minimal global CSS (base resets, Tailwind import)
+├── app/                              # Next.js App Router pages & components
+│   ├── layout.tsx                    # Root layout: <Nav />, fonts, metadata
+│   ├── page.tsx                      # Home page (/)
+│   ├── globals.css
 │   │
 │   ├── components/
-│   │   ├── Nav.tsx               # Sticky top navigation (Client Component)
-│   │   ├── UpcomingEvents.tsx    # Events timeline widget (Client Component)
-│   │   └── SmoothScroll.tsx      # Lenis smooth scroll wrapper (Client Component)
+│   │   ├── Nav.tsx                   # Sticky nav, shows session state (Client)
+│   │   ├── UpcomingEvents.tsx        # Events timeline widget (Client)
+│   │   ├── SmoothScroll.tsx          # Lenis smooth scroll wrapper (Client)
+│   │   └── FloatingCelebration.tsx   # Celebration animation (Client)
 │   │
 │   ├── contributors/
-│   │   ├── page.tsx              # Leaderboard (/contributors)
-│   │   ├── loading.tsx           # Suspense skeleton for leaderboard
-│   │   ├── FilterBar.tsx         # Period/search filter (Client Component)
-│   │   ├── RefreshButton.tsx     # Manual refresh + toast (Client Component)
-│   │   ├── ShareButton.tsx       # Copy/Twitter/WhatsApp share (Client Component)
+│   │   ├── page.tsx                  # Leaderboard (/contributors)
+│   │   ├── loading.tsx
+│   │   ├── FilterBar.tsx             # Period/search/year/campus filter (Client)
+│   │   ├── RefreshButton.tsx         # Manual refresh + login nudge (Client)
+│   │   ├── ShareButton.tsx           # Copy/Twitter/WhatsApp share (Client)
 │   │   └── [username]/
-│   │       ├── page.tsx          # Individual contributor profile
-│   │       └── loading.tsx       # Suspense skeleton for profile
+│   │       ├── page.tsx              # Individual contributor profile
+│   │       └── loading.tsx
 │   │
 │   ├── achievers/
-│   │   ├── page.tsx              # Hall of Fame (/achievers)
-│   │   └── [username]/
-│   │       └── page.tsx          # Individual achiever profile
+│   │   ├── page.tsx                  # Hall of Fame (/achievers)
+│   │   └── [username]/page.tsx       # Individual achiever profile
 │   │
-│   ├── programs/
-│   │   └── page.tsx              # Open source programs directory (static)
+│   ├── check-work/
+│   │   ├── page.tsx                  # Lookup form for previewing any GitHub user
+│   │   └── [username]/page.tsx       # Live, uncached PR/issue preview for one user
 │   │
-│   ├── get-started/
-│   │   └── page.tsx              # "How to contribute" guide (static)
+│   ├── join/page.tsx                 # Public self-registration form
+│   ├── login/page.tsx                # GitHub OAuth sign-in (optional upgrade, not a gate)
+│   ├── programs/page.tsx             # Open source programs directory (static)
+│   ├── get-started/page.tsx          # "How to contribute" guide (static)
+│   ├── repo-activity/page.tsx        # Repo-level activity view
 │   │
 │   ├── issues/
-│   │   ├── page.tsx              # Common Issues page (holds issue data, server)
-│   │   └── IssuesClient.tsx      # Accordion interaction (Client Component)
+│   │   ├── page.tsx                  # Common Issues page (server)
+│   │   └── IssuesClient.tsx          # Accordion interaction (Client)
 │   │
 │   ├── admin/
-│   │   ├── page.tsx              # Admin login form (Client Component)
+│   │   ├── page.tsx                  # Admin login form (Client)
 │   │   └── dashboard/
-│   │       ├── page.tsx          # Dashboard wrapper (Server Component)
-│   │       └── AdminDashboardClient.tsx  # Full admin UI (Client Component)
+│   │       ├── page.tsx              # Dashboard wrapper (Server)
+│   │       └── AdminDashboardClient.tsx  # Full admin UI (Client)
 │   │
 │   └── api/
 │       ├── refresh/
-│       │   └── route.ts          # GET/POST — cache status & refresh trigger
+│       │   ├── route.ts              # GET/POST — cache status & single-student/period refresh
+│       │   └── incremental/route.ts  # GET/POST — cron-driven round-robin stale-profile refresh
+│       ├── auth/
+│       │   ├── github/route.ts               # Initiates OAuth redirect
+│       │   ├── github/callback/route.ts      # Exchanges code, sets cookie, adds token to pool
+│       │   ├── session/route.ts               # Returns current login state
+│       │   └── logout/route.ts
+│       ├── join-requests/route.ts    # Public: check eligibility / submit a join request
+│       ├── weekly-contributors/route.ts
+│       ├── repo-activity/route.ts
+│       ├── user-activity/route.ts
 │       └── admin/
-│           ├── auth/route.ts     # POST — admin login (sets session cookie)
-│           ├── flag/route.ts     # POST/DELETE — flag or unflag a PR
-│           └── approve/route.ts  # POST — approve/un-approve a PR
+│           ├── auth/route.ts         # POST — admin login (sets session cookie)
+│           ├── students/route.ts     # CRUD for tracked students
+│           ├── flag/route.ts         # POST/DELETE — flag or unflag a PR
+│           ├── approve/route.ts      # POST — approve/un-approve a PR
+│           ├── join-requests/route.ts # List/manage pending join requests
+│           ├── queue/route.ts        # Unreviewed-PR review queue
+│           ├── events/route.ts       # CRUD for events
+│           └── achievers/route.ts    # CRUD for Hall of Fame entries
 │
-├── lib/                          # Shared server-side utilities
-│   ├── github.ts                 # GitHub API types + fetch functions
-│   ├── kv.ts                     # KV cache abstraction (Vercel KV or disk)
-│   ├── profile-cache.ts          # Per-user profile cache read/write helpers
-│   ├── summary-cache.ts          # Leaderboard summary cache helpers
-│   ├── data.ts                   # Reads achievers.json, events.json
-│   ├── flagged.ts                # Reads/writes data/flagged_prs.json
-│   ├── reviewed.ts               # Reads/writes data/reviewed_prs.json
-│   ├── admin-auth.ts             # Admin password verification
-│   └── types.ts                  # Shared TypeScript interfaces (EventItem)
+├── lib/                               # Shared server-side utilities
+│   ├── github.ts                      # GitHub API types, fetch functions, scoring (~800 lines)
+│   ├── kv.ts                          # KV cache abstraction (Upstash or disk fallback)
+│   ├── profile-cache.ts               # Per-student PR/issue cache read/write
+│   ├── summary-cache.ts               # Leaderboard summary cache (one blob per period)
+│   ├── repo-cache.ts                  # Repo star-count validation cache (spam detection)
+│   ├── kv-students.ts                 # KV-backed tracked-student list (CRUD)
+│   ├── kv-join-requests.ts            # KV-backed join-request queue
+│   ├── kv-events.ts                   # KV-backed events list
+│   ├── kv-achievers.ts                # KV-backed Hall of Fame entries
+│   ├── flagged.ts                     # KV-backed flagged-PR list
+│   ├── reviewed.ts                    # KV-backed admin-reviewed PR list
+│   ├── admin-auth.ts                  # Shared admin cookie check — import this, don't re-implement it
+│   ├── data.ts                        # PROGRAM_MAP + achiever/event JSON helpers
+│   └── types.ts                       # Shared TypeScript interfaces (EventItem)
 │
-├── data/                         # Static JSON data files (git-tracked)
-│   ├── students.json             # List of tracked GitHub usernames
-│   ├── achievers.json            # Hall of Fame entries with programs
-│   ├── events.json               # Upcoming sessions/deadlines
-│   ├── flagged_prs.json          # Admin-flagged PRs (excluded from score)
-│   ├── reviewed_prs.json         # Admin-approved PRs
-│   └── kv/                       # Local disk KV cache (not committed in prod)
-│       ├── profile_cache_*.json  # Per-user PR/profile cache
-│       └── summary_cache_*.json  # Leaderboard summary caches by period
+├── data/                               # Seed JSON (see Section 4 — NOT the live source of truth)
+│   ├── students.json
+│   ├── achievers.json
+│   ├── events.json
+│   ├── flagged_prs.json
+│   └── reviewed_prs.json
 │
-├── public/                       # Static assets (SVG icons)
-├── next.config.ts                # Next.js config (allowed image hostname)
-├── vercel.json                   # Vercel Cron schedule
-├── package.json
-└── tsconfig.json
+├── data/kv/                            # Local-dev-only disk cache (gitignored), mirrors KV keys
+│
+├── proxy.ts                            # Middleware equivalent in this Next.js version — gates
+│                                        # only /api/refresh/incremental behind CRON_SECRET
+├── vercel.json                         # Legacy daily cron (see Section 12)
+└── .github/workflows/
+    ├── refresh-cache.yml               # PRIMARY: incremental refresh every 15 min
+    └── refresh.yml                     # Manual-only full reseed (see Section 12 — do not re-enable its schedule)
 ```
 
 ---
 
 ## 4. Data Layer
 
-### 4.1 `data/students.json`
+**Read this before touching anything in `data/*.json` — they are not what actually drives the live site.**
 
-The canonical list of tracked students. Add or remove GitHub usernames here.
+Every collection below lives in exactly one Upstash Redis key, as a single JSON blob holding the *entire* collection. The corresponding `lib/kv-*.ts` / `lib/*.ts` helper reads that key first; **only if the key has never been set** does it fall back to seeding from the committed JSON file (and then writes that seed into KV so it never reads the file again).
 
-```json
-[
-  { "github": "some-github-username" }
-]
-```
+| Collection | KV key | Seed file | Managed via |
+|---|---|---|---|
+| Tracked students | `students_list` | `data/students.json` | Admin dashboard (`/api/admin/students`) or approved join requests |
+| Hall of Fame | *(see `lib/kv-achievers.ts`)* | `data/achievers.json` | Admin dashboard (`/api/admin/achievers`) |
+| Events timeline | *(see `lib/kv-events.ts`)* | `data/events.json` | Admin dashboard (`/api/admin/events`) |
+| Flagged PRs | `flagged_prs` | `data/flagged_prs.json` | Admin dashboard (`/api/admin/flag`) |
+| Reviewed PRs | *(see `lib/reviewed.ts`)* | `data/reviewed_prs.json` | Admin dashboard (`/api/admin/approve`) |
+| Repo validation | `repo_cache_map` | — (built entirely at runtime) | Automatic — see Section 6.4 |
+| Shared GitHub tokens | `github_token_pool` | — | Automatic on OAuth login — see Section 11 |
+| Pending join requests | *(see `lib/kv-join-requests.ts`)* | — | Public submission via `/join` |
 
-> **Note:** The `getStudents()` function handles both `"username"` (string) and `{ "github": "username" }` (object) formats for backward compatibility.
+**Practical consequence**: editing `data/students.json` and pushing a commit does **nothing** to production once `students_list` exists in KV (it already does — ~1,900 entries). To add a student, use the admin dashboard's "Add Student" form, or approve their submission from `/join` via the admin queue.
 
-When you add a student, their data will be fetched on the next cache refresh or when someone first visits their profile page.
-
-### 4.2 `data/achievers.json`
-
-Powers the Hall of Fame (`/achievers`). Each entry links a GitHub username to program achievements.
+### 4.1 `data/achievers.json` schema (still the reference schema, even though KV is authoritative at runtime)
 
 ```json
 [
   {
     "github": "username",
-    "name": "Full Name",           // optional — overrides GitHub display name
-    "headline": "Short bio",       // optional — overrides GitHub bio
-    "bookingUrl": "https://...",   // optional — 1:1 booking link
+    "name": "Full Name",
+    "headline": "Short bio",
+    "bookingUrl": "https://...",
     "programs": [
-      {
-        "name": "GSoC",            // must match a key in PROGRAM_MAP in lib/data.ts
-        "year": 2024,              // optional
-        "org": "Organization",     // optional
-        "url": "https://..."       // optional — makes the card a clickable link
-      }
+      { "name": "GSoC", "year": 2024, "org": "Organization", "url": "https://..." }
     ]
   }
 ]
 ```
 
-**Supported program names** (auto-styled via `PROGRAM_MAP` in `lib/data.ts`):
-`GSoC`, `Summer of Bitcoin`, `ESoC`, `Outreachy`, `LFX`, `MLH`, `Hacktoberfest`
+**Supported program names** (auto-styled via `PROGRAM_MAP` in `lib/data.ts`): `GSoC`, `Summer of Bitcoin`, `ESoC`, `Outreachy`, `LFX`, `MLH`, `Hacktoberfest`. Unrecognized names render with a generic style — not an error.
 
-Any program name not in the map renders with a generic white style — this is not an error.
-
-### 4.3 `data/events.json`
-
-Powers the `<UpcomingEvents />` widget on the Home page.
+### 4.2 `data/events.json` schema
 
 ```json
 [
-  {
-    "id": "unique-id",
-    "title": "Event Title",
-    "date": "2026-07-15",           // ISO date string (YYYY-MM-DD)
-    "type": "session",              // "session" | "deadline" | "announcement"
-    "description": "Short description",
-    "link": "https://..."           // optional
-  }
+  { "id": "unique-id", "title": "Event Title", "date": "2026-07-15", "type": "session", "description": "...", "link": "https://..." }
 ]
 ```
+`type` is one of `session` | `deadline` | `announcement`.
 
-### 4.4 `data/flagged_prs.json`
+### 4.3 Flagged & reviewed PRs
 
-Maintained by admins via the dashboard. Flagged PRs are subtracted from a student's `scoreMergedPRs` (the ranking metric) but remain visible on their profile. Managed via `lib/flagged.ts` — do not edit manually.
-
-### 4.5 `data/reviewed_prs.json`
-
-Admin-approved PRs. Used in the admin dashboard for display. Managed via `lib/reviewed.ts`.
+Managed exclusively through the admin dashboard — `lib/flagged.ts` / `lib/reviewed.ts` are the only writers. Flagged PRs are **never deleted**: they stay visible on the student's profile but are excluded from `scoreMergedPRs`.
 
 ---
 
 ## 5. Caching Architecture
 
-This is the most critical system. Understanding it is essential before making any changes.
+This is the most critical system to understand before making changes.
 
 ### 5.1 Two-Level Cache
 
@@ -246,59 +257,53 @@ Any Request
 │            lib/kv.ts (KV Layer)          │
 │                                          │
 │   KV_REST_API_URL + TOKEN present?       │
-│     YES → Vercel KV (Upstash Redis)      │  ← Production
+│     YES → Upstash Redis (REST API)       │  ← Production
 │     NO  → data/kv/*.json (disk files)   │  ← Local development
 └──────────────────────────────────────────┘
 ```
 
-The disk fallback means local development works with **zero infrastructure** — no Redis, no account needed. On Vercel, KV env vars are set and cache is shared across all serverless function instances.
+`kvSet()` returns a `boolean` — **check it, or at least don't assume success**. Upstash's REST API hard-rejects any single write over **10MB** with a `413`. This has bitten real students with unusually high PR/issue counts (any request pushing a cache entry over ~10MB fails outright), which is why `lib/profile-cache.ts` trims every cached PR/issue object down to exactly the fields the app uses (see 5.2) instead of storing GitHub's full raw API response — the raw response includes body text, assignees, milestones, reactions, etc. that this app never reads, and it was enough to blow past the limit for prolific contributors.
 
 ### 5.2 Profile Cache (`lib/profile-cache.ts`)
 
 **KV key format:** `profile_cache:<username_lowercase>`
+**Physical TTL:** 30 days (`EX 2592000` on write) — entries don't need to survive forever, but they shouldn't vanish just because the incremental refresh hasn't reached that student yet.
+**Freshness threshold used by the incremental cron:** 24 hours (`STALE_THRESHOLD_MS` in `updateStaleProfiles`) — this is a *different* number from the physical TTL; don't confuse them.
 
-**TTL:** 1 hour (3600 seconds)
-
-**Cached data per user:**
+**Cached data per student** (trimmed shape — not GitHub's raw response):
 ```typescript
 interface ProfileCacheEntry {
-  cachedAt: string;       // ISO timestamp of when cache was written
-  profile: GitHubUser;    // Full GitHub user object
-  prs: StudentPR[];       // All PR objects (paginated, full results)
-  issues: StudentIssue[]; // All issues authored in external repos
+  cachedAt: string;
+  profile: GitHubUser;
+  prs: StudentPR[];       // trimmed to id, number, title, state, urls, dates, draft, labels, pull_request.merged_at, user
+  issues: StudentIssue[]; // trimmed similarly
 }
 ```
 
 **Cache lifecycle:**
-- Read on: `GET /contributors/[username]`
-- Written on: first profile visit (cache miss) or `POST /api/refresh?username=X`
-- Freshness: < 1 hour = fresh; ≥ 1 hour = stale
-- Stale cache is used as fallback if the GitHub API call fails (network error or rate limit)
-- Manual refresh button has a **separate 5-minute cooldown** enforced in the API route
+- Read on: `GET /contributors/[username]`, `POST /api/refresh?username=X`, the incremental cron
+- Written on: `POST /api/refresh?username=X` (manual), or `refreshStudentCache()` inside the incremental cron
+- Stale cache is used as a fallback if a live refresh attempt fails (rate limit, network error, or a rejected KV write)
+- The public manual-refresh button has a **2-hour cooldown for anonymous users**; logged-in users have no cooldown (see Section 11)
 
 ### 5.3 Summary Cache (`lib/summary-cache.ts`)
 
-**KV key format:** `summary_cache:<period>`
+**KV key format:** `summary_cache:<period>` — one giant blob per period (`all`, `1day`, `week`, `month`, `2months`, `3months`, `6months`, `year`), each holding **every tracked student's summary**.
+**TTL:** none — summary caches are written without an expiry and are treated as permanent, updated only by incremental patches (see 5.4). This was a deliberate choice ("Make summary cache permanent to prevent leaderboard fluctuations") so the leaderboard never drops to zero because of an expired key.
 
-**Periods:** `all`, `1day`, `week`, `month`, `3months`, `6months`, `year`
+**Cost this incurs**: because each period is one blob, patching a *single* student's entry means reading and rewriting the *entire* ~1,900-entry array. This is the biggest structural inefficiency in the codebase today — fine at current scale, worth revisiting if the roster grows much further or reads/writes start showing latency.
 
-**TTL:** 24 hours (86400 seconds)
+### 5.4 Refresh Architecture — Three Generations, Only One Is Live
 
-**Cached data:**
-```typescript
-interface SummaryCache {
-  cachedAt: string;
-  summaries: StudentSummary[];  // All students, sorted by scoreMergedPRs desc
-}
-```
+The refresh mechanism went through several redesigns. Understanding *all three* matters because remnants of the earlier ones are still in the codebase (some intentionally kept as manual fallbacks, one now removed):
 
-**Cache lifecycle:**
-- Read on: `GET /contributors` for predefined periods
-- Written on: cache miss or `POST /api/refresh` (no username param)
-- Invalidated on: admin flags a PR (sets `cachedAt` to epoch `1970-01-01` making it immediately stale)
-- The Vercel Cron runs `POST /api/refresh` every 4 hours to keep it warm
+**Generation 1 (retired)**: `getStudentSummary()` — fetched one page of a student's PRs live and scaled the count by `total_count / sample_size` to estimate merged/open/closed counts without full pagination. This function has been removed (it had zero callers left — the entire codebase had already moved on to exact counts from cache). If you see "scaled/estimated leaderboard counts" mentioned anywhere outside old commit messages, it's stale — the leaderboard shows exact counts from `profile_cache` now.
 
-### 5.4 Cache Invalidation Flow (Admin Flags a PR)
+**Generation 2 (retired)**: a "batch fetch" optimization in `getAllStudentSummaries()` that combined 5 students into one GitHub search query using `is:pr (author:a OR author:b OR ... OR author:e)`, to save API calls. **This query is rejected outright by GitHub's Search API** — verified empirically: even `author:torvalds OR author:octocat` (two well-known, valid accounts) returns `422 Validation Failed`, contradicting GitHub's own documented "up to 5 operators" limit. No current code path calls this with `forceLive: true` anymore (that flag is `false` everywhere it's invoked today), but historically, when it *was* invoked live, every batch failed and any student with no prior cache got a zero-PR placeholder — in some cases written directly into their `profile_cache` entry. **This has been fixed**: `getAllStudentSummaries`'s live-fetch path now loops over students individually using the same reliable single-author search `getStudentPRs`/`getStudentIssues` already use elsewhere, at the cost of one request pair per student instead of per five.
+
+**Generation 3 (current, primary)**: `updateStaleProfiles(batchSize)` — a round-robin function that, each time it runs, picks up to `batchSize` students to refresh: first anything in the manual `refresh_queue` (populated when a rate-limited manual refresh gets deferred), then students with no cache at all, then the oldest stale (>24h) cached students. It's called by `/api/refresh/incremental`, which is hit by a GitHub Actions workflow **every 15 minutes**, refreshing **5 students per tick** (~480/day theoretical maximum). With ~1,900 tracked students, this cannot refresh the full roster within its own 24-hour staleness window — there is a structural backlog by design, not a bug. If the roster grows, either the batch size, the tick frequency, or both need to increase (headroom exists: a single token's 30 req/min ceiling supports far more than 5 students/15min if nothing else is competing for it).
+
+### 5.5 Cache Invalidation Flow (Admin Flags a PR)
 
 ```
 Admin flags a PR in dashboard
@@ -306,29 +311,30 @@ Admin flags a PR in dashboard
         ▼
 POST /api/admin/flag
         │
-        ├── Writes PR to data/flagged_prs.json
+        ├── Writes PR to the flagged-PR KV list
         │
         └── calls invalidateSummaryCache()
                 │
                 ▼
-            Sets cachedAt='1970-01-01T00:00:00.000Z'
-            on all period summary caches
+            Sets cachedAt='1970-01-01T00:00:00.000Z' on every period's summary cache
                 │
                 ▼
-            Next /contributors request sees stale cache
-            → fetches fresh from GitHub API
-            → flagged PR now excluded from scoreMergedPRs
+            Next /contributors request treats it as stale
+            → next refresh cycle (manual or incremental) recomputes with the PR excluded
 ```
 
-### 5.5 Rate Limiting Design
+### 5.6 Rate Limiting Design
 
 | Context | Cooldown | Enforced Where |
 |---|---|---|
-| Public refresh button (leaderboard) | 5 minutes | `/api/refresh` route (reads `isCacheFresh`) |
-| Public refresh button (profile) | 5 minutes | `/api/refresh?username=X` route |
-| Vercel Cron | 4 hours | `vercel.json` cron schedule |
-| GitHub API (unauthenticated) | 10 req/min | GitHub enforced |
-| GitHub API (with token) | 30 req/min | GitHub enforced |
+| Public refresh button (leaderboard, anonymous) | 5 minutes | `/api/refresh` route (`isCacheFresh`) |
+| Public refresh button (profile, anonymous) | 2 hours | `/api/refresh?username=X` route |
+| Logged-in user, either button | none | same routes, bypassed when a session cookie is present |
+| Incremental cron | 15 minutes, 5 students/tick | GitHub Actions `refresh-cache.yml` → `/api/refresh/incremental` |
+| GitHub Search API (unauthenticated) | 10 req/min | GitHub-enforced |
+| GitHub Search API (with a token) | 30 req/min | GitHub-enforced, and shared across **every** request using that token — see Section 11 |
+
+**Do not run two automatic refresh schedules at once.** `refresh.yml`'s schedule trigger was removed for exactly this reason: it and `refresh-cache.yml` both drove requests through the same shared token, and running concurrently pushed combined throughput past the 30 req/min ceiling, causing intermittent "GitHub rate limit exceeded" failures that looked like they were tied to specific students but were really just whoever's request landed during the exhausted window. `refresh.yml` still exists as a manual `workflow_dispatch` for deliberate full reseeds — trigger it by hand, don't re-add its `schedule:` trigger.
 
 ---
 
@@ -336,23 +342,19 @@ POST /api/admin/flag
 
 ### 6.1 Authentication
 
-Set `GITHUB_TOKEN` in environment variables. The token is included as `Authorization: Bearer <token>` on all requests. A **read-only public repos** scope is sufficient.
-
-Without a token: 10 req/min rate limit (unauthenticated).
-With a token: 30 req/min (authenticated).
+See Section 11 for the full picture — in short: a logged-in visitor's own OAuth token is used for their requests; guests get a random token from `github_token_pool` (contributed by anyone who's ever logged in) or fall back to the single shared `GITHUB_TOKEN` env var if the pool is empty (it currently is, in production — nobody has logged in yet in a way that populated it).
 
 ### 6.2 Key Functions in `lib/github.ts`
 
 | Function | GitHub Endpoint | Returns |
 |---|---|---|
 | `getStudentProfile(username)` | `GET /users/:username` | Full GitHub user object |
-| `getStudentPRs(username)` | Search: `is:pr author:X -user:X` | All external PRs (paginated) |
+| `getStudentPRs(username)` | Search: `is:pr author:X -user:X` | All external PRs (paginated, up to 1000 with a token) |
 | `getStudentIssues(username)` | Search: `is:issue author:X -user:X` | All external issues (paginated) |
-| `getStudentSummary(student)` | Profile + PR search (1 page only) | Leaderboard summary with scaled counts |
-| `getAllStudentSummaries()` | Calls `getStudentSummary` for all students | Full ranked leaderboard array |
+| `getAllStudentSummaries(dateQuery, flagged, forceLive)` | Reads `profile_cache` per student (default), or fetches live per-student if `forceLive: true` | Full ranked leaderboard array |
+| `refreshStudentCache(username)` | Profile + PRs + issues, sequentially | Writes to `profile_cache`, used by the incremental cron |
 
-**Search query design — why `-user:X`:**
-This excludes PRs/issues in repos owned by the student themselves. Self-contributions to own repos do not count toward the score. This is intentional.
+**Search query design — why `-user:X`:** excludes PRs/issues in repos owned by the student themselves. Self-contributions to your own repos don't count toward the score. Intentional, and closes an obvious gaming vector.
 
 ### 6.3 Pagination Strategy
 
@@ -360,21 +362,16 @@ This excludes PRs/issues in repos owned by the student themselves. Self-contribu
 |---|---|---|
 | `getStudentPRs` | Up to 3 (no token) / 10 (with token) | 300 / 1000 |
 | `getStudentIssues` | Up to 3 (no token) / 10 (with token) | 300 / 1000 |
-| `getStudentSummary` | **1 page only** | 100 (scaled to total) |
 
-### 6.4 Leaderboard Count Scaling
+Every leaderboard number shown is now an **exact** count from full pagination — there is no scaled-estimate path anymore (see 5.4, Generation 1).
 
-`getStudentSummary` (used for the leaderboard) only fetches 1 page for performance, then scales:
+### 6.4 Repo Validation / Spam Filtering (`lib/repo-cache.ts`)
 
-```
-scaledMerged = Math.round(mergedInSample * (total_count / sample_size))
-```
-
-**This means leaderboard counts are estimates**, not exact figures. Individual profile pages (`getStudentPRs` with full pagination) show exact counts. This is a deliberate tradeoff: exact counts require many API calls; estimates are fast.
+Any repository a merged PR points to gets checked once for star count (`GET /repos/:owner/:repo`) and cached permanently in `repo_cache_map`. A repo with **fewer than 5 stars is marked invalid**, and merged PRs into it are penalized in `scoreMergedPRs` — this is the automatic half of the integrity system, catching the common "spam PR into a throwaway repo" gaming pattern without needing an admin to manually flag every instance. It runs alongside, not instead of, manual flagging (`lib/flagged.ts`) — an admin can still override either way via `manualOverride`.
 
 ### 6.5 `repoFromUrl(url)` Utility
 
-Converts `https://api.github.com/repos/org/repo` → `org/repo`. Used for grouping PRs by repository and displaying repo names.
+Converts `https://api.github.com/repos/org/repo` → `org/repo`. Used for grouping PRs by repository and building the `owner/repo#number` keys used throughout the flagging/validation system.
 
 ---
 
@@ -382,353 +379,109 @@ Converts `https://api.github.com/repos/org/repo` → `org/repo`. Used for groupi
 
 ### 7.1 Home (`/`)
 
-**File:** `app/page.tsx`
-**Rendering:** `force-dynamic` (always reflects latest cache)
+**File:** `app/page.tsx` · **Rendering:** `force-dynamic`
 
-**Data sources (all fast — no GitHub API calls):**
-- `getEvents()` → `data/events.json`
-- `getAchievers()` → `data/achievers.json`
-- `readSummaryCache()` → KV cache
-
-**Sections rendered:**
-1. Hero with live contributor count badge (from cache)
-2. 3-stat strip: Total PRs, Merged, Contributors
-3. Top 5 contributors preview (from cached summary, ranked order)
-4. Hall of Fame mini-section with program counts
-5. Quick navigation cards to all sections
-6. Upcoming events timeline
-
-**Design decision:** Home is `force-dynamic` (not static) so it always shows fresh cache stats. Since it reads only from KV (not GitHub API), this is extremely fast (~10ms latency).
-
----
+Reads only from KV (events, achievers, summary cache) — no GitHub API calls, so it stays fast (~10-50ms) regardless of GitHub's rate limit state. Renders: hero stats, top-5 preview, Hall of Fame mini-section, nav cards, upcoming events.
 
 ### 7.2 Contributors Leaderboard (`/contributors`)
 
-**File:** `app/contributors/page.tsx`
-**Rendering:** `force-dynamic`
+**File:** `app/contributors/page.tsx` · **Rendering:** `force-dynamic`
 
-**URL query parameters:**
-| Param | Values | Default |
-|---|---|---|
-| `period` | `all`, `1day`, `week`, `month`, `3months`, `6months`, `year`, `custom` | `all` |
-| `from` | ISO date string | — |
-| `to` | ISO date string | — |
-| `search` | text string | — |
+**Query params:** `period` (`all`, `1day`, `week`, `month`, `2months`, `3months`, `6months`, `year`, `custom`), `from`, `to`, `search`, `year`, `campus`.
 
-**Data flow:**
-1. Parse `searchParams`
-2. For predefined periods: read `summary_cache:<period>` from KV
-3. If cache missing or invalidated (epoch timestamp): call `getAllStudentSummaries()` + write cache
-4. Apply `search` filter client-side (name + username substring match)
-5. Render ranked student cards
+Reads the matching `summary_cache:<period>` entry directly — it does **not** trigger a live GitHub fetch on page load. If a student has no `profile_cache` entry yet, they render as a zero-stat placeholder (see Section 15 — this is indistinguishable from a genuine zero until they're refreshed, manually or by the incremental cron).
 
-**Ranking metric:** `scoreMergedPRs` = `mergedPRs - flaggedMergedPRs`. A student with 10 genuine merges ranks above one with 20 merges where 15 are flagged.
-
-**Components used:**
-- `<FilterBar />` — URL-driven period switching and name search (350ms debounce)
-- `<RefreshButton />` — public refresh with 5-min cooldown and toast notifications
-
----
+**Ranking metric:** `scoreMergedPRs = mergedPRs - flaggedMergedPRs - invalidRepoMergedPRs`.
 
 ### 7.3 Contributor Profile (`/contributors/[username]`)
 
 **File:** `app/contributors/[username]/page.tsx`
-**Rendering:** `revalidate = 3600` (ISR, 1-hour background regeneration)
 
-**Tab system** (URL query param `?tab=`):
-| Tab Value | Shows |
-|---|---|
-| `prs` (default) | All PRs grouped by repository |
-| `merged` | Only merged PRs |
-| `open` | Only open PRs |
-| `issues` | Issues authored in external repos |
+Reads `profile_cache` for the username; if missing or the manual-refresh cooldown has passed, triggers a live fetch. Falls back to stale cache if the live fetch fails. Tabs: PRs (default, grouped by repo), Merged, Open, Issues. Achievement badges computed client-side from the PR/issue list (First Merge, Merging Machine, Bug Squasher, Doc Hero, Speed Demon — see original criteria table, unchanged).
 
-**Data flow:**
-1. Read profile cache for username
-2. If fresh (< 1 hour): use cached data
-3. If stale: fetch fresh profile + PRs + issues from GitHub API → write cache
-4. If API fails AND stale cache exists: use stale cache as fallback
-5. If nothing: call `notFound()` → 404 page
+### 7.4 Hall of Fame (`/achievers`) & Achiever Profile (`/achievers/[username]`)
 
-**Features:**
-- PR/issue lists grouped by `repoFromUrl()` with `RepoHeader` component
-- Color-coded status badges: Merged (purple), Open (teal), Closed (red)
-- GitHub labels rendered with their actual API colors (`#RRGGBB22` background)
-- Achievement badges (see criteria below)
-- `ContributionChart` — pure SVG area chart of PR activity over the last 6 months
-- Share button (copy link, Twitter/X, WhatsApp)
-- Manual refresh button with 5-minute cooldown
+Data from the achievers KV collection (seeded from `data/achievers.json`, see Section 4). Achiever profiles fetch live GitHub data directly (not via `profile_cache`) since they're visited far less often and the data is supplementary, not ranking-critical.
 
-**Achievement badge criteria:**
+### 7.5 Check Work (`/check-work`, `/check-work/[username]`)
 
-| Badge | Emoji | Condition |
-|---|---|---|
-| First Merge | 🌱 | ≥ 1 merged PR |
-| Merging Machine | 🔥 | ≥ 10 merged PRs |
-| Bug Squasher | 🐞 | ≥ 1 merged PR with "fix"/"bug" in title or bug/fix label |
-| Doc Hero | 📚 | ≥ 1 merged PR with "doc"/"readme" in title or doc label |
-| Speed Demon | ⚡ | 3+ merged PRs within any 7-day window |
+**Purpose:** preview *any* GitHub user's PRs/issues — not just tracked students — most useful for an admin vetting a join request before approving it, or a student previewing their own eligibility before applying.
 
-**Contribution Chart implementation:**
-- Pure SVG, rendered server-side (zero JavaScript chart library, zero bundle impact)
-- Last 6 calendar months on X-axis (built with `new Date(year, month - i, 1)`)
-- Y-axis auto-scales to peak month (`displayMax = maxVal === 0 ? 5 : maxVal`)
-- Gradient line: purple (`#c084fc`) → indigo (`#818cf8`) → blue (`#60a5fa`)
-- Hover tooltips: CSS `group-hover` opacity trick — no JS event listeners
+**Important:** this route does a **fully live, uncached** fetch on every single pageview (`dynamic = 'force-dynamic'`, no `profile_cache` involved at all). It shows a dedicated "GitHub API Rate Limit Hit" page if the shared token is exhausted at that moment, with a nudge to log in. Because it's uncached, a burst of activity here (e.g. an admin reviewing several join requests back to back) draws on the same shared rate-limit budget as everything else — worth keeping in mind if it becomes a frequent flow.
 
----
+### 7.6 Join (`/join`)
 
-### 7.4 Hall of Fame (`/achievers`)
+Public self-registration form. Backed by `POST /api/join-requests` — checks the username isn't already tracked or pending, validates it exists on GitHub, then queues it for admin approval (`/api/admin/join-requests`, `/api/admin/queue`).
 
-**File:** `app/achievers/page.tsx`
-**Rendering:** `revalidate = 3600`
+### 7.7 Login (`/login`)
 
-Data entirely from `data/achievers.json`. No GitHub API calls. Displays student cards with their program badges.
+**Not a gate.** Framed as an optional upgrade: logging in raises your own personal rate limit to GitHub's authenticated ceiling and contributes your token to the shared guest pool (Section 11). Every other public page works fully without it.
 
----
+### 7.8 Programs, Get Started, Common Issues, Repo Activity
 
-### 7.5 Achiever Profile (`/achievers/[username]`)
+Static or lightly-dynamic informational pages — unchanged in design from prior versions. See component-level comments in each file for content structure.
 
-**File:** `app/achievers/[username]/page.tsx`
-**Rendering:** `revalidate = 3600`
+### 7.9 Admin Login (`/admin`) & Dashboard (`/admin/dashboard`)
 
-Fetches live GitHub profile + PRs directly (no KV cache — uses Next.js ISR). Shows:
-- Program achievement cards from `achievers.json`
-- Quick stats: total PRs, merged count, unique repo count
-- Last 10 PRs as a live feed
-
-**Design decision:** Achiever profiles call the API directly (not via KV cache) because they are visited less frequently than contributor profiles, and the data is supplementary.
-
----
-
-### 7.6 Programs (`/programs`)
-
-**File:** `app/programs/page.tsx`
-**Rendering:** Static (fully pre-rendered at build time)
-
-All content is hardcoded in the file. Lists major open source programs with application timelines, eligibility, and tips.
-
----
-
-### 7.7 Get Started (`/get-started`)
-
-**File:** `app/get-started/page.tsx`
-**Rendering:** Static
-
-An engaging, visually rich onboarding guide introducing new contributors to the open-source ecosystem. 
-
-**Sections and Content:**
-1. **Interactive Hero Section:** Dynamic title, inspiring tagline, and quick navigation anchors.
-2. **What is Open Source & Why Innovation:** Side-by-side comparison detailing the contrast between proprietary silos and the open-source collaboration model. Highlight of **Permissionless Innovation** and a 4-item statistical metrics row.
-3. **Open Source Giants (Project Profiles):** Showcase cards for famous open-source software:
-   - *Linux:* The bedrock of cloud server infrastructure and supercomputers.
-   - *Android:* Google's open-source OS running on 3B+ mobile devices.
-   - *Python:* Guido van Rossum's holiday project that became the foundation of modern AI tools (PyTorch, TensorFlow).
-   - *VLC Media Player:* Student-built media tool downloaded 3.5B+ times, volunteer-maintained, ad-free.
-   - *VS Code & Git:* Global standard developer tools powering modern code collaboration.
-   - *Blender:* Crowdfunded Hollywood-grade 3D graphics suite.
-   Each card features key statistics, historical fun facts (origin stories), and brand-colored hover glows.
-4. **Why Contribute:** Career benefits including real-world experience, visibility, connections, and paid stipend programs.
-5. **Onboarding Quest Roadmap:** 6 vertical timeline steps guiding students from learning Git to writing their first PR description.
-6. **Core Skills Checklist:** Categorized checklist of Git, Code Navigation, Technical Communication, and Local Tooling skills.
-7. **Strict Guidelines:** Critical community standards to deter AI plagiarism, README spam, and drive-by PRs.
-
----
-
-### 7.8 Common Issues (`/issues`)
-
-**File:** `app/issues/page.tsx` (server) + `app/issues/IssuesClient.tsx` (client)
-**Rendering:** Static
-
-The `ISSUES` array in `page.tsx` contains 7 structured issue entries (PR extra files, undo bad commit, picking up abandoned PRs, testing before push, merge conflicts, wrong branch, commit messages). Each has: title, severity tag, what happened, why it happens, step-by-step solution with code blocks, and a prevention tip.
-
-`IssuesClient.tsx` handles accordion expand/collapse and tag-based filtering with local React state.
-
----
-
-### 7.9 Admin Login (`/admin`)
-
-**File:** `app/admin/page.tsx` (Client Component)
-
-Login form that `POST`s the password to `/api/admin/auth`. On success, server sets an HTTP-only cookie and client redirects to `/admin/dashboard`.
-
----
-
-### 7.10 Admin Dashboard (`/admin/dashboard`)
-
-**Files:**
-- `page.tsx` — Server Component that verifies auth, reads all data, passes to client
-- `AdminDashboardClient.tsx` — Full interactive dashboard (Client Component)
-
-**Dashboard capabilities:**
-- View all PRs across all students with status (merged/open/closed), flag state, and approval state
-- Filter by student, PR status, repository, and flag/approval state
-- Flag a PR as `fake`, `self_pr`, or `low_quality` with an optional admin note
-- Unflag a previously flagged PR
-- Approve a PR (mark as reviewed)
+Password form → sets `admin_session` cookie → full dashboard (flag/unflag PRs, approve join requests, manage students/events/achievers). See Section 10.
 
 ---
 
 ## 8. Components
 
-### 8.1 `Nav` (`app/components/Nav.tsx`)
+Unchanged from prior documentation for `Nav`, `FilterBar`, `RefreshButton`, `ShareButton`, `UpcomingEvents`, `SmoothScroll` — see inline comments in each file. One addition:
 
-**Type:** Client Component
+### 8.1 `FloatingCelebration` (`app/components/FloatingCelebration.tsx`)
 
-**Features:**
-- Sticky top bar (`sticky top-0 z-50`), 52px height
-- Active link detection via `usePathname()` with prefix matching (`/contributors/username` highlights "Contributors")
-- Desktop: horizontal link pills
-- Mobile: hamburger icon → full-screen slide-out panel
-- Body scroll locked (`document.body.style.overflow = 'hidden'`) when mobile menu is open
-- Auto-closes on route change via `useEffect([path])`
-- Admin icon (lock) always visible but visually subtle (`text-white/15`)
+**Type:** Client Component. Celebratory animation triggered on specific milestone events (e.g. a fresh merge). Self-contained, no external state dependencies.
 
-**Navigation links (in order):** Home, Contributors, Hall of Fame, Programs, Get Started, Issues
+### 8.2 `Nav` session awareness
 
----
-
-### 8.2 `FilterBar` (`app/contributors/FilterBar.tsx`)
-
-**Type:** Client Component
-
-**State management:** All state lives in URL params — the component is driven by `useSearchParams()`. This means filtered views are shareable/bookmarkable and survive page refreshes.
-
-**Features:**
-- Preset period pills: All, 1 Day, 1 Week, 1 Month, 3 Months
-- Custom date range: "Custom" pill → reveals `from`/`to` date pickers + Apply button
-- Name search with **350ms debounce** using `useRef<ReturnType<typeof setTimeout>>`
-- Active filter summary label with "Clear all" shortcut
-- Uses `router.push()` for navigation (not `router.replace`) so filters are in browser history
-
----
-
-### 8.3 `RefreshButton` (`app/contributors/RefreshButton.tsx`)
-
-**Type:** Client Component
-
-**Used on:** Both the leaderboard page and individual contributor profiles
-
-**Flow:**
-1. User clicks "Refresh"
-2. Shows `info` toast: "Fetching latest data from GitHub..."
-3. `POST /api/refresh[?username=X]`
-4. If rate-limited: shows `error` toast with remaining seconds; sets 8-second local cooldown
-5. If success: shows `success` toast; calls `router.refresh()` via `useTransition` to re-render server components
-
-**Toast system:**
-- Fixed bottom-right (`fixed bottom-5 right-5 z-50`)
-- Glassmorphic card: `bg-[#0d0d14]/90 backdrop-blur-md border-white/10`
-- Animated pulsing dot: emerald (success), blue (info/loading), red (error)
-- Auto-dismisses after 4 seconds (except `info` type, which stays until replaced)
-
-**"Updated X ago" label:**
-Ticks every 30 seconds via `setInterval` using `timeAgo()` helper function.
-
----
-
-### 8.4 `ShareButton` (`app/contributors/ShareButton.tsx`)
-
-**Type:** Client Component
-
-Three share actions:
-1. **Copy link** — `navigator.clipboard.writeText()`, shows ✓ checkmark for 2 seconds
-2. **Twitter/X** — `twitter.com/intent/tweet` with pre-encoded text + URL
-3. **WhatsApp** — `wa.me/?text=` with pre-encoded text
-
----
-
-### 8.5 `UpcomingEvents` (`app/components/UpcomingEvents.tsx`)
-
-**Type:** Client Component (needs countdown logic)
-
-Renders events timeline on the Home page. Color-coded by type. Shows live countdowns using `Date.now()` — requires client-side rendering.
-
----
-
-### 8.6 `SmoothScroll` (`app/components/SmoothScroll.tsx`)
-
-**Type:** Client Component
-
-Initializes **Lenis smooth inertial scrolling** across the application. 
-
-**Features:**
-- Custom ease-out exponential deceleration function: `(t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))`.
-- Integrates with the browser's `requestAnimationFrame` render loop.
-- Automatically handles device wheel, trackpad, and keyboard scrolls.
-- Cleans up anim frames and destroys instance on unmount to prevent memory leaks.
+`Nav.tsx` calls `GET /api/auth/session` on mount and on every path change, and renders either a "Sign In" affordance or the logged-in user's avatar/username with quick links to their own profile and check-work page.
 
 ---
 
 ## 9. API Routes
 
-### `GET /api/refresh`
+### `GET /api/refresh` · `POST /api/refresh`
 
-Returns cache metadata without triggering a refresh.
+Cache status and manual refresh trigger. See Section 5.6 for cooldown rules. `POST` with `?username=X` refreshes one student; without it, refreshes the `?period=` summary (defaults to `all`) from whatever's currently in each student's `profile_cache` (no live GitHub calls unless `forceLive` is explicitly requested by the caller — the public route never does).
 
-**Query params:**
-- `?username=X` → profile cache status for user X
-- `?period=X` → summary cache status for that period
+### `GET /api/refresh/incremental` · `POST /api/refresh/incremental`
 
-**Response:**
-```json
-{ "cachedAt": "2026-06-12T10:00:00Z", "fresh": true, "count": 11 }
-```
+Gated by `CRON_SECRET` (checked in `proxy.ts`, not in the route itself — see Section 11). Runs `updateStaleProfiles(5)` and patches the `all`/`week`/`month` summary caches for whichever students were touched. This is what the 15-minute GitHub Actions workflow calls.
 
----
+### `GET/POST /api/join-requests`
 
-### `POST /api/refresh`
+Public. `GET ?username=X` checks eligibility (already tracked / already pending / not found / eligible) without submitting anything. `POST` submits a request into the pending queue.
 
-Triggers a cache refresh. Rate-limited.
+### `POST /api/admin/auth` · `DELETE /api/admin/auth`
 
-**With `?username=X`:**
-- Checks 5-minute cooldown on that user's profile cache
-- If fresh: returns `{ fromCache: true, message: "Try again in Xs" }`
-- If stale: fetches GitHub profile + PRs + issues → writes KV cache → `revalidatePath()` → returns `{ fromCache: false, cachedAt }`
+Validates `ADMIN_PASSWORD`, sets/clears the `admin_session` cookie.
 
-**Without username param:**
-- Refreshes the summary leaderboard for `?period=X` (defaults to `all`)
-- Same 5-minute cooldown logic
-- Calls `getAllStudentSummaries()` → writes KV summary cache → `revalidatePath('/contributors')`
-- Also called by Vercel Cron every 4 hours
+### `GET/POST/PUT/DELETE /api/admin/students`
 
----
+Full CRUD for the tracked-student list. All four verbs are gated by `checkAdminAuth()` from `lib/admin-auth.ts` — every admin route should import this rather than re-implementing the cookie check locally (a prior inconsistency here has been cleaned up; keep it that way).
 
-### `POST /api/admin/auth`
+### `POST/DELETE /api/admin/flag` · `POST /api/admin/approve`
 
-Validates the admin password against `process.env.ADMIN_PASSWORD`. Sets an HTTP-only session cookie on success.
+Flag/unflag a PR, or mark it reviewed. Both invalidate the summary cache on write.
 
----
+### `GET/POST /api/admin/join-requests` · `GET/POST /api/admin/queue`
 
-### `POST /api/admin/flag`
+List and act on pending join requests and the PR review queue.
 
-Flags a PR. Auth-gated (requires session cookie).
+### `GET/POST/PUT/DELETE /api/admin/events` · `.../achievers`
 
-**Request body:**
-```json
-{
-  "prKey": "owner/repo#123",
-  "url": "https://github.com/...",
-  "title": "PR title",
-  "author": "github-username",
-  "reason": "fake" | "self_pr" | "low_quality",
-  "note": "Optional admin note"
-}
-```
+CRUD for the events timeline and Hall of Fame entries.
 
-**Side effects:** writes to `flagged_prs.json`, calls `invalidateSummaryCache()`
+### `GET /api/auth/github` · `GET /api/auth/github/callback` · `GET /api/auth/session` · `GET /api/auth/logout`
 
----
+See Section 11 in full.
 
-### `DELETE /api/admin/flag`
+### `GET /api/weekly-contributors` · `GET /api/repo-activity` · `GET /api/user-activity`
 
-Removes a flag. Body: `{ prKey: "owner/repo#123" }`. Calls `unflagPR()` + `invalidateSummaryCache()`.
-
----
-
-### `POST /api/admin/approve`
-
-Marks a PR as approved. Body: `{ prKey: "owner/repo#123" }`. Writes to `reviewed_prs.json`.
+Supplementary read-only views built on top of cached summary/profile data.
 
 ---
 
@@ -736,77 +489,80 @@ Marks a PR as approved. Body: `{ prKey: "owner/repo#123" }`. Writes to `reviewed
 
 ### Authentication
 
-- Single shared password in `ADMIN_PASSWORD` environment variable
-- Verified by `lib/admin-auth.ts`
-- Session maintained via HTTP-only cookie — value checked server-side on each admin API call
-- No JWT, no user accounts, no roles
+- Single shared password (`ADMIN_PASSWORD`), no per-admin accounts or roles.
+- Verified by `checkAdminAuth()` in `lib/admin-auth.ts` — **this is the only place that should check the cookie**; every admin route imports it.
+- Session cookie is HTTP-only, no automatic expiry beyond the browser session.
 
-### Security Model
+### Capabilities
 
-- Anyone with the password has full admin access
-- All admin mutations are server-side API routes that check the session cookie
-- The password is never sent to client-side JavaScript
-- Admin cookie has no automatic expiry (browser session cookie)
+- View all PRs across all students with status, flag state, and approval state.
+- Flag a PR as `fake`, `self_pr`, or `low_quality` with an optional note; unflag at any time.
+- Approve/un-approve a PR.
+- Add/edit/remove tracked students (year, campus).
+- Review and approve/reject pending join requests.
+- Manage the events timeline and Hall of Fame entries.
 
 ### Flagging Philosophy
 
-Flagged PRs are **not deleted**. They:
-- Remain visible on the contributor's profile page
-- Are excluded from `scoreMergedPRs` used for leaderboard ranking
-- Are stored in `data/flagged_prs.json` — git-tracked for transparency and audit trail
-- Can be unflagged at any time by an admin
-
-This preserves data integrity: you can see what was flagged and why, and reverse decisions without data loss.
+Flagged PRs are **never deleted** — they stay visible on the student's profile, are excluded only from `scoreMergedPRs`, and can be reversed at any time. This preserves an audit trail without silently hiding data.
 
 ---
 
-## 11. Deployment & Infrastructure
+## 11. Auth: Admin, Student, and Guest
+
+There are **three unrelated access concepts** in this app — worth being explicit about since they're easy to conflate:
+
+### 11.1 Admin access
+
+One shared password gates `/admin/dashboard` and every `/api/admin/*` route, via a cookie checked by `checkAdminAuth()`. No connection to GitHub identity at all.
+
+### 11.2 GitHub OAuth ("Sign In with GitHub")
+
+**This does not authenticate a student against the leaderboard** — there's no concept of "your account" beyond the token itself. What it actually does:
+
+1. `GET /api/auth/github` redirects to GitHub's OAuth authorize URL (`scope=read:user` only — read-only).
+2. `GET /api/auth/github/callback` exchanges the code for an access token, stores it in an HTTP-only `github_oauth_token` cookie (30-day expiry), then fetches the user's GitHub login and **adds `{ [login]: accessToken }` into the shared `github_token_pool` KV map**.
+3. From then on, `getGitHubHeaders()` in `lib/github.ts` uses *your* token for *your* requests (personal 5,000 req/hr core limit, 30 req/min search), and *any guest's* request may randomly draw *your* token from the pool.
+
+This means logging in is simultaneously a personal upgrade (unlimited refresh cooldowns, see Section 5.6) and a contribution to shared capacity for every other visitor. **As of this writing, the token pool is empty in production** — nobody has logged in in a way that populated it, so 100% of guest traffic runs on the single fallback `GITHUB_TOKEN`. If guest-facing rate limiting becomes a recurring problem, driving actual logins (or seeding the pool manually) is the highest-leverage fix available without code changes.
+
+### 11.3 Guests
+
+Everything is public without logging in — `proxy.ts` (this Next.js version's middleware file) gates exactly one route, `/api/refresh/incremental`, behind `CRON_SECRET`. Nothing else requires authentication. The `/login` page is an *optional upgrade* prompt, not an access gate — don't let its copy (or your own assumptions) imply otherwise; a prior version of this page incorrectly framed login as required, which has been corrected.
+
+---
+
+## 12. Deployment & Infrastructure
 
 ### Vercel Setup
 
-1. Connect the `OpenSource_NST_Tracker/` directory to Vercel
-2. Set all required environment variables (see Section 12)
-3. Create a Vercel KV database (Storage → KV) and link it to the project
-4. Deploy
+Connect the repo, set environment variables (Section 13), link an Upstash-backed KV store, deploy.
 
-### Vercel Cron
+### Scheduling — GitHub Actions is primary, Vercel cron is legacy
 
-`vercel.json` configures an automatic refresh:
-```json
-{
-  "crons": [
-    {
-      "path": "/api/refresh",
-      "schedule": "0 */4 * * *"
-    }
-  ]
-}
-```
+**`.github/workflows/refresh-cache.yml`** — runs every 15 minutes, `POST`s `/api/refresh/incremental` with `x-cron-secret`. This is the primary, always-on refresh mechanism (Section 5.4, Generation 3).
 
-This calls `GET /api/refresh` every 4 hours. **Note:** Vercel Cron sends a `GET` request, but the refresh action requires `POST`. You may need to either:
-- Handle `GET` as a refresh trigger in `route.ts`, or
-- Change the cron to `POST` via Vercel's dashboard configuration
+**`.github/workflows/refresh.yml`** — `workflow_dispatch` only (manual trigger from the Actions tab). Runs `scripts/seed-all.js`, which calls the same incremental endpoint in a tight loop until the whole roster is caught up. **Do not add a `schedule:` trigger back to this file** — running it concurrently with `refresh-cache.yml` was the direct cause of a real production incident: both hit the same shared GitHub token, and combined they exceeded the 30 req/min search ceiling, causing intermittent rate-limit failures for whichever student's refresh happened to be in flight at the time.
 
-Currently the route exports both `GET` (returns status) and `POST` (triggers refresh). Ensure Vercel Cron is configured for the correct method.
+**`vercel.json`** still configures a native Vercel cron hitting `/api/refresh/incremental` once daily — redundant with the 15-minute GitHub Actions workflow, low-impact (once/day), left in place but not the mechanism to reason about if you're debugging refresh timing.
 
 ### Scaling Characteristics
 
-With warmed caches, the site can handle thousands of concurrent users on Vercel free tier:
-- **Cache hit** (KV read): ~10–50ms total response time
-- **Cache miss** (GitHub API): ~200–1000ms total response time
-- The 4-hour cron ensures caches are always warm during typical usage
-- The bottleneck is GitHub API rate limits (30 req/min with token), not compute
+- Cache hit (KV read): ~10–50ms.
+- Cache miss (live GitHub fetch): ~200–1000ms, and bounded by the 30 req/min shared-token ceiling — this, not compute, is the bottleneck at current scale.
+- The incremental cron's 5-students/15-minutes throughput (~480/day) is below what a full daily refresh of ~1,900 students needs — see Section 5.4. This is a known, accepted gap, not an oversight to "fix" reflexively; changing it is a capacity/frequency tradeoff decision, not a bug fix.
 
 ---
 
-## 12. Environment Variables
+## 13. Environment Variables
 
 | Variable | Required | Description |
 |---|---|---|
-| `GITHUB_TOKEN` | Recommended | GitHub Personal Access Token (read-only public repos scope). Without it, rate limits are 10 req/min (unauthenticated). |
-| `ADMIN_PASSWORD` | Yes (for admin) | Password for `/admin` dashboard. Without this, admin API routes return 401. |
-| `KV_REST_API_URL` | Yes (production) | Vercel KV / Upstash Redis REST endpoint URL. Without it, falls back to disk (`data/kv/`). |
-| `KV_REST_API_TOKEN` | Yes (production) | Vercel KV / Upstash Redis auth bearer token. |
+| `GITHUB_TOKEN` | Recommended | Fallback token used when no OAuth pool token is available. Read-only public-repo scope is sufficient. |
+| `ADMIN_PASSWORD` | Yes (for admin) | Password for `/admin`. Without it, admin API routes return 401. |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | Yes (for OAuth login) | GitHub OAuth App credentials — without these, `/api/auth/github` returns a config error in production. |
+| `CRON_SECRET` | Yes (for incremental refresh) | Must match `x-cron-secret` sent by `refresh-cache.yml` / manual `refresh.yml` runs; checked in `proxy.ts`. |
+| `KV_REST_API_URL` / `KV_REST_API_TOKEN` | Yes (production) | Upstash Redis REST endpoint + token. Without them, falls back to `data/kv/*.json` on disk. |
 
 **Local `.env.local` example:**
 ```bash
@@ -815,230 +571,134 @@ ADMIN_PASSWORD=your-local-admin-password
 # Leave KV vars empty to use disk cache (data/kv/*.json)
 # KV_REST_API_URL=
 # KV_REST_API_TOKEN=
+# GITHUB_CLIENT_ID=ADMIN   # local-only bypass, see app/api/auth/github/route.ts — never works in production
 ```
 
 ---
 
-## 13. Design System
+## 14. Design System
+
+*(Unchanged from prior documentation — still accurate.)*
 
 ### Color Palette
 
-| Role | Tailwind Class | Notes |
-|---|---|---|
-| Page background | `bg-[#0d0d14]` | Applied on every `<main>` |
-| Card fill | `bg-white/[0.025]` to `bg-white/[0.05]` | Glassmorphic surfaces |
-| Card border | `border-white/[0.07]` to `border-white/[0.1]` | Subtle borders |
-| Primary accent | `purple-400` / `purple-600` | Buttons, active states, glow |
-| Secondary accent | `blue-400` / `blue-600` | Gradient pair with purple |
-| Success / Merged | `emerald-400` / `emerald-500` | Merged PR badges, merged count |
-| Open / Active | `teal-400` / `teal-500` | Open PR badges |
-| Closed / Error | `red-400` / `red-500` | Closed PRs, error toasts |
-| Hall of Fame gold | `yellow-400` / `yellow-500` | Achiever accent color |
-| Text primary | `text-white` / `text-white/85` | Headings |
-| Text secondary | `text-white/50` to `text-white/40` | Body text |
-| Text muted | `text-white/30` to `text-white/20` | Labels, metadata |
+| Role | Tailwind Class |
+|---|---|
+| Page background | `bg-[#0d0d14]` |
+| Card fill | `bg-white/[0.025]` to `bg-white/[0.05]` |
+| Card border | `border-white/[0.07]` to `border-white/[0.1]` |
+| Primary accent | `purple-400` / `purple-600` |
+| Secondary accent | `blue-400` / `blue-600` |
+| Success / Merged | `emerald-400` / `emerald-500` |
+| Open / Active | `teal-400` / `teal-500` |
+| Closed / Error | `red-400` / `red-500` |
+| Hall of Fame gold | `yellow-400` / `yellow-500` |
 
 ### Typography
 
-- **Sans-serif:** `Geist` — all body text, UI elements
-- **Monospace:** `Geist Mono` — code blocks, repo names, PR numbers, tabular stats
-- Applied as CSS variables `--font-geist-sans` / `--font-geist-mono` on the `<html>` element
+Geist (sans, body/UI) + Geist Mono (code, repo names, PR numbers, tabular stats), via `--font-geist-sans` / `--font-geist-mono`.
 
 ### Layout
 
-- **Detail pages** (profile, achiever): `max-w-4xl mx-auto px-4`
-- **List pages** (leaderboard, programs): `max-w-6xl mx-auto px-4`
-- **Home sections:** `max-w-3xl mx-auto px-4`
-- **Nav height:** 52px (set as inline style, not Tailwind, to prevent purging)
-- **Bottom padding:** `pb-24` on all content areas
+- Detail pages: `max-w-4xl mx-auto px-4`
+- List pages: `max-w-6xl mx-auto px-4`
+- Home sections: `max-w-3xl mx-auto px-4`
+- Nav height: 52px (inline style, not Tailwind, to survive purging)
 
 ### Background Glow Pattern
 
-Used on every hero section — always `pointer-events-none` and `aria-hidden`:
-```tsx
-<div className="pointer-events-none absolute inset-0" aria-hidden="true">
-  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px]
-                  bg-purple-600/8 blur-[80px] rounded-full" />
-</div>
-```
-
-- Opacity is very low (`/8` = 8%) — subtle not garish
-- Each page uses a different color tint to differentiate sections
-
-### Interactive State Patterns
-
-Hover transitions used consistently across all cards:
-```
-Background: bg-white/[0.025] → hover:bg-white/[0.05]
-Border:     border-white/[0.07] → hover:border-purple-500/25
-Lift:       translate-y-0 → hover:-translate-y-0.5
-Arrow icon: text-white/15 → hover:text-purple-400 + hover:translate-x-0.5
-```
-
-### Gradient Text
-
-Used on page titles:
-```tsx
-<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
-  NST
-</span>
-```
+Every hero uses a `pointer-events-none aria-hidden` low-opacity blurred glow (`/8` opacity), color-tinted per page.
 
 ---
 
-## 14. Known Behaviours & Gotchas
+## 15. Known Behaviours & Gotchas
 
 ### Turbopack FATAL Errors in Dev Mode
 
-During `npm run dev`, you will see recurring `FATAL: An unexpected Turbopack error` messages in the terminal. **These do not break the app** — pages still serve with HTTP 200. This is a known Next.js 16 Turbopack bug triggered by Server Components that import Node.js `fs` (filesystem) module (`lib/kv.ts`, `lib/flagged.ts`). The Turbopack HMR system panics when recompiling these modules but recovers and continues serving. The production build (`npm run build`) and `npm start` are completely unaffected.
+`npm run dev` shows recurring `FATAL: An unexpected Turbopack error` messages. Harmless — pages still serve HTTP 200. Triggered by Server Components importing Node's `fs` module (`lib/kv.ts` and friends). `npm run build` / `npm start` are unaffected.
 
-### Leaderboard Counts Are Statistical Estimates
+### A Zero-Stat Card Doesn't Mean Zero Contributions
 
-The `mergedPRs`, `openPRs`, `closedPRs` shown on contributor cards in the leaderboard are **scaled estimates** (from a 100-result sample). Individual profile pages show exact counts fetched with full pagination.
+If a student has never been successfully refreshed (never-cached, or the last write was silently rejected), their leaderboard card shows an all-zero placeholder — **indistinguishable from a genuine zero contributor** without checking `profile_cache` directly. If you suspect this, the fix is a manual refresh (`POST /api/refresh?username=X`), not editing any JSON file.
 
-### Two Separate Freshness Concepts in `summary-cache.ts`
+### Two Independent Cache Layers Can Disagree Temporarily
 
-`isCacheFresh()` uses a **5-minute TTL** — this controls the **public refresh button rate limit**, not the cache expiry. The actual KV cache TTL (how long data lives) is **24 hours** (set via `EX 86400` on write). Do not confuse these.
+A student's profile page can show fresher data than their leaderboard card, or vice versa, because `profile_cache` and `summary_cache` are updated on different schedules (see Section 5). This is expected, not a bug — the incremental cron patches summary caches for whichever students it just touched, not the whole roster.
 
-### Profile Cache and Summary Cache Are Independent
+### GitHub's Search API Rejects Multi-Author OR Queries
 
-A student's profile page can show updated data (profile cache refreshed) while their card on the leaderboard shows older stats (summary cache not yet refreshed). This is expected behaviour.
+Despite documentation suggesting up to 5 `AND`/`OR`/`NOT` operators are allowed, a query like `author:a OR author:b` returns `422 Validation Failed` right now, verified against well-known accounts. Don't reintroduce multi-author OR batching without re-verifying this against GitHub's live behavior first — it's what caused the Generation 2 refresh mechanism to silently fail (Section 5.4).
 
-### Adding a Student Has a Delay
+### `kvSet` Failures Are Now Visible, Not Silent
 
-New entries in `students.json` will not appear on the leaderboard until:
-1. The summary cache expires (up to 24 hours), **or**
-2. Someone clicks the public Refresh button, **or**
-3. The Vercel Cron runs (every 4 hours)
+Previously, any KV write rejection (e.g. hitting the 10MB request-size limit) was swallowed entirely — the app would report success while writing nothing. `kvSet()` now returns whether the write actually succeeded, and `writeProfileCache()` throws if it didn't, so callers can react instead of silently losing data.
 
-Their individual profile page at `/contributors/<username>` works immediately on first visit (profile cache built on demand).
+### Adding a Student Has a Delay (and Requires the Right Method)
+
+New students added via the admin dashboard or an approved join request won't appear with real stats on the leaderboard until:
+1. Someone visits their profile directly (`/contributors/<username>` — builds `profile_cache` on first visit), or
+2. The incremental cron reaches them in its round-robin (could take a while — see Section 5.4), or
+3. Someone clicks the public Refresh button on their profile.
+
+Editing `data/students.json` does **not** add them to the live site (see Section 4).
 
 ### The `pull_request.merged_at` Field
 
-The GitHub Search API for issues/PRs returns a `pull_request` sub-object with exactly these keys: `url`, `html_url`, `diff_url`, `patch_url`, `merged_at`. The `merged_at` field is present in the search response (it is `null` for unmerged PRs). You do **not** need a separate API call to get merge status — it is included in the search result.
+GitHub's Search API for issues/PRs includes a `pull_request` sub-object with `merged_at` directly in the search response — no separate API call needed to check merge status.
 
 ---
 
-## 15. Contributor Guide
+## 16. Contributor Guide
 
 ### Running Locally
 
 ```bash
-# 1. Navigate to the project directory
-cd OpenSource_NST_Tracker/
-
-# 2. Install dependencies
 npm install
-
-# 3. Create local environment file
-# (copy contents below into .env.local)
-GITHUB_TOKEN=ghp_your_token_here
-ADMIN_PASSWORD=localpass
-
-# 4. Start dev server
-npm run dev
-# → http://localhost:3000
-
-# 5. Build for production (catches TypeScript + compilation errors)
-npm run build
-
-# 6. Type-check only (no build output)
-npx tsc --noEmit
+# .env.local — see Section 13
+npm run dev        # → http://localhost:3000
+npm run build      # catches TypeScript + compilation errors — do this before every deploy
+npx tsc --noEmit   # type-check only
 ```
+
+**Always run `npm run build` locally before deploying.** A missing import once shipped silently and failed every production deployment for days without an obvious error in Vercel's dashboard — `npm run build` catches this immediately and costs nothing.
 
 ### Adding a New Student
 
-1. Edit `data/students.json`:
-   ```json
-   { "github": "their-github-handle" }
-   ```
-2. Commit and push. The leaderboard will include them after the next refresh.
+Do **not** edit `data/students.json` and expect it to work (see Section 4). Instead:
+- Use the admin dashboard's "Add Student" form (`POST /api/admin/students`), or
+- Have the student submit via `/join`, then approve their request from the admin queue.
 
-### Adding a Hall of Fame Entry
+### Adding a Hall of Fame Entry / Event
 
-1. Edit `data/achievers.json` (see Section 4.2 for schema)
-2. If the program name is new, add it to `PROGRAM_MAP` in `lib/data.ts`:
-   ```typescript
-   'NewProgram': {
-     label: 'Full Program Name',
-     color: 'text-color-400',
-     bg: 'bg-color-500/10',
-     border: 'border-color-500/30',
-     dot: 'bg-color-400',
-   },
-   ```
-
-### Adding an Event
-
-Edit `data/events.json`. Use ISO date format (`YYYY-MM-DD`). Types: `session`, `deadline`, `announcement`.
+Use the admin dashboard (`/api/admin/achievers`, `/api/admin/events`). The JSON files in `data/` only matter for a fresh KV instance that's never been seeded.
 
 ### Adding an Achievement Badge
 
-In `app/contributors/[username]/page.tsx`, add to the `getBadges()` function:
-
-```typescript
-if (yourCondition) {
-  list.push({
-    id: 'unique_snake_case_id',
-    name: 'Badge Display Name',
-    emoji: '🎯',
-    desc: 'Tooltip: what this badge means',
-    style: 'bg-color-500/10 border-color-500/20 text-color-400 hover:bg-color-500/15',
-  });
-}
-```
+In `app/contributors/[username]/page.tsx`, extend the badge-computation logic with your new condition, emoji, and description — follow the existing badges as a template.
 
 ### Adding a New Common Issue
 
-In `app/issues/page.tsx`, add to the `ISSUES` array:
-
-```typescript
-{
-  id: 'unique-kebab-id',
-  emoji: '🔧',
-  severity: 'common',          // 'common' | 'best-practice'
-  title: 'Issue title...',
-  tags: ['git', 'tag2'],
-  whatHappened: `Description of the situation...`,
-  whyItHappens: [
-    'First reason...',
-    'Second reason...',
-  ],
-  solution: [
-    {
-      step: 'Step title',
-      code: `git command here`,
-      note: 'Explanation of what this does...',
-    },
-  ],
-  preventionTip: 'How to avoid this in the future...',
-},
-```
+In `app/issues/page.tsx`, add an entry to the `ISSUES` array — see existing entries for the shape (title, severity, whatHappened, whyItHappens, solution steps, preventionTip).
 
 ### Modifying the Caching Logic
 
-Before changing `lib/kv.ts`, `lib/profile-cache.ts`, or `lib/summary-cache.ts`:
-
-1. Read Section 5 completely
-2. Test locally (disk mode, no KV vars) and with KV vars set
-3. Ensure TTL values are consistent: `isProfileFresh()` TTL must match the write TTL
-4. After any change to cache key formats, existing cached data becomes orphaned (not automatically cleaned up)
+Before touching `lib/kv.ts`, `lib/profile-cache.ts`, or `lib/summary-cache.ts`:
+1. Read Section 5 completely.
+2. Test both with and without KV env vars set (disk fallback vs. real Upstash).
+3. Remember `kvSet()` can fail (10MB limit) — check its return value or let `writeProfileCache`'s throw propagate; don't silently swallow it again.
+4. Changing a cache key format orphans existing data — nothing cleans up old keys automatically.
 
 ### Quick File Reference
 
 | Goal | File to Edit |
 |---|---|
-| Add a student | `data/students.json` |
-| Add an achiever | `data/achievers.json` |
+| Add a student | Admin dashboard, **not** `data/students.json` (see Section 4) |
+| Add an achiever / event | Admin dashboard (`/api/admin/achievers` / `/api/admin/events`) |
 | Add a program style | `lib/data.ts` → `PROGRAM_MAP` |
-| Add an event | `data/events.json` |
-| Change leaderboard ranking | `lib/github.ts` → `getStudentSummary()` |
-| Change cache TTLs | `lib/profile-cache.ts`, `lib/summary-cache.ts` |
-| Change cron schedule | `vercel.json` |
-| Change admin password logic | `lib/admin-auth.ts` + `ADMIN_PASSWORD` env var |
-| Add navigation link | `app/components/Nav.tsx` → `LINKS` array |
-| Add achievement badge | `app/contributors/[username]/page.tsx` → `getBadges()` |
-| Change refresh rate limit | `app/api/refresh/route.ts` → `COOLDOWN_MS` |
-| Add a Common Issue | `app/issues/page.tsx` → `ISSUES` array |
-| Change chart window (months) | `app/contributors/[username]/page.tsx` → `getChartData()` |
-| Change allowed image hosts | `next.config.ts` → `images.remotePatterns` |
+| Change leaderboard ranking logic | `lib/github.ts` → scoring inside `getSummaryFromCache()` / `getAllStudentSummaries()` |
+| Change cache TTLs / staleness threshold | `lib/profile-cache.ts` (TTL), `lib/github.ts` → `updateStaleProfiles` (staleness) |
+| Change incremental refresh frequency/batch size | `.github/workflows/refresh-cache.yml` (frequency), `app/api/refresh/incremental/route.ts` (batch size) |
+| Change admin password logic | `lib/admin-auth.ts` + `ADMIN_PASSWORD` — import `checkAdminAuth()`, don't re-implement the cookie check |
+| Add navigation link | `app/components/Nav.tsx` |
+| Add achievement badge | `app/contributors/[username]/page.tsx` |
+| Change refresh rate limit | `app/api/refresh/route.ts` (cooldown constants) |

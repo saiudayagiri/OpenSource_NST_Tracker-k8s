@@ -1,18 +1,11 @@
-import { cookies } from 'next/headers';
+import { checkAdminAuth } from '@/lib/admin-auth';
 import { getFlaggedPRs, flagPR, unflagPR, FlagReason } from '@/lib/flagged';
 import { markReviewed, unmarkReviewed } from '@/lib/reviewed';
 import { invalidateSummaryCache } from '@/lib/summary-cache';
 
-const COOKIE_NAME = 'admin_session';
-
-async function isAuthenticated(): Promise<boolean> {
-  const cookieStore = await cookies();
-  return cookieStore.get(COOKIE_NAME)?.value === 'authenticated';
-}
-
 /** GET /api/admin/flag — list all flagged PRs */
 export async function GET() {
-  if (!(await isAuthenticated())) {
+  if (!(await checkAdminAuth())) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
   return Response.json(await getFlaggedPRs());
@@ -20,7 +13,7 @@ export async function GET() {
 
 /** POST /api/admin/flag — flag a PR (also marks it reviewed so it leaves the queue) */
 export async function POST(request: Request) {
-  if (!(await isAuthenticated())) {
+  if (!(await checkAdminAuth())) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -53,7 +46,7 @@ export async function POST(request: Request) {
 
 /** DELETE /api/admin/flag?id=<prId> — unflag a PR (also removes from reviewed so it goes back to queue) */
 export async function DELETE(request: Request) {
-  if (!(await isAuthenticated())) {
+  if (!(await checkAdminAuth())) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

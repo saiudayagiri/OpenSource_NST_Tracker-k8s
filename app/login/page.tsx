@@ -15,7 +15,7 @@ export default function LoginPage() {
         {/* Title / Logo */}
         <div className="mb-8 animate-in fade-in slide-in-from-top-3 duration-500">
           <div className="inline-flex items-center gap-2 bg-purple-500/10 border border-purple-500/25 rounded-full px-4 py-1.5 text-xs font-semibold text-purple-300 mb-4">
-            🔒 Protected Platform
+            ⚡ Optional Upgrade
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-white">
             Opensource Tracker{' '}
@@ -24,7 +24,7 @@ export default function LoginPage() {
             </span>
           </h1>
           <p className="text-white/40 text-sm mt-2 leading-relaxed">
-            Welcome! To access the leaderboard, scan repositories, or check your contributions, please authenticate.
+            The leaderboard and profiles are public — no login needed. Sign in with GitHub to get unlimited refreshes on your own profile, and to help everyone else too: your token adds to the shared pool that powers guest requests.
           </p>
         </div>
 
@@ -33,10 +33,10 @@ export default function LoginPage() {
           <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-purple-500/25 to-blue-500/15 border border-purple-500/20 flex items-center justify-center text-2xl mb-6 shadow-inner">
             🔑
           </div>
-          
-          <h2 className="text-lg font-bold text-white mb-2">GitHub Authentication Required</h2>
+
+          <h2 className="text-lg font-bold text-white mb-2">Sign In for Unlimited Refreshes</h2>
           <p className="text-white/35 text-xs mb-8 leading-normal">
-            This platform uses GitHub credentials to authenticate developers and verify access control permissions.
+            We use your GitHub token only to raise your personal API rate limit and contribute to the shared pool — never to act on your behalf.
           </p>
 
           <Link
