@@ -252,7 +252,7 @@ export async function validateNewRepos(
   if (uniqueRepos.size === 0) return { updated, map: repoCacheMap };
 
   const headers = await getGitHubHeaders();
-  
+
   for (const repoFullName of uniqueRepos) {
     try {
       const res = await fetch(`https://api.github.com/repos/${repoFullName}`, { headers });
@@ -271,13 +271,30 @@ export async function validateNewRepos(
         repoCacheMap[repoFullName] = { stars: 0, forks: 0, valid: false };
         updated = true;
       } else if (res.status === 403 || res.status === 429) {
-        // Rate limit hit while fetching repo details. Stop checking for now.
-        console.warn(`Rate limit hit checking repo: ${repoFullName}`);
-        break;
+        // This endpoint (GET /repos/:owner/:repo) is core-API, not search — its
+        // budget is 5000/hr, so a 403/429 here is almost always GitHub's secondary
+        // abuse-detection reacting to a tight request burst, not real quota
+        // exhaustion. Previously this `break`d the whole batch, silently leaving
+        // every remaining repo unvalidated (and therefore fail-open / treated as
+        // valid by scoring) until they happened to come up again in some later
+        // run. Only stop early if we've actually run out of primary quota;
+        // otherwise back off briefly and keep going so one unlucky repo can't
+        // strand the rest of the batch.
+        const remaining = res.headers.get('x-ratelimit-remaining');
+        if (remaining === '0') {
+          console.warn(`Core rate limit exhausted checking repo: ${repoFullName}. Stopping batch.`);
+          break;
+        }
+        console.warn(`Secondary rate limit hit checking repo: ${repoFullName}. Backing off and continuing.`);
+        await new Promise((r) => setTimeout(r, 2000));
       }
     } catch (err) {
       console.error(`Failed to check repo ${repoFullName}:`, err);
     }
+
+    // Small pacing between requests so a long batch doesn't itself trigger
+    // secondary rate limiting.
+    await new Promise((r) => setTimeout(r, 150));
   }
 
   return { updated, map: repoCacheMap };
