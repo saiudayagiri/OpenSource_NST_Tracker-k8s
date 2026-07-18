@@ -443,16 +443,34 @@ export async function getAllStudentSummaries(
 
   // ── Phase 1: Resolve from individual profile caches (zero API calls) ──
   if (!forceLive) {
-    const cachedResults = await Promise.all(
-      students.map(async (student) => {
-        try {
-          const cached = await readProfileCache(student.github);
-          return { student, cached };
-        } catch {
+    // Firing one KV read per student all at once (1800+ simultaneous requests at
+    // current roster size) causes a meaningful fraction to fail under that
+    // connection burst — and a failed read here was previously indistinguishable
+    // from "never cached", silently turning real, correctly-cached students into
+    // zero-PR placeholders. Reading in small concurrent batches, with one retry
+    // per failed read, keeps this reliable instead of load-dependent.
+    const READ_BATCH_SIZE = 50;
+    const cachedResults: Array<{ student: Student; cached: ProfileCacheEntry | null }> = [];
+
+    for (let i = 0; i < students.length; i += READ_BATCH_SIZE) {
+      const batch = students.slice(i, i + READ_BATCH_SIZE);
+      const batchResults = await Promise.all(
+        batch.map(async (student) => {
+          for (let attempt = 0; attempt < 2; attempt++) {
+            try {
+              const cached = await readProfileCache(student.github);
+              return { student, cached };
+            } catch (err) {
+              if (attempt === 1) {
+                console.error(`Failed to read profile cache for ${student.github} after retry:`, err);
+              }
+            }
+          }
           return { student, cached: null };
-        }
-      })
-    );
+        })
+      );
+      cachedResults.push(...batchResults);
+    }
 
     for (const { student, cached } of cachedResults) {
       if (cached) {
