@@ -62,7 +62,7 @@ GitHub push to main
    → push image to ghcr.io/<owner>/<repo>:latest
                                      │
                                      ▼ (manual, see DEPLOYMENT.md)
-                          kubectl apply -f k8s/  (on nst-n1, via Rancher cluster)
+                kubectl apply -f k8s/  (via Rancher's browser-based kubectl shell)
                                      │
                     ┌────────────────┴────────────────┐
                     ▼                                  ▼
