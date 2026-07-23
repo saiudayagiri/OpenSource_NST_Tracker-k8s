@@ -24,5 +24,7 @@ jobs:
       - name: Run Refresh Script
         run: node scripts/seed-all.js
         env:
-          # Use the production Vercel URL
-          BASE_URL: https://opensource-nst-tracker.vercel.app
+          # Points at this repo's own deployment (K8s cluster), not the
+          # original Vercel app — set the APP_URL secret in this repo's
+          # Settings > Secrets and variables > Actions. See docs/DEPLOYMENT.md.
+          BASE_URL: ${{ secrets.APP_URL }}

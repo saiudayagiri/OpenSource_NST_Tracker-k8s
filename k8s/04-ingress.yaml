@@ -1,0 +1,24 @@
+# No TLS config needed here — public HTTPS is handled entirely by the
+# cluster's Cloudflare Tunnel + wildcard *.nstsdc.org DNS. See
+# docs/DEPLOYMENT.md and nst-sdc/nst-cluster-docs' tutorial-public-url.md.
+#
+# Before applying: confirm this hostname isn't already taken —
+#   kubectl get ingress -A
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: opensource-tracker
+  namespace: opensource-tracker
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: oss-tracker.nstsdc.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: opensource-tracker
+                port:
+                  number: 80

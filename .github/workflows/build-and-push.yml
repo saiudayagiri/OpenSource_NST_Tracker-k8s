@@ -1,0 +1,51 @@
+name: Build and Push Image to GHCR
+
+# Builds the Docker image and pushes it to GitHub Container Registry on every
+# push to main. Uses the built-in GITHUB_TOKEN (no new secrets needed) — see
+# docs/DEPLOYMENT.md for how to pull this image on the cluster.
+#
+# This workflow only builds and pushes the image. It does NOT deploy to the
+# cluster — that's a manual `kubectl apply` step for now (see docs/DEPLOYMENT.md
+# for why, and what the eventual Fleet/GitOps upgrade looks like).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # GHCR/Docker image names must be lowercase, but a repo name can contain
+      # uppercase letters (this one does: OpenSource_NST_Tracker-k8s) — lowercase
+      # it here rather than let the push fail with a confusing error.
+      - name: Compute lowercase image name
+        id: image
+        run: echo "name=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:latest
+            ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ github.sha }}

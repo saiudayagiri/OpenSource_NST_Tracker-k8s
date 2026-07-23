@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -43,3 +44,7 @@ next-env.d.ts
 # AI Assistant local state
 .claude/
 data/kv/
+
+# real k8s secret manifest (filled in with actual values) — never commit this.
+# k8s/01-secret.yaml.example is the template that IS committed.
+k8s/01-secret.yaml

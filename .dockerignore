@@ -7,4 +7,9 @@ node_modules
 .env.development.local
 .env.test.local
 .env.production.local
-# Notice: .git is intentionally NOT excluded as per Project Silver requirements
+# Unlike the original repo's .dockerignore, .git IS excluded here — this repo's
+# Dockerfile is for the Kubernetes deployment, and a production image has no
+# use for git history (only makes the image larger and copies commit metadata
+# unnecessarily). If this repo genuinely needs that carried over, re-add a
+# "!.git" style exception rather than removing this comment.
+.git

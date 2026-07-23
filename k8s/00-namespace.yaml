@@ -1,0 +1,6 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: opensource-tracker
+  labels:
+    app: opensource-tracker
