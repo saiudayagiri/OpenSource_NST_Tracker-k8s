@@ -131,6 +131,20 @@ The leaderboard only updates when something calls `/api/refresh/incremental` —
 - `APP_URL` = `https://oss-tracker.nstsdc.org`
 - `CRON_SECRET` = the exact same value you put in `k8s/01-secret.yaml` in step 4
 
+## Performance notes: why this might feel slower than Vercel
+
+The first real deploy of this app to the cluster measured page loads around 2–5 seconds, versus a much snappier feel on Vercel. Two separate causes were found, worth checking again if the roster grows or performance regresses:
+
+**1. CPU throttling from an undersized limit (fixed in this repo's manifest).** The original `k8s/02-deployment.yaml` capped the container at `500m` (half a CPU core). Confirmed via the container's cgroup stats:
+
+```bash
+kubectl -n opensource-tracker exec deploy/opensource-tracker -- cat /sys/fs/cgroup/cpu.stat
+```
+
+`nr_throttled` (periods where the container hit its limit and got paused) and `throttled_usec` (total time spent paused) are the numbers that matter — at the old `500m` limit, `throttled_usec` (13.5s) actually exceeded `usage_usec` (11.4s), meaning the pod spent more time waiting to be allowed to run than actually running. Raising the limit to `1000m` (one full core) cut the throttled/usage ratio from ~119% to ~19%. If pages feel slow again later, check this first before assuming it's a code problem.
+
+**2. A structural cost that's the same on both deployments, just less visible on Vercel.** Even with zero throttling, pages stayed in the 2–3 second range. This is because `summary_cache:<period>` stores **every tracked student's summary in one ~3MB JSON blob** (see [../DOCUMENTATION.md](../DOCUMENTATION.md) Section 5.3) — even the home page's 5-entry preview fetches and parses the entire blob. This is already documented as *"the biggest structural inefficiency in the codebase today"*, not something introduced by this deployment. Vercel's serverless functions likely get more CPU per invocation by default and may sit closer to the Upstash region, which is probably why it feels faster there despite doing the same redundant work. Worth revisiting the caching design (e.g., splitting summary cache into smaller pages) as a separate follow-up if snappier performance matters more than it currently does.
+
 ## Troubleshooting
 
 For anything cluster-specific (Traefik quirks, DNS propagation, `kubectl` connectivity, general "this cluster-wide thing is broken"), the cluster's own docs are the source of truth and already cover far more ground than this file should try to duplicate: `nst-sdc/nst-cluster-docs`, especially `reference/tips.md` and `reference/troubleshooting.md`. For anything about this **app's** behavior specifically (caching, rate limits, the admin system), see [ARCHITECTURE.md](./ARCHITECTURE.md) and [../DOCUMENTATION.md](../DOCUMENTATION.md).
