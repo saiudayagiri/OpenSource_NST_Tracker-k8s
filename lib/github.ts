@@ -36,10 +36,29 @@ export class GitHubRateLimitError extends Error {
   }
 }
 
+/** Thrown when an explicitly-passed token (e.g. a pool token assigned to a
+ * parallel refresh worker) is rejected as unauthorized — distinct from a
+ * cookie-session token being invalid, so callers can evict it from the pool. */
+export class InvalidTokenError extends Error {
+  constructor(message = 'GitHub token is invalid or revoked') {
+    super(message);
+    this.name = 'InvalidTokenError';
+  }
+}
+
 let memoryTokenPool: string[] | null = null;
 let lastPoolFetch = 0;
 
-export async function getGitHubHeaders(): Promise<HeadersInit> {
+export async function getGitHubHeaders(explicitToken?: string): Promise<HeadersInit> {
+  // An explicit token (e.g. one worker's assigned slice of the token pool
+  // during a parallelized batch refresh) always wins over cookie/pool lookup.
+  if (explicitToken) {
+    return {
+      Accept: 'application/vnd.github.v3+json',
+      Authorization: `Bearer ${explicitToken}`,
+    };
+  }
+
   let token: string | undefined = undefined;
   try {
     const cookieStore = await cookies();
@@ -80,18 +99,67 @@ export async function getGitHubHeaders(): Promise<HeadersInit> {
   };
 }
 
+const TOKEN_POOL_KEY = 'github_token_pool';
+
+/**
+ * Returns every distinct token available to spread refresh work across:
+ * the system GITHUB_TOKEN plus every OAuth token contributed to the pool by
+ * logged-in users. More logged-in users over time => more independent
+ * 30 req/min search budgets => proportionally more students refreshed per
+ * incremental cron tick, with no code change needed as the pool grows.
+ */
+export async function getAvailableTokens(): Promise<string[]> {
+  const tokens = new Set<string>();
+  if (GITHUB_TOKEN) tokens.add(GITHUB_TOKEN);
+  try {
+    const pool = await kvGet<Record<string, string>>(TOKEN_POOL_KEY);
+    if (pool) {
+      for (const t of Object.values(pool)) {
+        if (t) tokens.add(t);
+      }
+    }
+  } catch (err) {
+    console.error('Failed to read github_token_pool:', err);
+  }
+  return [...tokens];
+}
+
+/** Evicts a specific token from the shared pool — used when a pool token
+ * turns out to be revoked/expired, so it stops being handed to future
+ * refresh workers. Never removes the system GITHUB_TOKEN (it isn't stored
+ * in the pool map to begin with). */
+export async function removePoolToken(token: string): Promise<void> {
+  try {
+    const pool = await kvGet<Record<string, string>>(TOKEN_POOL_KEY);
+    if (!pool) return;
+    const entries = Object.entries(pool).filter(([, v]) => v !== token);
+    if (entries.length === Object.keys(pool).length) return; // wasn't in the pool
+    await kvSet(TOKEN_POOL_KEY, Object.fromEntries(entries));
+    console.warn('Evicted invalid/revoked token from github_token_pool.');
+  } catch (err) {
+    console.error('Failed to evict token from github_token_pool:', err);
+  }
+}
+
 async function githubSearch<T>(
   q: string,
   page = 1,
   perPage = 100,
-  retryWithSystemToken = true
+  retryWithSystemToken = true,
+  token?: string
 ): Promise<{ total_count: number; items: T[] } | null> {
-  let headers = await getGitHubHeaders();
+  let headers = await getGitHubHeaders(token);
   let res = await fetch(
     `https://api.github.com/search/issues?q=${encodeURIComponent(q)}&sort=created&order=desc&per_page=${perPage}&page=${page}`,
     { headers, next: { revalidate: 3600 } }
   );
   if (!res.ok) {
+    if (res.status === 401 && token) {
+      // An explicitly-assigned token (pool worker) is invalid/revoked — let
+      // the caller evict it instead of silently falling back, so a dead
+      // token doesn't keep getting handed to future batches.
+      throw new InvalidTokenError();
+    }
     if (res.status === 401 && retryWithSystemToken && GITHUB_TOKEN) {
       console.warn('OAuth token in cookie was unauthorized. Retrying with system GITHUB_TOKEN...');
       headers = {
@@ -115,15 +183,16 @@ async function githubSearch<T>(
 }
 
 async function githubSearchAll<T>(
-  q: string
+  q: string,
+  token?: string
 ): Promise<{ total_count: number; items: T[] } | null> {
   const allItems: T[] = [];
   let page = 1;
-  const maxPages = GITHUB_TOKEN ? 10 : 3;
+  const maxPages = (token || GITHUB_TOKEN) ? 10 : 3;
   let totalCount = 0;
 
   while (page <= maxPages) {
-    const data = await githubSearch<T>(q, page, 100);
+    const data = await githubSearch<T>(q, page, 100, true, token);
     if (!data) {
       if (page === 1) return null;
       break;
@@ -133,7 +202,7 @@ async function githubSearchAll<T>(
     if (allItems.length >= data.total_count || data.items.length < 100) break;
     page++;
     if (page <= maxPages) {
-      await new Promise((r) => setTimeout(r, GITHUB_TOKEN ? 200 : 1000));
+      await new Promise((r) => setTimeout(r, (token || GITHUB_TOKEN) ? 200 : 1000));
     }
   }
 
@@ -202,13 +271,16 @@ export interface StudentSummary {
 
 // getStudents() has been replaced with getStudentsKV() from './kv-students'
 
-export async function getStudentProfile(username: string, retryWithSystemToken = true): Promise<GitHubUser | null> {
-  let headers = await getGitHubHeaders();
+export async function getStudentProfile(username: string, retryWithSystemToken = true, token?: string): Promise<GitHubUser | null> {
+  let headers = await getGitHubHeaders(token);
   let res = await fetch(`https://api.github.com/users/${username}`, {
     headers,
     next: { revalidate: 3600 },
   });
   if (!res.ok) {
+    if (res.status === 401 && token) {
+      throw new InvalidTokenError();
+    }
     if (res.status === 401 && retryWithSystemToken && GITHUB_TOKEN) {
       console.warn('OAuth token in cookie was unauthorized. Retrying with system GITHUB_TOKEN...');
       headers = {
@@ -235,10 +307,11 @@ export async function getStudentProfile(username: string, retryWithSystemToken =
 /** Fetches missing repository metadata from GitHub and updates the repo cache */
 export async function validateNewRepos(
   prs: StudentPR[],
-  repoCacheMap: import('./repo-cache').RepoCacheMap
+  repoCacheMap: import('./repo-cache').RepoCacheMap,
+  token?: string
 ): Promise<{ updated: boolean, map: import('./repo-cache').RepoCacheMap }> {
   let updated = false;
-  
+
   // Extract unique repo full names (e.g. "owner/repo")
   const uniqueRepos = new Set<string>();
   for (const pr of prs) {
@@ -251,7 +324,7 @@ export async function validateNewRepos(
 
   if (uniqueRepos.size === 0) return { updated, map: repoCacheMap };
 
-  const headers = await getGitHubHeaders();
+  const headers = await getGitHubHeaders(token);
 
   for (const repoFullName of uniqueRepos) {
     try {
@@ -270,6 +343,8 @@ export async function validateNewRepos(
         // Deleted or private repo
         repoCacheMap[repoFullName] = { stars: 0, forks: 0, valid: false };
         updated = true;
+      } else if (res.status === 401 && token) {
+        throw new InvalidTokenError();
       } else if (res.status === 403 || res.status === 429) {
         // This endpoint (GET /repos/:owner/:repo) is core-API, not search — its
         // budget is 5000/hr, so a 403/429 here is almost always GitHub's secondary
@@ -289,6 +364,7 @@ export async function validateNewRepos(
         await new Promise((r) => setTimeout(r, 2000));
       }
     } catch (err) {
+      if (err instanceof InvalidTokenError) throw err;
       console.error(`Failed to check repo ${repoFullName}:`, err);
     }
 
@@ -317,22 +393,27 @@ export interface StudentIssue {
 }
 
 // PRs authored by username in repos NOT owned by username (excludes own repos & forks)
-function searchPRs(username: string, extra = '', page = 1, perPage = 100) {
+function searchPRs(username: string, extra = '', page = 1, perPage = 100, token?: string) {
   return githubSearch<StudentPR>(
     `is:pr author:${username} -user:${username}${extra ? ' ' + extra : ''}`,
     page,
-    perPage
+    perPage,
+    true,
+    token
   );
 }
 
-export async function getStudentIssues(username: string): Promise<StudentIssue[] | null> {
+export async function getStudentIssues(username: string, token?: string): Promise<StudentIssue[] | null> {
   const all: StudentIssue[] = [];
   let page = 1;
-  const maxPages = GITHUB_TOKEN ? 10 : 3;
+  const maxPages = (token || GITHUB_TOKEN) ? 10 : 3;
   while (page <= maxPages) {
     const data = await githubSearch<StudentIssue>(
       `is:issue author:${username} -user:${username}`,
-      page
+      page,
+      100,
+      true,
+      token
     );
     if (!data) return null;
     all.push(...data.items);
@@ -360,13 +441,13 @@ export async function getStudentReviews(username: string): Promise<StudentPR[]> 
 }
 
 
-export async function getStudentPRs(username: string): Promise<StudentPR[] | null> {
+export async function getStudentPRs(username: string, token?: string): Promise<StudentPR[] | null> {
   const allPRs: StudentPR[] = [];
   let page = 1;
-  const maxPages = GITHUB_TOKEN ? 10 : 3;
+  const maxPages = (token || GITHUB_TOKEN) ? 10 : 3;
 
   while (page <= maxPages) {
-    const data = await searchPRs(username, '', page);
+    const data = await searchPRs(username, '', page, 100, token);
     if (!data) return null;
     allPRs.push(...data.items);
     if (allPRs.length >= data.total_count || data.items.length < 100) break;
@@ -696,25 +777,25 @@ export class NotFoundError extends Error {
   }
 }
 
-export async function refreshStudentCache(username: string): Promise<void> {
+export async function refreshStudentCache(username: string, token?: string): Promise<void> {
   console.log(`Refreshing cache for user: ${username}`);
-  const profile = await getStudentProfile(username);
-  
+  const profile = await getStudentProfile(username, true, token);
+
   if (!profile) {
     console.warn(`Profile not found (404) for user: ${username}. It will be removed from tracking.`);
     throw new NotFoundError(`Profile not found for user: ${username}`);
   }
-  
-  const prs = await getStudentPRs(username);
-  const issues = await getStudentIssues(username);
-  
+
+  const prs = await getStudentPRs(username, token);
+  const issues = await getStudentIssues(username, token);
+
   if (prs === null || issues === null) {
     throw new Error(`Failed to fetch contributions for user: ${username}`);
   }
-  
+
   // Validate any new repos found in PRs
   const currentRepoCache = await getRepoCache();
-  const { updated, map } = await validateNewRepos(prs, currentRepoCache);
+  const { updated, map } = await validateNewRepos(prs, currentRepoCache, token);
   if (updated) {
     await saveRepoCache(map);
   }
@@ -722,9 +803,39 @@ export async function refreshStudentCache(username: string): Promise<void> {
   await writeProfileCache(username, profile, prs, issues);
 }
 
-export async function updateStaleProfiles(batchSize = 5): Promise<{ updated: string[]; attempted: string[] }> {
+// Each student refresh costs 2 search-API calls (PRs + issues). Staying at
+// 25/min (vs GitHub's real 30/min limit) per token leaves headroom for
+// concurrent traffic — real visitors, manual refreshes, check-work previews —
+// sharing the same tokens.
+const SEARCH_CALLS_PER_STUDENT = 2;
+const SAFE_SEARCH_PER_MIN = 25;
+const PACING_MS_PER_STUDENT = Math.ceil(60_000 / (SAFE_SEARCH_PER_MIN / SEARCH_CALLS_PER_STUDENT));
+// Wall-clock budget per tick — every token's group runs concurrently, so this
+// bounds total tick duration regardless of how many tokens are available,
+// safely under this project's serverless function timeout.
+const WORK_WINDOW_MS = 150_000;
+const PER_TOKEN_BATCH = Math.floor(WORK_WINDOW_MS / PACING_MS_PER_STUDENT);
+// Defensive ceiling in case the token pool ever grows very large — a single
+// tick shouldn't try to process an unbounded number of students.
+const MAX_TOTAL_BATCH = 400;
+
+/**
+ * How many students one incremental tick can safely refresh, given how many
+ * distinct GitHub tokens are currently available. Scales automatically as
+ * more users log in and contribute their OAuth token to the shared pool —
+ * no code change needed to go faster as the pool grows.
+ */
+function computeAutoBatchSize(tokenCount: number): number {
+  return Math.max(1, Math.min(MAX_TOTAL_BATCH, tokenCount * PER_TOKEN_BATCH));
+}
+
+export async function updateStaleProfiles(batchSize?: number): Promise<{ updated: string[]; attempted: string[] }> {
   const students = await getStudentsKV();
   if (students.length === 0) return { updated: [], attempted: [] };
+
+  const tokens = await getAvailableTokens();
+  const effectiveBatchSize = batchSize ?? computeAutoBatchSize(tokens.length);
+  console.log(`[Incremental Refresh] ${tokens.length} token(s) available, batch size ${effectiveBatchSize}`);
 
   /** Minimum age before a profile is considered stale and eligible for background refresh */
   const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -745,12 +856,12 @@ export async function updateStaleProfiles(batchSize = 5): Promise<{ updated: str
   const targetsUsernames: string[] = [];
 
   // High-priority queue items first (no staleness check needed)
-  const queueTargets = validQueue.slice(0, batchSize);
+  const queueTargets = validQueue.slice(0, effectiveBatchSize);
   targetsUsernames.push(...queueTargets);
 
   // 3. Fill remaining slots using cache age data from the main summaries cache (single KV read)
-  if (targetsUsernames.length < batchSize) {
-    const remainingCount = batchSize - targetsUsernames.length;
+  if (targetsUsernames.length < effectiveBatchSize) {
+    const remainingCount = effectiveBatchSize - targetsUsernames.length;
     const excludedSet = new Set(targetsUsernames.map(u => u.toLowerCase()));
 
     // Try to load cached summaries to read cache timestamps without querying 1900+ keys
@@ -793,8 +904,8 @@ export async function updateStaleProfiles(batchSize = 5): Promise<{ updated: str
     neverCachedTargets.forEach(u => excludedSet.add(u.toLowerCase()));
 
     // Fill the remaining slots with stale profiles (oldest first)
-    if (targetsUsernames.length < batchSize) {
-      const stillRemaining = batchSize - targetsUsernames.length;
+    if (targetsUsernames.length < effectiveBatchSize) {
+      const stillRemaining = effectiveBatchSize - targetsUsernames.length;
       staleCached.sort((a, b) => a.cachedAtTime - b.cachedAtTime);
       const staleTargets = staleCached.slice(0, stillRemaining).map(s => s.username);
       targetsUsernames.push(...staleTargets);
@@ -806,28 +917,54 @@ export async function updateStaleProfiles(batchSize = 5): Promise<{ updated: str
     }
   }
 
-  // 4. Process targets — fetch from GitHub and write profile caches
+  // 4. Process targets — split across every available token and refresh each
+  //    token's slice concurrently. Wall-clock time for the whole tick is
+  //    bounded by one group's duration (they all run in parallel), while
+  //    total throughput scales with however many tokens exist.
   const updatedUsernames: string[] = [];
+  // Guard against the (unlikely) case of zero available tokens — fall back to
+  // a single worker with no explicit token, which still works via
+  // getGitHubHeaders()'s existing cookie/pool/system fallback chain.
+  const workerTokens: Array<string | undefined> = tokens.length > 0 ? tokens : [undefined];
+  const groups: string[][] = workerTokens.map(() => []);
+  targetsUsernames.forEach((username, i) => {
+    groups[i % workerTokens.length].push(username);
+  });
 
-  for (const username of targetsUsernames) {
-    try {
-      await refreshStudentCache(username);
-      updatedUsernames.push(username);
-      // Wait 1.5 seconds between students to respect GitHub Search rate limits
-      await new Promise((r) => setTimeout(r, 1500));
-    } catch (err: any) {
-      if (err instanceof NotFoundError || err.name === 'NotFoundError') {
-        console.error(`Removing invalid GitHub ID from tracking: ${username}`);
-        await removeStudent(username);
-        // We consider it "updated" so it gets removed from the refresh queue
-        updatedUsernames.push(username);
-      } else {
-        console.error(`Failed to refresh cache for ${username}:`, err);
-        // Do NOT write a fallback cache on Rate Limit or network errors.
-        // It will remain stale and get retried in the next batch automatically.
+  await Promise.all(
+    groups.map(async (group, groupIndex) => {
+      const token = workerTokens[groupIndex];
+      for (const username of group) {
+        try {
+          await refreshStudentCache(username, token);
+          updatedUsernames.push(username);
+        } catch (err: any) {
+          if (err instanceof NotFoundError || err.name === 'NotFoundError') {
+            console.error(`Removing invalid GitHub ID from tracking: ${username}`);
+            await removeStudent(username);
+            // We consider it "updated" so it gets removed from the refresh queue
+            updatedUsernames.push(username);
+          } else if (err instanceof InvalidTokenError) {
+            // Only reachable when `token` was explicitly passed (see
+            // githubSearch/getStudentProfile/validateNewRepos) — the
+            // system/cookie/pool fallback path never throws this.
+            if (token) {
+              console.warn(`Token for worker ${groupIndex} was rejected — evicting and stopping this worker for the tick.`);
+              await removePoolToken(token);
+            }
+            break; // remaining students in this group stay stale, retried next tick by another worker
+          } else {
+            console.error(`Failed to refresh cache for ${username}:`, err);
+            // Do NOT write a fallback cache on Rate Limit or network errors.
+            // It will remain stale and get retried in the next batch automatically.
+          }
+        }
+        // Pace requests within this token's own group — each group uses a
+        // distinct token, so groups don't compete for the same rate-limit budget.
+        await new Promise((r) => setTimeout(r, PACING_MS_PER_STUDENT));
       }
-    }
-  }
+    })
+  );
 
   // 5. Update the queue in KV by removing the successfully processed users
   if (validQueue.length > 0) {

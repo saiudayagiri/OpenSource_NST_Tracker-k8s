@@ -8,11 +8,17 @@ import { getStudentsKV } from '@/lib/kv-students';
 import { revalidatePath } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
+// Batch size auto-scales with the number of available GitHub tokens (system +
+// pool), each processed concurrently — this bounds wall-clock time per tick
+// regardless of pool size, so give it real headroom under the platform's
+// serverless timeout.
+export const maxDuration = 180;
 
 async function performIncrementalRefresh() {
-  // 1. Refresh up to 5 stale profiles (cursor-based round-robin, O(1) KV reads)
+  // 1. Refresh stale profiles — batch size auto-scales with how many GitHub
+  //    tokens are currently available (cursor-based round-robin, O(1) KV reads)
   console.log('[Incremental Refresh] Starting stale profile updates...');
-  const { updated, attempted } = await updateStaleProfiles(5);
+  const { updated, attempted } = await updateStaleProfiles();
   console.log('[Incremental Refresh] Updated users:', updated, 'Attempted users:', attempted);
 
   if (attempted.length === 0) {
