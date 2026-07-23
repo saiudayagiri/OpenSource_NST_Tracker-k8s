@@ -1,8 +1,9 @@
 # Kubernetes Deployment for the NST SDC cluster (rancher.nstsdc.org).
 # See docs/DEPLOYMENT.md for the full step-by-step walkthrough.
 #
-# Replace <YOUR_GHCR_OWNER>/<YOUR_IMAGE_NAME> with wherever your build workflow
-# actually pushes to (see .github/workflows/build-and-push.yml).
+# Image pushed automatically by .github/workflows/build-and-push.yml on every
+# push to main — see that workflow's run logs for the exact tag if this ever
+# needs to be re-pointed at a fork.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,7 +23,7 @@ spec:
     spec:
       containers:
         - name: opensource-tracker
-          image: ghcr.io/<YOUR_GHCR_OWNER>/<YOUR_IMAGE_NAME>:latest
+          image: ghcr.io/saiudayagiri/opensource_nst_tracker-k8s:latest
           ports:
             - containerPort: 3000
           envFrom:
@@ -47,8 +48,5 @@ spec:
             limits:
               cpu: "500m"
               memory: "512Mi"
-      # Only needed if the image is pushed to a private GHCR package — see
-      # docs/DEPLOYMENT.md for how to create this secret. Remove this block
-      # if the package is public.
-      imagePullSecrets:
-        - name: ghcr-pull-secret
+      # No imagePullSecrets needed — the GHCR package is public. If it's ever
+      # made private, see docs/DEPLOYMENT.md for how to add one back.
