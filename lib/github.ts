@@ -810,23 +810,35 @@ export async function refreshStudentCache(username: string, token?: string): Pro
 const SEARCH_CALLS_PER_STUDENT = 2;
 const SAFE_SEARCH_PER_MIN = 25;
 const PACING_MS_PER_STUDENT = Math.ceil(60_000 / (SAFE_SEARCH_PER_MIN / SEARCH_CALLS_PER_STUDENT));
-// Wall-clock budget per tick — every token's group runs concurrently, so this
-// bounds total tick duration regardless of how many tokens are available,
-// safely under this project's serverless function timeout.
-const WORK_WINDOW_MS = 150_000;
-const PER_TOKEN_BATCH = Math.floor(WORK_WINDOW_MS / PACING_MS_PER_STUDENT);
+
+// How many candidates to select per token — deliberately generous. The real
+// safety mechanism is TICK_DEADLINE_MS below, not this number: actual
+// per-student cost varies a lot (validateNewRepos can add anywhere from 0 to
+// many extra core-API calls depending on how many repos a student's PRs
+// touch that haven't been seen before), so picking a batch size by estimating
+// time-per-student is fragile — this was tried and hit
+// FUNCTION_INVOCATION_TIMEOUT in practice. Selecting more candidates than we
+// can necessarily finish is fine: whatever isn't reached before the deadline
+// simply stays stale and gets picked up next tick.
+const PER_TOKEN_CANDIDATE_POOL = 50;
 // Defensive ceiling in case the token pool ever grows very large — a single
-// tick shouldn't try to process an unbounded number of students.
+// tick shouldn't try to select an unbounded number of candidates.
 const MAX_TOTAL_BATCH = 400;
+// Hard wall-clock cutoff for actually processing students, independent of how
+// many were selected — kept well under the route's maxDuration (180s) so a
+// slow student (or several) can never push the whole tick into a platform
+// timeout. Each token's group checks this before starting its next student.
+const TICK_DEADLINE_MS = 150_000;
 
 /**
- * How many students one incremental tick can safely refresh, given how many
+ * How many candidates to select for one incremental tick, given how many
  * distinct GitHub tokens are currently available. Scales automatically as
  * more users log in and contribute their OAuth token to the shared pool —
- * no code change needed to go faster as the pool grows.
+ * no code change needed to go faster as the pool grows. Actual throughput is
+ * still bounded by TICK_DEADLINE_MS, not this number.
  */
 function computeAutoBatchSize(tokenCount: number): number {
-  return Math.max(1, Math.min(MAX_TOTAL_BATCH, tokenCount * PER_TOKEN_BATCH));
+  return Math.max(1, Math.min(MAX_TOTAL_BATCH, tokenCount * PER_TOKEN_CANDIDATE_POOL));
 }
 
 export async function updateStaleProfiles(batchSize?: number): Promise<{ updated: string[]; attempted: string[] }> {
@@ -931,10 +943,16 @@ export async function updateStaleProfiles(batchSize?: number): Promise<{ updated
     groups[i % workerTokens.length].push(username);
   });
 
+  const tickStart = Date.now();
+
   await Promise.all(
     groups.map(async (group, groupIndex) => {
       const token = workerTokens[groupIndex];
       for (const username of group) {
+        if (Date.now() - tickStart > TICK_DEADLINE_MS) {
+          console.log(`Worker ${groupIndex} hit the tick deadline — stopping; remaining students stay stale for the next tick.`);
+          break;
+        }
         try {
           await refreshStudentCache(username, token);
           updatedUsernames.push(username);
