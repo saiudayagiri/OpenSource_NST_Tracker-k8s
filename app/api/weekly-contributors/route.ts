@@ -9,7 +9,14 @@ export async function GET() {
     // Attempt to load from the 'week' summary cache
     let cache = await readSummaryCache('week');
 
-    // If cache is empty or older than 5 minutes, try fetching live but fall back gracefully
+    // 'week' has a rolling date boundary that drifts as time passes — a cache
+    // older than an hour may still be showing PRs that have since aged out of
+    // the window, so treat it the same as missing.
+    const MAX_CACHE_AGE_MS = 60 * 60 * 1000;
+    if (cache && Date.now() - new Date(cache.cachedAt).getTime() >= MAX_CACHE_AGE_MS) {
+      cache = null;
+    }
+
     if (!cache) {
       const flaggedPRIds = await getFlaggedPRIdSet();
       const dateQuery = buildDateQuery('week');

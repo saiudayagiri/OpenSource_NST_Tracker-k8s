@@ -47,15 +47,30 @@ export default async function ContributorsPage({
   // ── Cache-first data loading ──────────────────────────────────────────────
   // Cache predefined period summaries to avoid hitting GitHub API rate limits
   const isPredefinedPeriod = ['all', '1day', 'week', 'month', '2months', '3months', '6months', 'year'].includes(period);
+  // Every period except 'all' has a rolling date boundary (created:>N days ago)
+  // that moves every second regardless of whether any student's data changed.
+  // The incremental cron only patches 'all'/'week'/'month', and even those only
+  // for the 5 students it happens to touch each tick — a PR can sit in a cached
+  // '1day'/'2months'/etc. summary looking "recent" for days after it's actually
+  // aged out, because nothing else ever forces that boundary to be re-evaluated.
+  // Time-boxing the cache age for these periods makes them self-correct instead
+  // of relying on an admin action (flagging a PR) to ever invalidate them.
+  const isTimeWindowed = isPredefinedPeriod && period !== 'all';
+  const MAX_WINDOW_CACHE_AGE_MS = 60 * 60 * 1000; // 1 hour
   let allSummaries: StudentSummary[] | null = null;
   let cachedAt: string | null = null;
 
   if (isPredefinedPeriod) {
     const cache = await readSummaryCache(period);
-    // Only use cache if it exists and hasn't been explicitly invalidated (epoch timestamp)
+    // Only use cache if it exists, hasn't been explicitly invalidated (epoch
+    // timestamp), and — for time-windowed periods — isn't old enough that its
+    // date boundary has drifted out of date.
     if (cache && cache.cachedAt !== '1970-01-01T00:00:00.000Z') {
-      allSummaries = cache.summaries;
-      cachedAt = cache.cachedAt;
+      const ageMs = Date.now() - new Date(cache.cachedAt).getTime();
+      if (!isTimeWindowed || ageMs < MAX_WINDOW_CACHE_AGE_MS) {
+        allSummaries = cache.summaries;
+        cachedAt = cache.cachedAt;
+      }
     }
   }
 
