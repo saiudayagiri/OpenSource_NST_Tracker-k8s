@@ -41,12 +41,19 @@ spec:
               port: 3000
             initialDelaySeconds: 10
             periodSeconds: 20
+          # Raised from the original 100m/500m request/limit after measuring
+          # real CPU throttling in production use: rendering the ~1,900-student
+          # leaderboard page is CPU-heavy (large JSON parse + big React tree),
+          # and cgroup stats (cat /sys/fs/cgroup/cpu.stat inside the pod) showed
+          # the container spending more time throttled than actually running
+          # at the old 500m limit. See docs/DEPLOYMENT.md for how to check this
+          # yourself if pages feel slow again after scaling up the roster.
           resources:
             requests:
-              cpu: "100m"
+              cpu: "250m"
               memory: "256Mi"
             limits:
-              cpu: "500m"
-              memory: "512Mi"
+              cpu: "1000m"
+              memory: "768Mi"
       # No imagePullSecrets needed — the GHCR package is public. If it's ever
       # made private, see docs/DEPLOYMENT.md for how to add one back.
